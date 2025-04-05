@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <Version>1.0.10818.2338</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BootFX.Common">
+      <HintPath>D:\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="BootFX.Common.MySql">
+      <HintPath>D:\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.MySql.dll</HintPath>
+    </Reference>
+    <Reference Include="BootFX.Common.Postgres">
+      <HintPath>D:\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.Postgres.dll</HintPath>
+    </Reference>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="BootFX" Version="7.0.11112.1645" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.0" />
+    <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Mbrit.Vegas\Mbrit.Vegas.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,216 @@
+<div>
+  <div class="form-group">
+    <label>Game</label>
+    <select class="form-control" [(ngModel)]="selectedGameName">
+      <option [value]="plan.name" *ngFor="let plan of plans">{{plan.name}}</option>
+    </select>
+  </div>
+  <div *ngIf="selectedPlan != null">
+    <div class="form-group mt-2">
+      <label>Bet per hand</label>
+      <select class="form-control" (change)="recalculate()" [(ngModel)]="selectedPlan.betPerHand">
+        <option [value]="value.value" *ngFor="let value of betPerHandRange">{{value.name0}}</option>
+      </select>
+    </div>
+    <div class="form-group mt-2">
+      <label>Hours played</label>
+      <select class="form-control" (change)="recalculate()" [(ngModel)]="selectedPlan.hoursPlayed">
+        <option [value]="value.value" *ngFor="let value of hoursPlayedRange">{{value.name1}}</option>
+      </select>
+    </div>
+    <div class="form-group mt-2">
+      <input type="checkbox" [(ngModel)]="selectedPlan.isPlanned" /> Planned
+    </div>
+  </div>
+  <div class="form-group mt-4">
+    <div class="row">
+      <div class="col-md-12">
+        <table class="grid">
+          <thead>
+            <tr>
+              <td></td>
+              <td *ngFor="let plan of plans">
+                {{plan.name}}
+                <div>
+                  <input type="checkbox" [(ngModel)]="plan.isPlanned" />
+                </div>
+              </td>
+              <td style="width:{{columnWidth}}">
+                Total
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="width:{{firstColumnWidth}}">House edge</td>
+              <td class="text-end" style="width:{{columnWidth}}" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asPercent2(plan.houseEdge)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                <span style="font-weight:normal">x̄</span>{{FormatHelper.asPercent2(averageHouseEdge)}}
+              </td>
+            </tr>
+            <tr>
+              <td>Volatility</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asFixed2(plan.relativeVolatility)}}
+                </div>
+              </td>
+              <td class="text-end">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td>Bet per hand</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asCurrency0(plan.betPerHand)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td>Hours</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asFixed1(plan.hoursPlayed)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                {{FormatHelper.asFixed1(totalHoursPlayed)}}
+              </td>
+            </tr>
+            <tr>
+              <td>Decisions per hour</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asFixed0(plan.handsPerHour)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td>Total decisions</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asFixed0(plan.totalDecisions)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td>Total wager</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asCurrency0(plan.totalWager)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                {{FormatHelper.asCurrency0(totalWager)}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="grid mt-4">
+          <tbody>
+            <tr>
+              <td style="width:{{firstColumnWidth}}">Theo</td>
+              <td class="text-end" style="width:{{columnWidth}}" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asCurrency0(plan.theo)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                {{FormatHelper.asCurrency0(totalTheo)}}
+              </td>
+            </tr>
+            <tr>
+              <td>Stop loss ({{stopLossRatioLow}}σ-{{stopLossRatioHigh}}σ)</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  <div>
+                    {{FormatHelper.asCurrency0(plan.stopLossLow)}}
+                  </div>
+                  <div class="small">
+                    {{FormatHelper.asCurrency0(plan.stopLossHigh)}}
+                  </div>
+                </div>
+              </td>
+              <td class="text-end">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td>Quit limit (0.6 of stop loss)</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  *** QUIT LIMIT
+                </div>
+              </td>
+              <td class="text-end">
+                -
+              </td>
+            </tr>
+            <tr>
+              <td>Bank ({{bankRatio}})</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asCurrency0(plan.bank)}}
+                </div>
+              </td>
+              <td class="text-end">
+                -
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="grid mt-4">
+          <tbody>
+            <tr class="italic">
+              <td style="width:{{firstColumnWidth}}">Comp ({{FormatHelper.asPercent0(compRate)}})</td>
+              <td class="text-end" style="width:{{columnWidth}}" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asCurrency0(plan.comp)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                {{FormatHelper.asCurrency0(totalComp)}}
+              </td>
+            </tr>
+            <tr class="italic">
+              <td>Comp/hour</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  {{FormatHelper.asCurrency0(plan.compPerHour)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                <span style="font-weight:normal">x̄</span>{{FormatHelper.asCurrency0(averageCompPerHour)}}
+              </td>
+            </tr>
+            <tr class="italic">
+              <td>Tier points ({{theoToTierPoints}})</td>
+              <td class="text-end" *ngFor="let plan of plans">
+                <div *ngIf="plan.isPlanned">
+                  <span *ngIf="!(plan.hasTierPoints)">~</span>{{FormatHelper.asFixed0(plan.tierPoints)}}
+                </div>
+              </td>
+              <td class="text-end italic bold">
+                <span *ngIf="areTierPointsEstimated">~</span>{{FormatHelper.asFixed0(totalTierPoints)}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

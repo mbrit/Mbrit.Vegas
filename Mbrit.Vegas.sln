@@ -1,0 +1,55 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mbrit.Vegas", "Mbrit.Vegas\Mbrit.Vegas.csproj", "{A54BA189-3CC3-4422-99C4-604784B31291}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mbrit.Vegas.Console", "Mbrit.Vegas.Console\Mbrit.Vegas.Console.csproj", "{C55226EA-7C74-402E-AB1F-B4FC9ACB2100}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mbrit.Vegas.Utility", "Mbrit.Vegas.Utility\Mbrit.Vegas.Utility.csproj", "{84FA7156-1D92-4E7A-8301-1C33CC47284B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mbrit.Vegas.Web.Api", "Mbrit.Vegas.Web.Api\Mbrit.Vegas.Web.Api.csproj", "{6D47B687-73B1-45C3-9F95-6A3D92F0FA1D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8FFCC888-562D-4484-A794-ED5BF5E5325B}"
+	ProjectSection(SolutionItems) = preProject
+		Deploy.xml = Deploy.xml
+	EndProjectSection
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Mbrit.Vegas.Web", "Mbrit.Vegas.Web\Mbrit.Vegas.Web.esproj", "{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A54BA189-3CC3-4422-99C4-604784B31291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A54BA189-3CC3-4422-99C4-604784B31291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A54BA189-3CC3-4422-99C4-604784B31291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A54BA189-3CC3-4422-99C4-604784B31291}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C55226EA-7C74-402E-AB1F-B4FC9ACB2100}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C55226EA-7C74-402E-AB1F-B4FC9ACB2100}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C55226EA-7C74-402E-AB1F-B4FC9ACB2100}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C55226EA-7C74-402E-AB1F-B4FC9ACB2100}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84FA7156-1D92-4E7A-8301-1C33CC47284B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84FA7156-1D92-4E7A-8301-1C33CC47284B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84FA7156-1D92-4E7A-8301-1C33CC47284B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84FA7156-1D92-4E7A-8301-1C33CC47284B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D47B687-73B1-45C3-9F95-6A3D92F0FA1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D47B687-73B1-45C3-9F95-6A3D92F0FA1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D47B687-73B1-45C3-9F95-6A3D92F0FA1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D47B687-73B1-45C3-9F95-6A3D92F0FA1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EA80A9E6-7D71-4A95-BF1F-E4C61CA44B4E}
+	EndGlobalSection
+EndGlobal
