@@ -1,4 +1,4 @@
-<div>
+<div class="mb-4">
   <div class="form-group">
     <label>Game</label>
     <select class="form-control" [(ngModel)]="selectedGameName">
@@ -134,14 +134,14 @@
               </td>
             </tr>
             <tr>
-              <td>Stop loss ({{stopLossRatioLow}}σ-{{stopLossRatioHigh}}σ)</td>
+              <td>Stop loss ({{stopLossRatio}}σ)</td>
               <td class="text-end" *ngFor="let plan of plans">
                 <div *ngIf="plan.isPlanned">
                   <div>
-                    {{FormatHelper.asCurrency0(plan.stopLossLow)}}
+                    {{plan.stopLossUnits}}
                   </div>
                   <div class="small">
-                    {{FormatHelper.asCurrency0(plan.stopLossHigh)}}
+                    {{FormatHelper.asCurrency0(plan.stopLoss)}}
                   </div>
                 </div>
               </td>
@@ -150,10 +150,19 @@
               </td>
             </tr>
             <tr>
-              <td>Quit limit (0.6 of stop loss)</td>
+              <td>Quit limit ({{quitRatio}}σ)
+              <div class="small">
+                Measure and stop at 30 mins
+              </div>
+              </td>
               <td class="text-end" *ngFor="let plan of plans">
                 <div *ngIf="plan.isPlanned">
-                  *** QUIT LIMIT
+                  <div>
+                    {{plan.quitUnits}}
+                  </div>
+                  <div class="small">
+                    {{FormatHelper.asCurrency0(plan.quit)}}
+                  </div>
                 </div>
               </td>
               <td class="text-end">
@@ -161,10 +170,15 @@
               </td>
             </tr>
             <tr>
-              <td>Bank ({{bankRatio}})</td>
+              <td>Bank ({{bankRatio}}σ)</td>
               <td class="text-end" *ngFor="let plan of plans">
                 <div *ngIf="plan.isPlanned">
-                  {{FormatHelper.asCurrency0(plan.bank)}}
+                  <div>
+                    {{plan.bankUnits}}
+                  </div>
+                  <div class="small">
+                    {{FormatHelper.asCurrency0(plan.bank)}}
+                  </div>
                 </div>
               </td>
               <td class="text-end">
@@ -176,7 +190,11 @@
         <table class="grid mt-4">
           <tbody>
             <tr class="italic">
-              <td style="width:{{firstColumnWidth}}">Comp ({{FormatHelper.asPercent0(compRate)}})</td>
+              <td style="width:{{firstColumnWidth}}">Comp
+                <div class="small">
+                  {{FormatHelper.asPercent0(compRate)}} of theo
+                </div>
+              </td>
               <td class="text-end" style="width:{{columnWidth}}" *ngFor="let plan of plans">
                 <div *ngIf="plan.isPlanned">
                   {{FormatHelper.asCurrency0(plan.comp)}}
@@ -198,7 +216,11 @@
               </td>
             </tr>
             <tr class="italic">
-              <td>Tier points ({{theoToTierPoints}})</td>
+              <td>Tier points
+                <div class="small">
+                  {{FormatHelper.asPercent0(theoToTierPoints)}} of theo
+                </div>
+              </td>
               <td class="text-end" *ngFor="let plan of plans">
                 <div *ngIf="plan.isPlanned">
                   <span *ngIf="!(plan.hasTierPoints)">~</span>{{FormatHelper.asFixed0(plan.tierPoints)}}

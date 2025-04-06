@@ -91,19 +91,27 @@ class GamePlan {
   }
 
   get stopLoss(): number {
-    return (this.stopLossLow + this.stopLossHigh) / 2;
+    return this.sessionStandardDeviation * this.owner.stopLossRatio;
   }
 
-  get stopLossLow(): number {
-    return this.sessionStandardDeviation * this.owner.stopLossRatioLow;
+  get stopLossUnits(): number {
+    return Math.round(this.stopLoss / this.betPerHand);
   }
 
-  get stopLossHigh(): number {
-    return this.sessionStandardDeviation * this.owner.stopLossRatioHigh;
+  get quit(): number {
+    return this.sessionStandardDeviation * this.owner.quitRatio;
+  }
+
+  get quitUnits(): number {
+    return Math.round(this.quit / this.betPerHand);
   }
 
   get bank(): number {
     return this.sessionStandardDeviation * this.owner.bankRatio;
+  }
+
+  get bankUnits(): number {
+    return Math.round(this.bank / this.betPerHand);
   }
 
   get compPerHour(): number {
@@ -153,10 +161,12 @@ class ValueAndName {
 export class BasicPageComponent {
   compRate = .3;
   defaultHoursPlayed = 1.5;
-  stopLossRatioLow = 1;
-  stopLossRatioHigh = 1.25;
-  bankRatio = .5;
+  stopLossRatio = -.75;
+  quitRatio = -.5;
+  bankRatio = .35;
   theoToTierPoints = .1;
+
+  firstColumn = 12.5;
 
   betPerHandRange: ValueAndName[] = [];
 
@@ -210,11 +220,11 @@ export class BasicPageComponent {
   }
 
   get firstColumnWidth(): string {
-    return "20%";
+    return this.firstColumn.toString() + "%";
   }
 
   get columnWidth(): string {
-    return (80 / (this.plans.length + 1)) + "%";
+    return ((100 - this.firstColumn) / (this.plans.length + 1)) + "%";
   }
 
   get plannedPlans(): GamePlan[] {

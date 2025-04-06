@@ -20,3 +20,7 @@
 .small {
     font-size:8pt;
 }
+
+.strikethrough, tr.strikethrough td {
+  text-decoration: line-through;
+}

@@ -1,4 +1,5 @@
 ﻿using BootFX.Common;
+using Mbrit.Vegas.Games;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,24 +14,31 @@ namespace Mbrit.Vegas.Utility
     {
         private IEnumerable<WinLoseDraw> Results { get; }
 
-        internal WldSequence(decimal winIncludingBonusPercentage, decimal bonusWinPercentage, decimal losePercentage, decimal drawPercentage, int hands, IRng rand)
+        //internal WldSequence(decimal winIncludingBonusPercentage, decimal bonusWinPercentage, decimal losePercentage, decimal drawPercentage, int hands, IRng rand)
+        internal WldSequence(Game game, int hands, IRng rand)
         {
-            if (winIncludingBonusPercentage + losePercentage + drawPercentage != 100)
-                throw new InvalidOperationException("The percentages must sum to 100.");
+            if (game.WinPercentage + game.LosePercentage + game.DrawPercentage != 1)
+                throw new InvalidOperationException("The percentages must sum to 1.");
+
+            var overallWins = game.WinPercentage;
 
             var results = new List<WinLoseDraw>();
-            while (results.Count < hands)
+            while (results.Count < hands * 2)
             {
-                for (var index = 0; index < (int)(winIncludingBonusPercentage - bonusWinPercentage) * 10; index++)
-                    results.Add(WinLoseDraw.Win);
+                foreach (var win in game.Wins)
+                {
+                    var numWins = (int)((win.Percentage * overallWins) * 100);
+                    for (var index = 0; index < numWins; index++)
+                        results.Add(new WinLoseDraw(WinLoseDrawType.Win, win));
+                }
 
-                for (var index = 0; index < (int)bonusWinPercentage * 10; index++)
-                    results.Add(WinLoseDraw.Bonus);
+                var numLosses = (int)(game.LosePercentage * 100);
+                for (var index = 0; index < numLosses; index++)
+                    results.Add(new WinLoseDraw(WinLoseDrawType.Lose));
 
-                for (var index = 0; index < (int)losePercentage * 10; index++)
-                    results.Add(WinLoseDraw.Lose);
-                for (var index = 0; index < (int)drawPercentage * 10; index++)
-                    results.Add(WinLoseDraw.Draw);
+                var numDraws = (int)(game.DrawPercentage * 100);
+                for (var index = 0; index < numDraws; index++)
+                    results.Add(new WinLoseDraw(WinLoseDrawType.Draw));
             }
 
             if (results.Count < hands)

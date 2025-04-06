@@ -1,4 +1,5 @@
 ﻿using BootFX.Common;
+using Mbrit.Vegas.Games;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,12 +11,14 @@ namespace Mbrit.Vegas.Utility
 {
     internal class GameResult : IEnumerable<GameResultItem>
     {
+        internal Game Game { get; }
         private decimal StartingBank { get; }
         private IEnumerable<GameResultItem> Hands { get; } = new List<GameResultItem>();
         internal GameOutcome Outcome { get; set; } = GameOutcome.PlayedThrough;
 
-        internal GameResult(decimal startingBank)
+        internal GameResult(Game game, decimal startingBank)
         {
+            this.Game = game;
             this.StartingBank = startingBank;
         }
 
@@ -48,33 +51,21 @@ namespace Mbrit.Vegas.Utility
             }
         }
 
-        private IEnumerable<GameResultItem> Wins => this.Hands.Where(v => v.Result == WinLoseDraw.Win).ToList();
+        private IEnumerable<GameResultItem> Wins => this.Hands.Where(v => v.Result.Type == WinLoseDrawType.Win).ToList();
 
-        private IEnumerable<GameResultItem> WinOrBonuses => this.Hands.Where(v => v.Result == WinLoseDraw.Win || v.Result == WinLoseDraw.Bonus).ToList();
+        private IEnumerable<GameResultItem> Losses => this.Hands.Where(v => v.Result.Type == WinLoseDrawType.Lose).ToList();
 
-        private IEnumerable<GameResultItem> Bonuses => this.Hands.Where(v => v.Result == WinLoseDraw.Bonus).ToList();
-
-        private IEnumerable<GameResultItem> Losses => this.Hands.Where(v => v.Result == WinLoseDraw.Lose).ToList();
-
-        private IEnumerable<GameResultItem> Draws => this.Hands.Where(v => v.Result == WinLoseDraw.Draw).ToList();
+        private IEnumerable<GameResultItem> Draws => this.Hands.Where(v => v.Result.Type == WinLoseDrawType.Draw).ToList();
 
         public int NumHands => this.Hands.Count();
 
         public int NumWins => this.Wins.Count();
-
-        public int NumWinOrBonuses => this.WinOrBonuses.Count();
-
-        public int NumBonuses => this.Bonuses.Count();
 
         public int NumLosses => this.Losses.Count();
 
         public int NumDraws => this.Draws.Count();
 
         public decimal PercentWins => this.GetPercentage(this.NumWins);
-
-        public decimal PercentWinOrBonuses => this.GetPercentage(this.NumWinOrBonuses);
-
-        public decimal PercentBonuses => this.GetPercentage(this.NumBonuses);
 
         public decimal PercentLosses => this.GetPercentage(this.NumLosses);
 
@@ -87,6 +78,12 @@ namespace Mbrit.Vegas.Utility
             else
                 return 0;
         }
+
+        internal int GetNumWins(GameWin win) => this.GetWins(win).Count();
+
+        internal decimal GetPercentWins(GameWin win) => this.GetPercentage(this.GetNumWins(win));
+
+        private IEnumerable<GameResultItem> GetWins(GameWin win) => this.Hands.Where(v => v.Result.Type == WinLoseDrawType.Win && v.Result.Win == win).ToList();
 
         public decimal FinalProfit => this.FinalBank - this.StartingBank;
 

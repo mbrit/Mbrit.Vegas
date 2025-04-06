@@ -1,5 +1,9 @@
 ﻿using BootFX.Common;
+using BootFX.Common.Data.Text;
 using BootFX.Common.Management;
+using Mbrit.Vegas.Games;
+using Microsoft.VisualBasic;
+using System.Collections.Immutable;
 using System.Net.Mail;
 using System.Numerics;
 using System.Reflection.Metadata;
@@ -14,11 +18,6 @@ namespace Mbrit.Vegas.Utility
 {
     internal class BlackjackFoo : CliFoo
     {
-        const decimal WinIncludingBonusPercentage = 42.5M;
-        const decimal BonusWinPercentage = 4.75M;
-        const decimal LosePercentage = 49M;
-        const decimal DrawPercentage = 8.5M;
-
         internal void DoMagic()
         {
             var rand = new RandomWrapper();
@@ -29,113 +28,174 @@ namespace Mbrit.Vegas.Utility
 
             var render = this.GetValueWithDefault<bool>("Render each");
 
-            var handsPerHour = 80;
-            var hours = 1M;
-            var totalHands = (int)(handsPerHour * hours);
+            var game = new Blackjack32();
 
-            var sequences = new List<WldSequence>();
-            for (var index = 0; index < games; index++)
-                sequences.Add(new WldSequence(WinIncludingBonusPercentage, BonusWinPercentage, LosePercentage, DrawPercentage, totalHands, rand));
+            //var handsPerHour = 80;
+            var hours = 1.5M;
+            var totalHands = (int)(game.DecisionsPerHour * hours);
 
-            var primary = new GameResult(0);
-
-            var outcomes = new Dictionary<GameOutcome, int>();
-            foreach (var outcome in Enum.GetValues<GameOutcome>())
-                outcomes[outcome] = 0;
-
-            var settings = new GameSettings(unitSize, 1.15M, totalHands, .5M, 1M);
-
-            Console.WriteLine();
-
-            var playThroughProfits = new List<decimal>();
-            var quitProfits = new List<decimal>();
-            var quitTracks = new List<int>();
-            var handsPlayed = new List<int>();
-
-            var recoveries = new Dictionary<int, int>();
-            var recoveryIndexes = new List<int>();
-            var startRecovery = settings.FloorUnits + 6;
-            for (var index = startRecovery; index >= startRecovery - 12; index--)
+            var cumulatives = new Dictionary<decimal, Dictionary<decimal, decimal>>();
+            
+            for (var stopLoss = 0M; stopLoss <= 2.0M; stopLoss += 0.1M)
             {
-                recoveryIndexes.Add(index);
-                recoveries[index] = 0;
+                cumulatives[stopLoss] = new Dictionary<decimal, decimal>();
+
+                for (var takeProfit = 0M; takeProfit <= 2.0M; takeProfit += 0.1M)
+                {
+                    Console.WriteLine($"Run --> stop loss: {stopLoss}, take profit: {takeProfit}");
+
+                    var sequences = new List<WldSequence>();
+                    for (var index = 0; index < games; index++)
+                        sequences.Add(new WldSequence(game, totalHands, rand));
+
+                    var settings = new GameSettings(unitSize, game.StandardDeviation, totalHands, stopLoss, takeProfit, false);
+
+                    var playThroughProfits = new List<decimal>();
+                    var quitProfits = new List<decimal>();
+                    var quitTracks = new List<int>();
+                    var handsPlayed = new List<int>();
+
+                    var primary = new GameResult(game, 0);
+
+                    var outcomes = new Dictionary<GameOutcome, int>();
+                    foreach (var outcome in Enum.GetValues<GameOutcome>())
+                        outcomes[outcome] = 0;
+
+                    /*
+                    var recoveries = new Dictionary<int, int>();
+                    var recoveryIndexes = new List<int>();
+                    var startRecovery = settings.FloorUnits + 6;
+                    for (var index = startRecovery; index >= startRecovery - 12; index--)
+                    {
+                        recoveryIndexes.Add(index);
+                        recoveries[index] = 0;
+                    }
+                    */
+
+                    var cumulative = 0M;
+                    foreach (var sequence in sequences)
+                    {
+                        var results = this.PlayGame(game, sequence, primary, settings, rand, render);
+                        outcomes[results.Outcome]++;
+
+                        if (results.Outcome == GameOutcome.PlayedThrough)
+                        {
+                            playThroughProfits.Add(results.FinalProfit);
+
+                            /*
+                            if (results.LowestTrack <= startRecovery)
+                                recoveries[results.LowestTrack]++;
+                            */
+                        }
+                        else if (results.Outcome == GameOutcome.Quit)
+                        {
+                            quitProfits.Add(results.FinalProfit);
+                            quitTracks.Add(results.FinalTrack);
+                        }
+
+                        handsPlayed.Add(results.NumHands);
+
+                        cumulative += results.FinalProfit;
+                    }
+
+                    Console.WriteLine(">>> " + cumulative);
+
+                    /*
+                    Console.WriteLine();
+
+                    this.DumpResults(primary);
+
+                    Console.WriteLine();
+
+                    table = new ConsoleTable();
+                    table.AddHeaderRow("Recovery", "Count");
+                    foreach(var index in recoveryIndexes)
+                        table.AddRow(index, recoveries[index]);
+                    table.Render();
+
+                    Console.WriteLine();
+
+                    table = new ConsoleTable();
+                    table.AddHeaderRow("Outcome", "Count", "%age");
+                    foreach (var outcome in Enum.GetValues<GameOutcome>())
+                        table.AddRow(outcome, outcomes[outcome], this.FormatPercent2((decimal)outcomes[outcome] / (decimal)sequences.Count));
+                    table.Render();
+
+                    Console.WriteLine();
+
+                    table = new ConsoleTable();
+                    table.AddHeaderRow("Outcome", "Value");
+                    if (playThroughProfits.Any())
+                    {
+                        table.AddRow("Min profit on play-throughs", playThroughProfits.Min());
+                        table.AddRow("Max profit on play-throughs", playThroughProfits.Max());
+                        table.AddRow("Average profit on play-throughs", playThroughProfits.Average());
+                    }
+                    if (quitProfits.Any())
+                    {
+                        table.AddRow("Min profit on quits", quitProfits.Min());
+                        table.AddRow("Max profit on quits", quitProfits.Max());
+                        table.AddRow("Average profit on quits", quitProfits.Average());
+                        table.AddRow("Average track on quits", quitTracks.Select(v => (decimal)v).Average());
+                    }
+                    table.AddRow("Average hands played", handsPlayed.Average());
+                    table.Render();
+                    */
+
+                    cumulatives[stopLoss][takeProfit] = cumulative;
+                }
             }
 
-            sequences.ProcessItems((sequence) =>
-            {
-                var results = this.PlayGame(sequence, primary, settings, rand, render);
-                outcomes[results.Outcome]++;
-
-                if (results.Outcome == GameOutcome.PlayedThrough)
-                {
-                    playThroughProfits.Add(results.FinalProfit);
-
-                    if (results.LowestTrack <= startRecovery)
-                        recoveries[results.LowestTrack]++;
-                }
-                else if (results.Outcome == GameOutcome.Quit)
-                {
-                    quitProfits.Add(results.FinalProfit);
-                    quitTracks.Add(results.FinalTrack);
-                }
-
-                handsPlayed.Add(results.NumHands);
-
-                var trend = this.GetTrend(results);
-                Console.WriteLine(results.FinalProfit + "\t" + trend);
-            });
-
+            /*
             Console.WriteLine();
 
             var table = new ConsoleTable();
             table.AddHeaderRow("Setting", "Value");
             table.AddRow("Unit size", settings.UnitSize);
             table.AddRow("Bankroll", settings.StartBank);
+            table.AddRow("Hours", hours);
             table.AddRow("SD", settings.SingleStandardDeviation);
             table.AddRow("Ceiling", settings.StandardDeviationHigh, settings.CeilingUnits, settings.CeilingMultipler);
             table.AddRow("Floor", settings.StandardDeviationLow, settings.FloorUnits, settings.FloorMultipler);
             table.AddRow("Quit", settings.StandardDeviationLow, settings.QuitUnits);
             table.Render();
+            */
 
-            Console.WriteLine();
+            var path = @"c:\Mbrit\Vegas\" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + ".csv";
+            Runtime.Current.EnsureFolderForFileCreated(path);
 
-            this.DumpResults(primary);
-
-            Console.WriteLine();
-
-            table = new ConsoleTable();
-            table.AddHeaderRow("Recovery", "Count");
-            foreach(var index in recoveryIndexes)
-                table.AddRow(index, recoveries[index]);
-            table.Render();
-
-            Console.WriteLine();
-
-            table = new ConsoleTable();
-            table.AddHeaderRow("Outcome", "Count", "%age");
-            foreach (var outcome in Enum.GetValues<GameOutcome>())
-                table.AddRow(outcome, outcomes[outcome], this.FormatPercent2((decimal)outcomes[outcome] / (decimal)sequences.Count));
-            table.Render();
-
-            Console.WriteLine();
-
-            table = new ConsoleTable();
-            table.AddHeaderRow("Outcome", "Value");
-            if (playThroughProfits.Any())
+            using (var writer = new StreamWriter(path))
             {
-                table.AddRow("Min profit on play-throughs", playThroughProfits.Min());
-                table.AddRow("Max profit on play-throughs", playThroughProfits.Max());
-                table.AddRow("Average profit on play-throughs", playThroughProfits.Average());
+                var csv = new CsvDataWriter(writer);
+
+                var stopLosses = cumulatives.Keys.ToList();
+                stopLosses.Sort();
+
+                List<decimal> takeProfits = null;
+
+                foreach(var stopLoss in stopLosses)
+                {
+                    var values = cumulatives[stopLoss];
+
+                    if(takeProfits == null)
+                    {
+                        takeProfits = new List<decimal>(values.Keys);
+                        takeProfits.Sort();
+
+                        csv.WriteValue("Stop loss");
+                        foreach (var takeProfit in takeProfits)
+                            csv.WriteValue(takeProfit);
+                        csv.WriteLine();
+                    }
+
+                    csv.WriteValue(stopLoss);
+                    foreach (var takeProfit in takeProfits)
+                        csv.WriteValue(values[takeProfit]);
+                    csv.WriteLine();
+                }
             }
-            if (quitProfits.Any())
-            {
-                table.AddRow("Min profit on quits", quitProfits.Min());
-                table.AddRow("Max profit on quits", quitProfits.Max());
-                table.AddRow("Average profit on quits", quitProfits.Average());
-                table.AddRow("Average track on quits", quitTracks.Select(v => (decimal)v).Average());
-            }
-            table.AddRow("Average hands played", handsPlayed.Average());
-            table.Render();
+
+            Console.WriteLine(path);
         }
 
         private decimal GetTrend(GameResult result)
@@ -159,18 +219,52 @@ namespace Mbrit.Vegas.Utility
         {
             var table = new ConsoleTable();
             table.AddHeaderRow("Result", "Count", "%age", "ideal");
-            table.AddRow(WinLoseDraw.Win, results.NumWins, this.FormatPercent2(results.PercentWins), this.FormatPercent2(WinIncludingBonusPercentage / 100));
-            table.AddRow(WinLoseDraw.Bonus, results.NumBonuses, this.FormatPercent2(results.PercentBonuses), this.FormatPercent2(BonusWinPercentage / 100));
-            table.AddRow(WinLoseDraw.Lose, results.NumLosses, this.FormatPercent2(results.PercentLosses), this.FormatPercent2(LosePercentage / 100));
-            table.AddRow(WinLoseDraw.Draw, results.NumDraws, this.FormatPercent2(results.PercentDraws), this.FormatPercent2(DrawPercentage / 100));
+
+            var game = results.Game;
+
+            var overallWinPercentage = results.PercentWins;
+            var expectedOverallWinPercentage = game.WinPercentage;
+            var row = table.AddRow(WinLoseDrawType.Win, results.NumWins, this.FormatPercent2(overallWinPercentage), this.FormatPercent2(expectedOverallWinPercentage));
+            this.ColourifyResultsRow(row, overallWinPercentage, expectedOverallWinPercentage);
+
+            foreach (var win in results.Game.Wins)
+            {
+                var winPercentage = 0M;
+                if(overallWinPercentage != 0)
+                    winPercentage = results.GetPercentWins(win) / overallWinPercentage;
+
+                var expectedWinPercentage = win.Percentage;
+                row = table.AddRow(">> " + win.Name, results.GetNumWins(win), this.FormatPercent2(winPercentage), this.FormatPercent2(expectedWinPercentage));
+                this.ColourifyResultsRow(row, winPercentage, expectedWinPercentage);
+            }
+
+            var losePercentage = results.PercentLosses;
+            var expectedLosePercentage = game.LosePercentage;
+            row = table.AddRow(WinLoseDrawType.Lose, results.NumLosses, this.FormatPercent2(results.PercentLosses), this.FormatPercent2(game.LosePercentage));
+            this.ColourifyResultsRow(row, losePercentage, expectedLosePercentage);
+
+            var drawPercentage = results.PercentDraws;
+            var expectedDrawPercentage = game.DrawPercentage;
+            row = table.AddRow(WinLoseDrawType.Draw, results.NumDraws, this.FormatPercent2(drawPercentage), this.FormatPercent2(expectedDrawPercentage));
+            this.ColourifyResultsRow(row, drawPercentage, expectedDrawPercentage);
+
             table.Render();
+        }
+
+        private void ColourifyResultsRow(ConsoleTableRow row, decimal actualPercentage, decimal expectedPercentage)
+        {
+            const decimal wobble = 0.025M;
+            if (actualPercentage >= expectedPercentage - wobble && actualPercentage <= expectedPercentage + wobble)
+                row.ForegroundColor = ConsoleColor.Green;
+            else
+                row.ForegroundColor = ConsoleColor.Red;
         }
 
         private string FormatPercent2(decimal value) => (value * 100).ToString("n2") + "%";
 
-        internal GameResult PlayGame(WldSequence sequence, GameResult primary, GameSettings settings, IRng rand, bool render = true)
+        internal GameResult PlayGame(Game game, WldSequence sequence, GameResult primary, GameSettings settings, IRng rand, bool render = true)
         {
-            var results = new GameResult(settings.StartBank);
+            var results = new GameResult(game, settings.StartBank);
 
             var bank = settings.StartBank;
 
@@ -178,21 +272,23 @@ namespace Mbrit.Vegas.Utility
             var trackUp = 1;
             var trackDown = 1;
 
-            var warn = settings.FloorUnits + 2;
+            var warn = settings.StopLossUnits + 2;
 
-            foreach (var theResult in sequence)
+            foreach (var result in sequence)
             {
-                if (bank < settings.UnitSize)
+                if (settings.HasBank && bank < settings.UnitSize)
                     break;
 
                 // reduce the balance to play...
                 var bet = settings.UnitSize;
                 bank -= bet;
 
-                var result = BlackjackHandResult.Unknown;
-                if (theResult == WinLoseDraw.Win)
+                if (result.Type == WinLoseDrawType.Win)
                 {
-                    result = BlackjackHandResult.PlayerWins;
+                    var win = result.Win.GetWin(bet);
+                    bank += bet + win;
+
+                    track += trackUp;
 
                     if (render)
                     {
@@ -200,19 +296,9 @@ namespace Mbrit.Vegas.Utility
                         this.RenderTrack((track + 1), ConsoleColor.Green, warn);
                     }
                 }
-                else if (theResult == WinLoseDraw.Bonus)
+                else if (result.Type == WinLoseDrawType.Lose)
                 {
-                    result = BlackjackHandResult.PlayerWinsWithBlackjack;
-
-                    if (render)
-                    {
-                        ConsoleHelper.WriteColor("↑", ConsoleColor.Cyan);
-                        this.RenderTrack((track + 1), ConsoleColor.Cyan, warn);
-                    }
-                }
-                else if (theResult == WinLoseDraw.Lose)
-                {
-                    result = BlackjackHandResult.DealersWins;
+                    track -= trackDown;
 
                     if (render)
                     { 
@@ -220,9 +306,9 @@ namespace Mbrit.Vegas.Utility
                         this.RenderTrack((track - 1), ConsoleColor.Red, warn);
                     }
                 }
-                else if (theResult == WinLoseDraw.Draw)
+                else if (result.Type == WinLoseDrawType.Draw)
                 {
-                    result = BlackjackHandResult.Push;
+                    bank += bet;
 
                     if (render)
                     {
@@ -231,43 +317,24 @@ namespace Mbrit.Vegas.Utility
                     }
                 }
                 else
-                    throw new NotSupportedException($"Cannot handle '{result}'.");
+                    throw new NotSupportedException($"Cannot handle '{result.Type}'.");
 
-                if (result == BlackjackHandResult.Push)
-                    bank += bet;
-                else
-                {
-                    if (result == BlackjackHandResult.PlayerWinsWithBlackjack || result == BlackjackHandResult.PlayerWins)
-                    {
-                        if (result == BlackjackHandResult.PlayerWins)
-                            bank += bet * 2;
-                        else
-                            bank += bet * 2.5M;
+                results.AddHand(result, bank, track);
+                primary.AddHand(result, bank, track);
 
-                        result = BlackjackHandResult.PlayerWins;
-
-                        track += trackUp;
-                    }
-                    else
-                        track -= trackDown;
-                }
-
-                results.AddHand(theResult, bank, track);
-                primary.AddHand(theResult, bank, track);
-
-                if (track == settings.CeilingUnits)
+                if (settings.HasTakeProfits && track == settings.TakeProfitsUnits)
                 {
                     results.Outcome = GameOutcome.TookProfit;
                     break;
                 }
-                else if (track == settings.FloorUnits)
+                else if (settings.HasStopLoss && track == settings.StopLossUnits)
                 {
                     results.Outcome = GameOutcome.CrashedOut;
                     break;
                 }
 
                 // are we at 35 hands?
-                if(results.NumHands == 25 && track <= settings.QuitUnits)
+                if(results.NumHands == 30 && settings.HasQuitUnits && track <= settings.QuitUnits)
                 {
                     results.Outcome = GameOutcome.Quit;
                     break;

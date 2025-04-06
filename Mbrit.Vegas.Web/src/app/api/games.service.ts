@@ -18,11 +18,12 @@ export class Game {
 
 export class GamesRepo {
   private games = [
-    new Game("Blackjack (3:2)", 0.02, 25, 80, 1.15),
+    new Game("Blackjack (3:2)", 0.005, 25, 80, 1.15),
+    new Game("Blackjack (5:6)", 0.02, 25, 80, 1.15),
     new Game("UTH", 0.022, 25, 60, 2.9),
     new Game("3 Card", 0.037, 25, 95, 1.8),
     new Game("4 Card", 0.034, 25, 90, 2.1),
-    new Game("Pai Gow", 0.015, 25, 35, 0.4),
+    new Game("Pai Gow", 0.015, 25, 35, 0.75),
     new Game("Baccarat", 0.011, 25, 35, 1),
     new Game("Roulette (00)", 0.053, 25, 70, 1.4),
     new Game("Craps", 0.015, 25, 35, 1.1),
