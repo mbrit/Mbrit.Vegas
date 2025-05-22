@@ -12,7 +12,6 @@ namespace Mbrit.Vegas.Games
         //private const decimal TheBonusWinPercentage = 4.75M;
         private const decimal TheLosePercentage = .49M;
         private const decimal TheDrawPercentage = .085M;
-        private static decimal TheWinPercentage = 1 - TheLosePercentage - TheDrawPercentage;
 
         private const decimal TheStandardDeviation = 1.15M;
 

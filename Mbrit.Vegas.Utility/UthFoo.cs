@@ -14,12 +14,26 @@ namespace Mbrit.Vegas.Utility
     {
         internal void DoMagic()
         {
-            const int bankroll = 1500;
-            const int numPlays = 10000;
-            const int totalHands = 30;
-            const int ante = 25;
+            var simulator = new Simulator<UthArgs>();
+            simulator.AddRange(v => v.Ante, 5, 250, 5);
+            simulator.AddRange(v => v.WinTargetWeight, 0.1M, 2M, 0.1M);
 
-            var winTarget = (int)(.8 * (8 * ante));       // ante + blind + 4x raise...
+            simulator.Run((args) =>
+            {
+                return this.PlayGame();
+            });
+        }
+
+        internal IEnumerable<BankrollResults> PlayGame()
+        {
+            //const int bankroll = 1500;
+            const int numPlays = 10000;
+            const int totalHands = 10;
+            const int ante = 100;
+
+            var bankroll = (int)((2.2 * ante) * totalHands);
+
+            var winTarget = (int)(bankroll * .33);
 
             var cashOutAt = bankroll + winTarget;
             var quitAt = 0; //  bankroll - 500;
@@ -40,6 +54,7 @@ namespace Mbrit.Vegas.Utility
 
             Console.WriteLine("====================================");
             Console.WriteLine("Bankroll: " + bankroll);
+            Console.WriteLine("Win target: " + winTarget);
             Console.WriteLine("Average: " + results.Select(v => v.Bankroll).Average());
 
             var averageWager = results.Select(v => v.TotalWager).Average();
@@ -89,6 +104,8 @@ namespace Mbrit.Vegas.Utility
                 percentOthers = (decimal)numOthers / (decimal)numPlays;
 
             //            Console.WriteLine($"Num other: " + others.Count + " of " + numPlays + ", " + (percentOthers * 100).ToString("n2") + $"%, average -- $" + others.Average(v => v.Bankroll).ToString("n0"));
+
+            return results;
         }
 
         internal BankrollResults Play(int bankroll, int ante, int totalHands, int winTarget, int stopTarget, bool trace = false)

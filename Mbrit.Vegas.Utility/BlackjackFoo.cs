@@ -28,19 +28,23 @@ namespace Mbrit.Vegas.Utility
 
             var render = this.GetValueWithDefault<bool>("Render each");
 
-            var game = new Blackjack32();
+            //var game = new Blackjack32();
+            var game = new PaiGow();
 
             //var handsPerHour = 80;
             var hours = 1.5M;
             var totalHands = (int)(game.DecisionsPerHour * hours);
 
             var cumulatives = new Dictionary<decimal, Dictionary<decimal, decimal>>();
-            
-            for (var stopLoss = 0M; stopLoss <= 2.0M; stopLoss += 0.1M)
+
+            var stopLosses = this.GetStopLosses();
+            var takeProfits = this.GetTakeProfits();
+
+            foreach(var stopLoss in stopLosses)
             {
                 cumulatives[stopLoss] = new Dictionary<decimal, decimal>();
 
-                for (var takeProfit = 0M; takeProfit <= 2.0M; takeProfit += 0.1M)
+                foreach(var takeProfit in takeProfits)
                 {
                     Console.WriteLine($"Run --> stop loss: {stopLoss}, take profit: {takeProfit}");
 
@@ -100,47 +104,50 @@ namespace Mbrit.Vegas.Utility
 
                     Console.WriteLine(">>> " + cumulative);
 
-                    /*
-                    Console.WriteLine();
-
-                    this.DumpResults(primary);
-
-                    Console.WriteLine();
-
-                    table = new ConsoleTable();
-                    table.AddHeaderRow("Recovery", "Count");
-                    foreach(var index in recoveryIndexes)
-                        table.AddRow(index, recoveries[index]);
-                    table.Render();
-
-                    Console.WriteLine();
-
-                    table = new ConsoleTable();
-                    table.AddHeaderRow("Outcome", "Count", "%age");
-                    foreach (var outcome in Enum.GetValues<GameOutcome>())
-                        table.AddRow(outcome, outcomes[outcome], this.FormatPercent2((decimal)outcomes[outcome] / (decimal)sequences.Count));
-                    table.Render();
-
-                    Console.WriteLine();
-
-                    table = new ConsoleTable();
-                    table.AddHeaderRow("Outcome", "Value");
-                    if (playThroughProfits.Any())
+                    if (render)
                     {
-                        table.AddRow("Min profit on play-throughs", playThroughProfits.Min());
-                        table.AddRow("Max profit on play-throughs", playThroughProfits.Max());
-                        table.AddRow("Average profit on play-throughs", playThroughProfits.Average());
+                        Console.WriteLine();
+
+                        this.DumpResults(primary);
+
+                        Console.WriteLine();
+
+                        /*
+                        var table = new ConsoleTable();
+                        table.AddHeaderRow("Recovery", "Count");
+                        foreach(var index in recoveryIndexes)
+                            table.AddRow(index, recoveries[index]);
+                        table.Render();
+
+                        Console.WriteLine();
+                        */
+
+                        var table = new ConsoleTable();
+                        table.AddHeaderRow("Outcome", "Count", "%age");
+                        foreach (var outcome in Enum.GetValues<GameOutcome>())
+                            table.AddRow(outcome, outcomes[outcome], this.FormatPercent2((decimal)outcomes[outcome] / (decimal)sequences.Count));
+                        table.Render();
+
+                        Console.WriteLine();
+
+                        table = new ConsoleTable();
+                        table.AddHeaderRow("Outcome", "Value");
+                        if (playThroughProfits.Any())
+                        {
+                            table.AddRow("Min profit on play-throughs", playThroughProfits.Min());
+                            table.AddRow("Max profit on play-throughs", playThroughProfits.Max());
+                            table.AddRow("Average profit on play-throughs", playThroughProfits.Average());
+                        }
+                        if (quitProfits.Any())
+                        {
+                            table.AddRow("Min profit on quits", quitProfits.Min());
+                            table.AddRow("Max profit on quits", quitProfits.Max());
+                            table.AddRow("Average profit on quits", quitProfits.Average());
+                            table.AddRow("Average track on quits", quitTracks.Select(v => (decimal)v).Average());
+                        }
+                        table.AddRow("Average hands played", handsPlayed.Average());
+                        table.Render();
                     }
-                    if (quitProfits.Any())
-                    {
-                        table.AddRow("Min profit on quits", quitProfits.Min());
-                        table.AddRow("Max profit on quits", quitProfits.Max());
-                        table.AddRow("Average profit on quits", quitProfits.Average());
-                        table.AddRow("Average track on quits", quitTracks.Select(v => (decimal)v).Average());
-                    }
-                    table.AddRow("Average hands played", handsPlayed.Average());
-                    table.Render();
-                    */
 
                     cumulatives[stopLoss][takeProfit] = cumulative;
                 }
@@ -168,24 +175,19 @@ namespace Mbrit.Vegas.Utility
             {
                 var csv = new CsvDataWriter(writer);
 
-                var stopLosses = cumulatives.Keys.ToList();
-                stopLosses.Sort();
-
-                List<decimal> takeProfits = null;
-
+                var first = true;
                 foreach(var stopLoss in stopLosses)
                 {
                     var values = cumulatives[stopLoss];
 
-                    if(takeProfits == null)
+                    if (first)
                     {
-                        takeProfits = new List<decimal>(values.Keys);
-                        takeProfits.Sort();
-
                         csv.WriteValue("Stop loss");
                         foreach (var takeProfit in takeProfits)
                             csv.WriteValue(takeProfit);
                         csv.WriteLine();
+
+                        first = false;
                     }
 
                     csv.WriteValue(stopLoss);
@@ -196,6 +198,26 @@ namespace Mbrit.Vegas.Utility
             }
 
             Console.WriteLine(path);
+        }
+
+        private IEnumerable<decimal> GetStopLossesx() => new List<decimal>() { 1 };
+
+        private IEnumerable<decimal> GetStopLosses()
+        {
+            var values = new List<decimal>();
+            for (var index = 0M; index < 2M; index += .1M)
+                values.Add(index);
+            return values;
+        }
+
+        //private IEnumerable<decimal> GetTakeProfits() => new List<decimal>() { 1 };
+
+        private IEnumerable<decimal> GetTakeProfits()
+        {
+            var values = new List<decimal>();
+            for (var index = 0M; index < 2M; index += .1M)
+                values.Add(index);
+            return values;
         }
 
         private decimal GetTrend(GameResult result)
