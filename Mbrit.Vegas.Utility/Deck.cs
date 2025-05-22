@@ -14,7 +14,7 @@ namespace Mbrit.Vegas.Utility
             var cards = new List<Card>();
             foreach(var suit in Enum.GetValues<Suit>())
             {
-                for(var index = 2; index < 13; index++)
+                for(var index = 1; index <= 13; index++)
                     cards.Add(new Card(suit, index));
             }
 

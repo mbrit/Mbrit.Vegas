@@ -36,6 +36,8 @@ namespace Mbrit.Vegas.Utility
                             new BlackjackFoo().DoMagic();
                         else if (name == "rand")
                             new RandomFoo().DoMagic();
+                        else if (name == "uth")
+                            new UthFoo().DoMagic();
                     });
                 }
             }

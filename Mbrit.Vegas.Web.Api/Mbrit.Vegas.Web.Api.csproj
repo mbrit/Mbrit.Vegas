@@ -3,7 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>1.0.10818.2338</Version>
+    <Version>1.0.20406.1911</Version>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BootFX.Common">

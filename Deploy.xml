@@ -1,0 +1,51 @@
+﻿<Deploy>
+
+  <TargetPath>c:\Program Files\Mbrit.Vegas</TargetPath>
+
+  <Modules>
+
+    <Module>
+      <Name>Web</Name>
+      <TargetPath>~/Web</TargetPath>
+      <SourcePath>~/Mbrit.Vegas.Web</SourcePath>
+    </Module>
+
+    <!--
+    <Module>
+      <Name>Web-Api</Name>
+      <TargetPath>~/Web-Api</TargetPath>
+      <SourcePath>~/Mbrit.Vegas.Web.Api</SourcePath>
+    </Module>
+    -->
+
+    <Module>
+      <Name>Console</Name>
+      <TargetPath>~/Console</TargetPath>
+      <SourcePath>~/Mbrit.Vegas.Console</SourcePath>
+    </Module>
+
+    <Module>
+      <Name>Utility</Name>
+      <TargetPath>~/Utility</TargetPath>
+      <SourcePath>~/Mbrit.Vegas.Utility</SourcePath>
+    </Module>
+
+  </Modules>
+
+  <Deploy>
+    <FrontEnd>
+    </FrontEnd>
+  </Deploy>
+
+  <Hosts>
+    <Host names="*">
+      <StopProcesses>
+        <StopProcess>Mbrit.Vegas.Console.exe</StopProcess>
+        <StopProcess>Mbrit.Vegas.Utility.exe</StopProcess>
+      </StopProcesses>
+    </Host>
+  </Hosts>
+
+</Deploy>
+
+

@@ -25,6 +25,7 @@
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Mbrit.Vegas.Utility\Mbrit.Vegas.Utility.csproj" />
     <ProjectReference Include="..\Mbrit.Vegas\Mbrit.Vegas.csproj" />
   </ItemGroup>
 </Project>
