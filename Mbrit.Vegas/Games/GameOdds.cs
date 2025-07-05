@@ -21,6 +21,6 @@ namespace Mbrit.Vegas.Games
 
         public override string ToString() => $"{this.Name} ({this.X}:{this.Y})";
 
-        internal decimal GetWin(decimal bet) => bet * (this.X / this.Y);
+        public decimal GetWin(decimal bet) => bet * ((decimal)this.X / (decimal)this.Y);
     }
 }

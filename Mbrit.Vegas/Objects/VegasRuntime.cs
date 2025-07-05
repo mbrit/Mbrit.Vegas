@@ -1,4 +1,5 @@
 using BootFX.Common;
+using BootFX.Common.Crypto;
 using BootFX.Common.Data;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,8 @@ namespace Mbrit.Vegas
         {
             DatabaseUpdate.Current.Update(null, new DatabaseUpdateArgs());
         }
+
+        public static string GetToken() => EncryptionHelper.GetToken();
 
         public static Version ProductVersion => typeof(VegasRuntime).Assembly.GetName().Version;
     }

@@ -7,6 +7,9 @@
     <Version>1.0.20406.1911</Version>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Casino.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="BootFX.Common">
       <HintPath>D:\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.dll</HintPath>
     </Reference>

@@ -23,19 +23,12 @@ namespace Mbrit.Vegas.Utility
         internal void AddRange<TValue>(Expression<Func<T, TValue>> expression, TValue from, TValue to, TValue step) =>
             ((List<ISimulatorStep>)this.Steps).Add(new SimulatorSteps<T, TValue>(expression, from, to, step));
 
-        internal Dictionary<T, IEnumerable<BankrollResults>> Run(Func<T, IEnumerable<BankrollResults>> callback)
+        internal void Run(Action<T> callback)
         {
-            var results = new Dictionary<T, IEnumerable<BankrollResults>>();
-
             // get all the runs...
             var args = this.ExpandArgs().ToList();
             foreach (var arg in args)
-            {
-                var result = callback(arg);
-                results[arg] = result;
-            }
-
-            return results;
+                callback(arg);
         }
 
         private IEnumerable<T> ExpandArgs()

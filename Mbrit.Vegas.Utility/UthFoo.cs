@@ -1,5 +1,7 @@
 ﻿
 using BootFX.Common;
+using BootFX.Common.Data.Text;
+using Microsoft.VisualBasic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
@@ -10,38 +12,82 @@ using System.Security.Principal;
 
 namespace Mbrit.Vegas.Utility
 {
+    internal record AggregateResults(IEnumerable<UthBankrollResults> Results, decimal PercentWon);
+
     internal class UthFoo
     {
         internal void DoMagic()
         {
             var simulator = new Simulator<UthArgs>();
-            simulator.AddRange(v => v.Ante, 5, 250, 5);
-            simulator.AddRange(v => v.WinTargetWeight, 0.1M, 2M, 0.1M);
+            simulator.AddRange(v => v.Ante, 15, 150, 10);
+            simulator.AddRange(v => v.WinTargetMargin, 0.1M, 2M, 0.05M);
+
+            var results = new Dictionary<int, Dictionary<decimal, decimal>>();
+
+            var antes = new List<int>();
+            var winTargetMargins = new List<decimal>();
 
             simulator.Run((args) =>
             {
-                return this.PlayGame();
+                var gameResult = this.PlayGame(args);
+
+                if (!(results.ContainsKey(args.Ante)))
+                    results[args.Ante] = new Dictionary<decimal, decimal>();
+
+                results[args.Ante][args.WinTargetMargin] = gameResult.PercentWon;
+
+                antes.Merge(args.Ante);
+                winTargetMargins.Merge(args.WinTargetMargin);
             });
+
+            var folder = Path.Combine(@"c:\Mbrit\Vegas", this.GetType().Name);
+            Runtime.Current.EnsureFolderCreated(folder);
+            var temp = Path.Combine(folder, DateTime.UtcNow.ToString("yyyyMMdd HHmmss"));
+
+            using(var writer = new StreamWriter(temp))
+            {
+                var csv = new CsvDataWriter(writer);
+
+                csv.WriteValue("");
+                foreach (var ante in antes)
+                    csv.WriteValue(ante);
+                csv.WriteLine();
+
+                foreach(var winTargetMargin in winTargetMargins)
+                {
+                    csv.WriteValue(winTargetMargin);
+
+                    foreach(var ante in antes)
+                        csv.WriteValue(results[ante][winTargetMargin]);
+
+                    csv.WriteLine();
+                }
+            }
+
+            Console.WriteLine("Done.");
         }
 
-        internal IEnumerable<BankrollResults> PlayGame()
+        internal AggregateResults PlayGame(UthArgs args)
         {
             //const int bankroll = 1500;
-            const int numPlays = 10000;
-            const int totalHands = 10;
-            const int ante = 100;
+            //const int numPlays = 10000;
+            const int totalHands = 20;
+            //const int ante = 100;
 
-            var bankroll = (int)((2.2 * ante) * totalHands);
+            var bankroll = (int)((2.2 * args.Ante) * totalHands);
 
-            var winTarget = (int)(bankroll * .33);
+            var winTarget = (int)(bankroll * args.WinTargetMargin);
+
+            while (winTarget % 10 != 0)
+                winTarget++;
 
             var cashOutAt = bankroll + winTarget;
             var quitAt = 0; //  bankroll - 500;
 
-            var results = new List<BankrollResults>();
-            for(var index = 0; index < numPlays; index++)
+            var results = new List<UthBankrollResults>();
+            for(var index = 0; index < args.NumPlays; index++)
             {
-                var result = this.Play(bankroll, ante, totalHands, cashOutAt, quitAt);
+                var result = this.Play(bankroll, args.Ante, totalHands, cashOutAt, quitAt, args.Trace);
                 results.Add(result);
             }
 
@@ -54,12 +100,17 @@ namespace Mbrit.Vegas.Utility
 
             Console.WriteLine("====================================");
             Console.WriteLine("Bankroll: " + bankroll);
-            Console.WriteLine("Win target: " + winTarget);
+            Console.WriteLine("Ante: " + args.Ante);
+            Console.WriteLine($"Win target: {bankroll} + {winTarget} ({(((decimal)winTarget / (decimal)bankroll) * 100).ToString("n2")}%) = {bankroll + winTarget}");
             Console.WriteLine("Average: " + results.Select(v => v.Bankroll).Average());
 
             var averageWager = results.Select(v => v.TotalWager).Average();
             Console.WriteLine("Average wager: " + averageWager);
-            Console.WriteLine("Tier points: " + averageWager / 25);
+            //Console.WriteLine("Tier points: " + averageWager / 25);
+
+            Console.WriteLine("Num 4x: " + results.Average(v => v.Num4x));
+            Console.WriteLine("Num 2x: " + results.Average(v => v.Num2x));
+            Console.WriteLine("Num 1x: " + results.Average(v => v.Num1x));
 
             // wins...
             var winLevel = 1M - (bankroll / winTarget);
@@ -68,13 +119,13 @@ namespace Mbrit.Vegas.Utility
             var numWon = wins.Count();
             var percentWon = 0M;
             if (numWon > 0)
-                percentWon = (decimal)numWon / (decimal)numPlays;
+                percentWon = (decimal)numWon / (decimal)args.NumPlays;
 
             var averageWinHands = 0;
             if (wins.Any())
                 averageWinHands = (int)Math.Ceiling(wins.Average(v => v.HandsPlayed));
 
-            Console.WriteLine($"Num won (↑${cashOutAt}): " + numWon + " of " + numPlays + ", " + (percentWon * 100).ToString("n2") + $"%, hands until stop: {averageWinHands}");
+            Console.WriteLine($"Num won (↑${cashOutAt}): " + numWon + " of " + args.NumPlays + ", " + (percentWon * 100).ToString("n2") + $"%, hands until stop: {averageWinHands}");
 
             // losses...
             var losses = results.Where(v => v.Bankroll - winTarget <= quitAt);
@@ -82,13 +133,13 @@ namespace Mbrit.Vegas.Utility
             var numWasted = losses.Count();
             var percentWasted = 0M;
             if (numWasted > 0)
-                percentWasted = (decimal)numWasted / (decimal)numPlays;
+                percentWasted = (decimal)numWasted / (decimal)args.NumPlays;
 
             var averageStopHands = 0;
             if(losses.Any())
                 averageStopHands = (int)Math.Ceiling(losses.Average(v => v.HandsPlayed));
 
-            Console.WriteLine($"Num lost (↓${quitAt}): " + numWasted + " of " + numPlays + ", " + (percentWasted * 100).ToString("n2") + $"%, hands until stop: {averageStopHands}");
+            Console.WriteLine($"Num lost (↓${quitAt}): " + numWasted + " of " + args.NumPlays + ", " + (percentWasted * 100).ToString("n2") + $"%, hands until stop: {averageStopHands}");
 
             // others...
             var others = new List<BankrollResults>();
@@ -101,14 +152,14 @@ namespace Mbrit.Vegas.Utility
             var numOthers = others.Count();
             var percentOthers = 0M;
             if (numOthers > 0)
-                percentOthers = (decimal)numOthers / (decimal)numPlays;
+                percentOthers = (decimal)numOthers / (decimal)args.NumPlays;
 
             //            Console.WriteLine($"Num other: " + others.Count + " of " + numPlays + ", " + (percentOthers * 100).ToString("n2") + $"%, average -- $" + others.Average(v => v.Bankroll).ToString("n0"));
 
-            return results;
+            return new AggregateResults(results, percentWon);
         }
 
-        internal BankrollResults Play(int bankroll, int ante, int totalHands, int winTarget, int stopTarget, bool trace = false)
+        internal UthBankrollResults Play(int bankroll, int ante, int totalHands, int winTarget, int stopTarget, bool trace = false)
         {
             //Console.WriteLine(">>> " + bankroll + ", " + winTarget + ", " + stopTarget);
 
@@ -176,7 +227,7 @@ namespace Mbrit.Vegas.Utility
                 if (bankroll - (antePlusBlind + (4 * ante)) < stopTarget)
                 {
                     //Console.WriteLine(" -- quit, " + bankroll);
-                    return new BankrollResults(bankroll, bankrollMin, bankrollMax, totalWager, handsPlayed);
+                    return new UthBankrollResults(bankroll, bankrollMin, bankrollMax, totalWager, handsPlayed, num4x, num2x, num1x);
                 }
 
                 bankroll -= antePlusBlind;
@@ -205,7 +256,7 @@ namespace Mbrit.Vegas.Utility
                 var river = community.TakeLast(2).ToList();
 
                 if (((p1.Rank == p2.Rank) && p1.Rank >= 3) ||
-                    p1.Rank == 14 ||
+                    p1.Rank == 1 ||
                     p1.Rank == 13 && (p2.Rank >= 5) ||
                     p1.Rank == 12 && (p2.Rank >= 8) ||
                     p1.Rank == 11 && (p2.Rank == 10))
@@ -406,7 +457,7 @@ namespace Mbrit.Vegas.Utility
             }
 
             //Console.WriteLine(" -- ok, " + bankroll + ", " + handsPlayed);
-            return new BankrollResults(bankroll, bankrollMin, bankrollMax, totalWager, handsPlayed);
+            return new UthBankrollResults(bankroll, bankrollMin, bankrollMax, totalWager, handsPlayed, num4x, num2x, num1x);
         }
 
         private IEnumerable<IEnumerable<Card>> GetHiddenPairs(IEnumerable<Card> player, IEnumerable<Card> community)

@@ -3,6 +3,7 @@ using BootFX.Common.Services;
 using System.Diagnostics;
 using Mbrit.Vegas.Service;
 using BootFX.Common.Data;
+using System.Runtime.CompilerServices;
 
 namespace Mbrit.Vegas.Utility
 {
@@ -38,6 +39,24 @@ namespace Mbrit.Vegas.Utility
                             new RandomFoo().DoMagic();
                         else if (name == "uth")
                             new UthFoo().DoMagic();
+                        else if (name == "walk")
+                            new WalkFoo().DoMagic();
+                        else if (name == "ms")
+                            new WalkFoo().MeasureSpikes();
+                        else if (name == "mb")
+                            new WalkFoo().MeasureMajorBusts();
+                        else if (name == "me")
+                            new WalkFoo().MeasureEvens();
+                        else if (name == "mm")
+                            new WalkFoo().MeasureMinors();
+                        else if (name == "walkn")
+                            new WalkFoo().DoMagicN();
+                        else if (name == "walkp")
+                            new WalkFoo().PushSpike();
+                        else if (name == "walk2")
+                            new WalkSweep().DoMagic();
+                        else if (name == "craps")
+                            new CrapsFoo().DoMagic();
                     });
                 }
             }

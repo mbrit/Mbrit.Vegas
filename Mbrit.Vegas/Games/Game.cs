@@ -18,6 +18,8 @@ namespace Mbrit.Vegas.Games
 
         public int DecisionsPerHour { get; }
 
+        public const decimal AverageHouseEdge = 0.015M;
+
         //protected Game(decimal winIncludingBonusPercentage, decimal bonusWinPercentage, decimal losePercentage, decimal drawPercentage, 
         //    decimal standardDeviation, int handsPerHour)
         protected Game(IEnumerable<GameWin> wins, decimal losePercentage, decimal drawPercentage,
