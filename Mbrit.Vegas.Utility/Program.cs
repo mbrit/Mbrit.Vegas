@@ -41,18 +41,8 @@ namespace Mbrit.Vegas.Utility
                             new UthFoo().DoMagic();
                         else if (name == "walk")
                             new WalkFoo().DoMagic();
-                        else if (name == "ms")
-                            new WalkFoo().MeasureSpikes();
-                        else if (name == "mb")
-                            new WalkFoo().MeasureMajorBusts();
-                        else if (name == "me")
-                            new WalkFoo().MeasureEvens();
-                        else if (name == "mm")
-                            new WalkFoo().MeasureMinors();
                         else if (name == "walkn")
                             new WalkFoo().DoMagicN();
-                        else if (name == "walkp")
-                            new WalkFoo().PushSpike();
                         else if (name == "walk2")
                             new WalkSweep().DoMagic();
                         else if (name == "craps")

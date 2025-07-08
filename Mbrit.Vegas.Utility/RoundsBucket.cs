@@ -10,12 +10,16 @@ using System.Threading.Tasks;
 
 namespace Mbrit.Vegas.Utility
 {
-    internal class RoundsBucket<T> : Loggable, IEnumerable<Round<T>>
+    internal class RoundsBucket<T> : Loggable
     {
-        private IEnumerable<Round<T>> Rounds { get; }
+        public decimal HouseEdge { get; }
 
-        protected RoundsBucket(int numRounds, int handsPerRound, Func<T> callback, Random rand)
+        protected List<Round<T>> Rounds { get; set; }
+
+        protected RoundsBucket(int numRounds, int handsPerRound, decimal houseEdge, Func<int, T> callback, Random rand)
         {
+            this.HouseEdge = houseEdge;
+
             // this method intentionally returns way more values than needed, because this is
             // how it's "burning" cards and plays...
 
@@ -31,7 +35,7 @@ namespace Mbrit.Vegas.Utility
                 var handTarget = rand.Next(handsPerRound * 4, handsPerRound * 8);
                 for (var hand = 0; hand < handTarget; hand++)
                 {
-                    var result = callback();
+                    var result = callback(hand);
                     vectors.Add(result);
                 }
 
@@ -40,13 +44,22 @@ namespace Mbrit.Vegas.Utility
 
             allVectors.Wash(rand);
 
-            this.Rounds = allVectors;
+            var top = allVectors.Take(numRounds);
+            this.Initialize(top);
 
             this.LogInfo(() => "Rounds generated.");
         }
 
-        public IEnumerator<Round<T>> GetEnumerator() => this.Rounds.GetEnumerator();
+        public int Count => this.Rounds.Count;
 
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+        protected RoundsBucket(int numRounds, int handsPerRound, IEnumerable<Round<T>> vectors)
+        {
+            this.Initialize(vectors);
+        }
+
+        protected virtual void Initialize(IEnumerable<Round<T>> vectors)
+        {
+            this.Rounds = vectors.ToList();
+        }
     }
 }

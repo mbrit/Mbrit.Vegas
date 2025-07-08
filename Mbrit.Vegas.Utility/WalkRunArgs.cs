@@ -7,11 +7,15 @@ using System.Threading.Tasks;
 namespace Mbrit.Vegas.Utility
 {
     internal delegate void WalkStepDelegate(int stepIndex, WinLoseDrawType win, IEnumerable<WinLoseDrawType> vectorsBefore, IWalkAdjuster adjuster);
+    internal delegate void WalkFinishedDelegate(WalkState state, decimal final);
+    internal delegate WalkState WalkCreateStateDelegate(WalkArgs args);
 
     internal class WalkRunArgs
     {
         internal bool DoTrace { get; set; }
-        internal WalkStrategy Strategy { get; set; } = new RandomWalkStrategy();
+
         internal WalkStepDelegate Step { get; set; }
+        internal WalkFinishedDelegate Finished { get; set; }
+        internal WalkCreateStateDelegate CreateState { get; set; }
     }
 }

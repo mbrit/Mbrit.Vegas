@@ -27,8 +27,9 @@ namespace Mbrit.Vegas.Utility
             for (var profitMultiple = 0.5M; profitMultiple <= 10M; profitMultiple += 0.5M)
                 profitMultiples.Add(profitMultiple);
 
-            const int runs = 25000;
+            //const int runs = 25000;
 
+            /*
             var args = WalkFoo.GetDefaultArgs();
 
             var path = @$"c:\Mbrit\Casino\walk-results--{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")}.csv";
@@ -78,6 +79,7 @@ namespace Mbrit.Vegas.Utility
             }
 
             Console.WriteLine("Sweep complete. Results written to walk-results.csv");
+            */
         }
     }
 }

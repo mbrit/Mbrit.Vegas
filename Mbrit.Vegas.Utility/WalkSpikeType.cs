@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace Mbrit.Vegas.Utility
 {
-    public enum WalkOutcome
+    public enum WalkSpikeType
     {
-        MajorBust = 0,
-        Evens = 1,
-        Spike0p5 = 2,
-        Spike1OrBetter = 3,
-        MinorBust = 4
+        One = 0,
+        OnePointFive = 1,
+        Two = 2,
+        ThreePlus = 3
     }
 }

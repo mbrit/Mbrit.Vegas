@@ -1,5 +1,6 @@
 ﻿using BootFX.Common;
 using BootFX.Common.Data.Text;
+using BootFX.Common.Entities;
 using BootFX.Common.Management;
 using Mbrit.Vegas.Games;
 using System;
@@ -13,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Mail;
+using System.Net.NetworkInformation;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
@@ -21,12 +23,20 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Mbrit.Vegas.Utility
 {
-    internal record ValueWithColour(object value, ConsoleColor colour);
+    internal record ValueWithColour(object Value, ConsoleColor colour = ConsoleColor.Gray, bool Flagged = false);
 
-    internal record WalkRun(IEnumerable<WalkResult> Results, WalkArgs Args, int Runs);
+    internal record PercentageWithColour(decimal Value, ConsoleColor colour = ConsoleColor.Gray, bool Flagged = false);
+
+    internal record WalkRun(IEnumerable<WalkResult> Results, WalkArgs Args, int Rounds, WalkGameSetup Setup)
+    {
+        internal WalkOutcomesBucket GetOutcomes() => new WalkOutcomesBucket(this, this.Rounds, Setup);
+    }
+
+    internal record EvaluationResultAndBucket(WalkResult Result, RoundEvaluation Evaluation);
 
     internal class WalkFoo : CliFoo
     {
@@ -35,149 +45,352 @@ namespace Mbrit.Vegas.Utility
         private int StartAdvisingAt = 10;
         private int StopAdvisingAt = 24;
 
+        private const int MaxEvaluationSampleSize = 8192;
+
         internal void DoMagicN()
         {
             var runs = this.GetValueWithDefault<int>("Number of runs");
             this.DoMagic(runs);
         }
 
-        internal static WalkArgs GetDefaultArgs(int unit = 125) => new WalkArgs(unit, 4, 12);
+        internal void DoMagic(int numRuns = 75000)
+        {
+            //IWinLoseDrawRoundsBucket newRounds = null;
+
+            var bucket = new EvaluationBucket();
+
+            var runs = this.DoMagicInternal(numRuns, 4, (index, setup) =>
+            {
+                if (index == 0)
+                {
+                    return new WalkGameSetup(setup.Rounds, null, () =>
+                    {
+                        var args = setup.GetArgs();
+                        args.StopAtWinMode = WalkGoalMode.ReachSpike0p5;
+                        return args;
+                    });
+                }
+                else if (index == 1)
+                {
+                    return new WalkGameSetup(setup.Rounds, null, () =>
+                    {
+                        var args = setup.GetArgs();
+                        args.SetStretchToSpike1();
+                        return args;
+                    });
+                }
+                else if (index == 2)
+                {
+                    return new WalkGameSetup(setup.Rounds, null, () =>
+                    {
+                        var args = setup.GetArgs();
+                        args.SetStretchToSpike1();
+                        args.HailMaryMode = WalkHailMary.Single;
+                        return args;
+                    });
+                }
+                else if (index == 3)
+                {
+                    return new WalkGameSetup(setup.Rounds, null, () =>
+                    {
+                        var args = setup.GetArgs();
+                        args.StopAtWinMode = WalkGoalMode.Unrestricted;
+                        return args;
+                    });
+                }
+                //else if (index == 2)
+                //{
+                //    return new WalkGameSetup(setup.Rounds, null, () =>
+                //    {
+                //        var args = setup.GetArgs();
+                //        args.SetStretchToSpike1();
+                //        args.HailMaryMode = WalkHailMary.Single;
+                //        return args;
+                //    });
+                //}
+                //else if (index == 3)
+                //{
+                //    return new WalkGameSetup(setup.Rounds, null, () =>
+                //    {
+                //        var args = setup.GetArgs();
+                //        args.SetStretchToSpike1();
+                //        args.HailMaryMode = WalkHailMary.Half;
+                //        return args;
+                //    });
+                //}
+                else
+                    throw new NotSupportedException($"Cannot handle '{index}'.");
+            });
+
+            //this.DumpCombinations(runs, combinations);
+            //this.DumpChains(runs.First());
+            this.DumpBankrolls(runs);
+        }
+
+        private void DumpBankrolls(IEnumerable<WalkRun> runs)
+        {
+            var asList = runs.ToList();
+
+            using (var writer = this.GetWriter("Bankrolls"))
+            {
+                var csv = new CsvDataWriter(writer);
+                csv.WriteValue("Index");
+                for (var i = 0; i < asList.Count; i++)
+                    csv.WriteValue("#" + i);
+                csv.WriteLine();
+
+                var numRounds = runs.First().Rounds;
+
+                var results = new List<List<WalkResult>>();
+                for (var i = 0; i < asList.Count; i++)
+                    results.Add(asList[i].Results.ToList());
+
+                for (var index = 0; index < numRounds; index++)
+                {
+                    csv.WriteValue(index);
+                    for (var i = 0; i < asList.Count; i++)
+                        csv.WriteValue(results[i][index].Bankroll);
+                    csv.WriteLine();
+                }
+            }
+        }
+
+        private void DumpChains(WalkRun run)
+        {
+            using (var writer = this.GetWriter("Chains"))
+            {
+                var csv = new CsvDataWriter(writer);
+                csv.WriteValue("Bankroll");
+                csv.WriteValue("Outcome");
+                csv.WriteValue("Win Chain");
+                csv.WriteValue("Loss Chain");
+                csv.WriteValue("Net Chain");
+                csv.WriteLine();
+
+                foreach(var result in run.Results)
+                {
+                    csv.WriteValue(result.Bankroll);
+                    csv.WriteValue(result.Outcome);
+                    csv.WriteValue(result.WinChainScore);
+                    csv.WriteValue(result.LossChainScore);
+                    csv.WriteValue(result.ChainScore);
+                    csv.WriteLine();
+                }
+            }
+        }
+
+        private void DumpCombinations(IEnumerable<WalkRun> runs, List<(int, int)> combinations)
+        {
+            using (var writer = this.GetWriter("Combinations"))
+            {
+                var csv = new CsvDataWriter(writer);
+                csv.WriteValue("Hands");
+                csv.WriteValue("Investments");
+                csv.WriteValue("EV");
+                csv.WriteValue("Major bust");
+                csv.WriteValue("Major bust");
+                csv.WriteValue("Evens");
+                csv.WriteValue("Spike 0.5x");
+                csv.WriteValue("Spike 1x");
+                csv.WriteValue("Spike 1.5x");
+                csv.WriteLine();
+
+                var asList = runs.ToList();
+                for (var index = 0; index < asList.Count - 1; index++)
+                {
+                    var run = asList[index + 1];
+                    var combination = combinations[index];
+
+                    var outcomes = run.GetOutcomes();
+
+                    csv.WriteValue(combination.Item1);
+                    csv.WriteValue(combination.Item2);
+                    csv.WriteValue(outcomes.ExpectedValuePerHundredCurrency.ToString("n3"));
+                    csv.WriteValue(outcomes.MajorBustPercentage.ToString("n3"));
+                    csv.WriteValue(outcomes.MinorBustPercentage.ToString("n3"));
+                    csv.WriteValue(outcomes.EvensPercentage.ToString("n3"));
+                    csv.WriteValue(outcomes.Spike0p5Percentage.ToString("n3"));
+                    csv.WriteValue(outcomes.Spike1Percentage.ToString("n3"));
+                    csv.WriteValue(outcomes.Spike1p5Percentage.ToString("n3"));
+                    csv.WriteLine();
+                }
+            }
+        }
+
+        /*
+        private void RenderEvSlopesForHeatmap()
+        {
+            var run = runs.Last();
+
+            var pairs = new List<EvaluationResultAndBucket>();
+
+            foreach (var result in run.Results)
+            {
+                foreach (var e in bucket.Evaluations)
+                {
+                    if (result.Index == e.Key)
+                        pairs.Add(new EvaluationResultAndBucket(result, e.Value));
+                }
+            }
+
+            pairs.Sort((a, b) => b.Result.Bankroll.CompareTo(a.Result.Bankroll));
+
+            using (var writer = this.CreateWriter("Evals"))
+            {
+                var csv = new CsvDataWriter(writer);
+                csv.WriteValue("Round");
+                csv.WriteValue("Bankroll");
+                csv.WriteValue("Stop");
+
+                for (var hand = 0; hand < run.Setup.HandsPerRound; hand++)
+                    csv.WriteValue("EV " + hand);
+
+                csv.WriteLine();
+
+                foreach (var pair in pairs)
+                {
+                    csv.WriteValue(pair.Result.Index);
+                    csv.WriteValue(pair.Result.Bankroll);
+
+                    var eval = pair.Evaluation;
+                    csv.WriteValue(eval.Stop);
+
+                    var first = -1;
+
+                    for (var hand = 0; hand < run.Setup.HandsPerRound; hand++)
+                    {
+                        var didWrite = false;
+
+                        if (eval.HasBucket(hand))
+                        {
+                            if (first == -1)
+                                first = hand;
+                            else
+                            {
+                                var slope = eval.GetSlope(first, hand);
+                                if (slope != null)
+                                {
+                                    csv.WriteValue(slope.Value.ToString("n2"));
+                                    didWrite = true;
+                                }
+                            }
+                        }
+
+                        if(!(didWrite))
+                            csv.WriteValue(string.Empty);
+                    }
+
+                    csv.WriteLine();
+                }
+            }
+
+            Console.WriteLine("Done.");
+        }
+            */
+
+        private StreamWriter GetWriter(string name)
+        {
+            var path = $@"c:\Mbrit\Casino\{name}\{name}--{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")}.csv";
+            Runtime.Current.EnsureFolderForFileCreated(path);
+            return new StreamWriter(path);
+        }
+
+        //internal static WalkArgs GetDefaultArgs(int unit = 100, decimal takeProfitMultipler = 4, int maxPutIns = 12) => new WalkArgs(unit, takeProfitMultipler, maxPutIns);
 
         private string FormatPercentage(int count, int numRounds)
         {
-            return (((decimal)count / (decimal)numRounds) * 100).ToString("n2") + "%";
+            //return (((decimal)count / (decimal)numRounds) * 100).ToString("n2") + "%";
+            return count.ToString();
         }
 
-        internal void DoMagic(int numRounds = 25000)
+        private IEnumerable<WalkRun> DoMagicInternal(int numRounds, int numVariants, Func<int, WalkGameSetup, WalkGameSetup> getSetup)
         {
             this.LogInfo(() => $"Running '{numRounds}' simulation(s)...");
 
-            //const int min = 125; // * 4 * 6 * 2;
-            //const int maxInvestment = min * 12;
-            //const int takeProfit = (int)((decimal)min * 4M); //  500;
-            //const decimal sideSplit = 0; //  0.75M;
-
-            var args = GetDefaultArgs();
-
             // get the rounds...
-            const decimal houseEdge = Game.AverageHouseEdge;
-            var rounds = WinLoseDrawRoundsBucket.GetWinLose(25000, args.MaxHands * 2, houseEdge, this.Random);
+            //const decimal houseEdge = Game.AverageHouseEdge;
+            const decimal houseEdge = Game.Blackjack32HouseEdge;
+            var rounds = WinLoseDrawRoundsBucket.GetWinLoseBucket(numRounds, 50, houseEdge, this.Random);
 
-            // from the analysis...
-            /*
-            const int min = 100;
-            const int putIns = 12;
-            const int maxInvestment = min * putIns;
-            const decimal takeProfitMultipler = 4M;
-            const int takeProfit = (int)((decimal)min * takeProfitMultipler); // 460;
-            const decimal sideSplit = 0; //  0.75M;
+            var baselineSetup = new WalkGameSetup(rounds);
 
-            var baseBet = Math.Round(min * sideSplit);
-            while (baseBet % 5 != 0)
-                baseBet--;
+            var runs = new List<WalkRun>();
 
-            var sideBet = min - baseBet;
-            */
-
-            Preamble(args);
-
-            var results = new List<WalkResult>();
-            var _lock = new object();
-
-            var runArgs = new WalkRunArgs()
+            for (var variant = -1; variant < numVariants; variant++)
             {
-                DoTrace = numRounds == 1
-            };
+                this.LogInfo(() => $"Running variant #{variant} of {numVariants}...");
+
+                WalkGameSetup setup = null;
+                if (variant == -1)
+                    setup = baselineSetup;
+                else
+                    setup = getSetup(variant, baselineSetup);
+
+                Preamble(setup);
+
+                var run = this.DoRun(setup);
+                runs.Add(run);
+            }
+
+            this.LogInfo(() => "Finished running variants...");
+
+            this.DumpResults(runs);
+
+            return runs;
+        }
+
+        private WalkRun DoRun(WalkGameSetup setup, Action<WalkRunArgs> configureArgs = null, Func<WalkArgs> getArgs = null)
+        {
+            var results = new List<WalkResult>();
 
             var logAt = DateTime.UtcNow.AddSeconds(2);
-            //for (var index = 0; index < runs; index++)
-            var index = 0;
-            foreach(var round in rounds)
-            {
-                var result = this.Walk(round, args, runArgs);
 
-                lock (_lock)
-                    results.Add(result);
+            var rounds = setup.Rounds;
+            var numRounds = rounds.Count;
+
+            WalkArgs args = null;
+            if (getArgs != null)
+                args = getArgs();
+
+            if(args == null)
+                args = setup.GetArgs();
+
+            for (var index = 0; index < numRounds; index++)
+            {
+                var runArgs = new WalkRunArgs()
+                {
+                    DoTrace = numRounds == 1,
+                };
+
+                if(configureArgs != null)
+                    configureArgs(runArgs);
+
+                var result = this.DoWalk(rounds[index], args, setup, runArgs);
+                results.Add(result);
 
                 if (DateTime.UtcNow >= logAt)
                 {
                     this.LogInfo(() => $"Done {index + 1:n0} of {numRounds:n0}...");
                     logAt = DateTime.UtcNow.AddSeconds(2);
                 }
-
-                index++;
-                if (index == numRounds)
-                    break;
             }
 
-            var runs = new List<WalkRun>();
-            runs.Add(new WalkRun(results, args, numRounds));
-
-            var bankrolls = results.Select(v => v.Bankroll);
-            var wagereds = results.Select(v => v.TotalWagered);
-
-            Func<int, string> getPercentage = (count) => this.FormatPercentage(count, numRounds);
-
-            Console.WriteLine("=========================");
-            Console.WriteLine("Losses --> " + getPercentage(bankrolls.Count(v => v <= 0)));
-
-            var numMinorBusts = results.Count(v => v.Outcome == WalkOutcome.MinorBust);
-            Console.WriteLine($"Minor busts (> {args.MinorBust} < 0) [check] --> " + getPercentage(numMinorBusts));
-
-            var numMajorBusts = results.Count(v => v.Outcome == WalkOutcome.MajorBust);
-            Console.WriteLine($"Major busts (< {args.MinorBust}) [check] --> " + getPercentage(numMajorBusts));
-
-            var numBusts = numMajorBusts + numMinorBusts;
-            Console.WriteLine("Total busts [check] --> " + getPercentage(numBusts));
-
-            Console.WriteLine("=========================");
-            Console.WriteLine($"Average wagered --> " + wagereds.Average());
-            Console.WriteLine("=========================");
-
-            if (numRounds > 1)
-            {
-                // this works because the amount in "bankroll" is net of the investment...
-
-                // first lot...
-
-                var evens = args.InitialMaxInvestment * .5M;
-                var spike = args.InitialMaxInvestment;
-
-                Console.WriteLine("Evens --> " + evens);
-                Console.WriteLine("Spike --> " + spike);
-
-                var numEvens = results.Where(v => v.Outcome == WalkOutcome.Evens).Count();
-                Console.WriteLine($"Num wins over {0} (0x) [check] --> " + getPercentage(numEvens));
-
-                var numMinor = results.Where(v => v.Outcome == WalkOutcome.Minor).Count();
-                Console.WriteLine($"Num wins over {args.InitialMaxInvestment * .5} (1x) [check] --> " + getPercentage(numMinor));
-
-                var numSpike = results.Where(v => v.Outcome == WalkOutcome.Spike).Count();
-                Console.WriteLine($"Num wins over {args.InitialMaxInvestment} (2x) [check] --> " + getPercentage(numSpike));
-
-                Console.WriteLine($"Total --> " + getPercentage(numBusts + numEvens + numEvens + numSpike));
-            }
-
-            Console.WriteLine($"Max win --> " + bankrolls.Max());
-            Console.WriteLine($"Average --> " + bankrolls.Where(v => v > 0).Average());
-
-            ConsoleHelper.WriteBanner("REFACTORING");
-
-            this.DumpResults(runs);
+            return new WalkRun(results, args, numRounds, setup);
         }
 
-        private void Preamble(WalkArgs args)
+        private void Preamble(WalkGameSetup setup)
         {
-            Console.WriteLine("Hands: " + args.MaxHands);
-            Console.WriteLine("Unit: " + args.Unit);
-            Console.WriteLine($"Side split: {args.SideSplit} ({args.BaseUnit}/{args.SideUnit})");
-            Console.WriteLine("Max investment: " + (args.Unit * args.MaxPutIns) + ", put-ins: " + args.MaxPutIns);
-            Console.WriteLine("Take profit: " + (args.Unit * args.TakeProfitMultiplier) + ", multipler: " + args.TakeProfitMultiplier);
+            Console.WriteLine("Hands: " + setup.HandsPerRound);
+            Console.WriteLine("House edge: " + setup.HouseEdge);
+            Console.WriteLine("Unit: " + setup.Unit);
+            //Console.WriteLine($"Side split: {args.SideSplit} ({args.BaseUnit}/{args.SideUnit})");
+            Console.WriteLine("Max investment: " + (setup.Unit * setup.MaxPutIns) + ", put-ins: " + setup.MaxPutIns);
+            Console.WriteLine("Take profit: " + (setup.Unit * setup.TakeProfitMultiplier) + ", multipler: " + setup.TakeProfitMultiplier);
         }
 
         private void DumpResults(IEnumerable<WalkRun> runs)
         {
-            var checkRounds = runs.SelectAndMerge(v => v.Runs);
+            var checkRounds = runs.SelectAndMerge(v => v.Rounds);
             if (checkRounds.Count() != 1)
                 throw new InvalidOperationException("The number of runs have to have the same across the runs.");
 
@@ -186,9 +399,23 @@ namespace Mbrit.Vegas.Utility
             var table = new ConsoleTable();
             var header = table.AddHeaderRow();
             header.AddCell("");
-            header.AddCell("Baseline");
 
-            Func<int, string> getPercentage = (count) => this.FormatPercentage(count, numRounds);
+            var index = -1;
+            foreach(var run in runs)
+            {
+                if (index == -1)
+                    header.AddCell("Baseline");
+                else
+                {
+                    var name = "#" + index;
+                    if (run.Args.HasName)
+                        name += " " + run.Args.Name;
+
+                    header.AddCell(name);
+                }
+
+                index++;
+            }
 
             Action sep = () =>
             {
@@ -196,104 +423,311 @@ namespace Mbrit.Vegas.Utility
                 this.RenderRow(table, sep, runs, (index, results, args) => new ValueWithColour(sep, ConsoleColor.Cyan));
             };
 
-            // config...
-            this.RenderRow(table, "Hands", runs, (index, results, args) => args.MaxHands);
-            this.RenderRow(table, "Unit", runs, (index, results, args) => args.Unit);
-            this.RenderRow(table, "Side split", runs, (index, results, args) => args.SideSplit);
-            this.RenderRow(table, "Initial max investment", runs, (index, results, args) => args.InitialMaxInvestment + ", put-ins: " + args.MaxPutIns);
-            this.RenderRow(table, "Take profit", runs, (index, results, args) => "???" + ", multiplier: " + args.TakeProfitMultiplier);
-
-            sep();
 
             var baseline = runs.First().Args;
+
+            WalkOutcomesBucket baselineOutcomes = null;
+            var otherOutcomes = new Dictionary<int, WalkOutcomesBucket>();
+
+            index = 0;
+            foreach (var run in runs)
+            {
+                if (index == 0)
+                    baselineOutcomes = new WalkOutcomesBucket(run, numRounds, run.Setup);
+                else
+                    otherOutcomes[index] = new WalkOutcomesBucket(run, numRounds, run.Setup);
+
+                index++;
+            }
+
+            // config...
+            this.RenderRow(table, "Hands", runs, (index, results, args) => args.MaxHands);
+
+            this.RenderRow(table, "House edge", runs, (index, results, args) =>
+            {
+                Func<decimal, ConsoleColor> getColour = (value) =>
+                {
+                    if (value >= Game.AverageHouseEdge)
+                        return ConsoleColor.Yellow;
+                    else
+                        return ConsoleColor.Magenta;
+                };
+
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.HouseEdge, getColour(baselineOutcomes.HouseEdge));
+                else
+                    return new PercentageWithColour(otherOutcomes[index].HouseEdge, getColour(otherOutcomes[index].HouseEdge));
+            });
+
+            this.RenderRow(table, "Unit", runs, (index, results, args) => args.Unit);
+            //this.RenderRow(table, "Side split", runs, (index, results, args) => args.SideSplit);
+            //this.RenderRow(table, "Initial max investment", runs, (index, results, args) => args.InitialMaxInvestment + ", put-ins: " + args.MaxPutIns);
+            //this.RenderRow(table, "Take profit", runs, (index, results, args) => args.InitialTakeProfit + ", multiplier: " + args.TakeProfitMultiplier);
+            this.RenderRow(table, "Spike 0.5x", runs, (index, results, args) => args.Spike0p5Win);
+            this.RenderRow(table, "Spike 1x", runs, (index, results, args) => args.Spike1Win);
+            this.RenderRow(table, "Stop mode", runs, (index, results, args) => args.StopAtWinMode);
+            this.RenderRow(table, "Limited stretch hands", runs, (index, results, args) => args.LimitedStretchHands);
+            this.RenderRow(table, "Limited investments", runs, (index, results, args) => args.LimitedStretchInvestments);
+            this.RenderRow(table, "Hail Mary", runs, (index, results, args) => args.HailMaryMode + ", " + args.HailMaryCount);
+
+            sep();
 
             // metrics...
             this.RenderRow(table, "Major Busts", runs, (index, results, args) =>
             {
-                var count = results.Count(v => v.Outcome == WalkOutcome.MajorBust);
-                return getPercentage(count);
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.MajorBustPercentage);
+                else
+                {
+                    var value = otherOutcomes[index].MajorBustPercentage;
+                    return new PercentageWithColour(value, this.CompareColours(baselineOutcomes.MajorBustPercentage, value, false));
+                }
             });
 
-            this.RenderRow(table, "Minor Busts", runs, (index, results, args) =>
+            this.RenderRow(table, $"Minor Busts ({baseline.MinorBust})", runs, (index, results, args) =>
             {
-                var count = results.Count(v => v.Outcome == WalkOutcome.MinorBust);
-                return getPercentage(count);
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.MinorBustPercentage);
+                else
+                {
+                    var value = otherOutcomes[index].MinorBustPercentage;
+                    return new PercentageWithColour(value, this.CompareColours(baselineOutcomes.MinorBustPercentage, value, false));
+                }
             });
 
             this.RenderRow(table, "Busts", runs, (index, results, args) =>
             {
-                var count = results.Count(v => v.DidBust);
-                return new ValueWithColour(getPercentage(count), ConsoleColor.Yellow);
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.BustPercentage, ConsoleColor.Gray, true);
+                else
+                {
+                    var value = otherOutcomes[index].BustPercentage;
+                    return new PercentageWithColour(value, this.CompareColours(baselineOutcomes.BustPercentage, value, false), true);
+                }
             });
 
             sep();
             
-            this.RenderRow(table, "Evens", runs, (index, results, args) =>
+            this.RenderRow(table, $"Evens", runs, (index, results, args) =>
             {
-                var count = results.Count(v => v.Outcome == WalkOutcome.Evens);
-                return getPercentage(count);
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.EvensPercentage);
+                else
+                {
+                    var value = otherOutcomes[index].EvensPercentage;
+                    return new PercentageWithColour(value, this.CompareColours(baselineOutcomes.EvensPercentage, value, false));
+                }
             });
 
-            this.RenderRow(table, "Minors", runs, (index, results, args) =>
+            this.RenderRow(table, $"Spike 0.5x ({baseline.Spike0p5Win})", runs, (index, results, args) =>
             {
-                var count = results.Count(v => v.Outcome == WalkOutcome.Minor);
-                return getPercentage(count);
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.Spike0p5Percentage);
+                else
+                {
+                    var value = otherOutcomes[index].Spike0p5Percentage;
+                    return new PercentageWithColour(value, this.CompareColours(baselineOutcomes.Spike0p5Percentage, value, true));
+                }
             });
 
-            this.RenderRow(table, $"Spikes ({baseline.InitialMaxInvestment})", runs, (index, results, args) =>
+            /*
+            this.RenderRow(table, $"Missed spikes", runs, (index, results, args) =>
             {
-                var count = results.Count(v => v.Outcome == WalkOutcome.Spike);
-                return new ValueWithColour(getPercentage(count), ConsoleColor.Yellow);
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.MissedSpike1Percentage, ConsoleColor.Gray, false);
+                else
+                {
+                    var value = otherOutcomes[index].MissedSpike1Percentage;
+                    return new PercentageWithColour(value, this.CompareColours(baselineOutcomes.MissedSpike1Percentage, value, false), false);
+                }
+            });
+
+            this.RenderRow(table, $"Spikes or better", runs, (index, results, args) =>
+            {
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.AnySpike1Percentage, ConsoleColor.Gray, true);
+                else
+                {
+                    var value = otherOutcomes[index].AnySpike1Percentage;
+                    return new PercentageWithColour(value, this.CompareColours(baselineOutcomes.AnySpike1Percentage, value, true), true);
+                }
+            });
+
+            sep();
+            */
+
+            this.RenderRow(table, $"Spike 1x ({baseline.Spike1Win})", runs, (index, results, args) =>
+            {
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.Spike1Percentage);
+                else
+                {
+                    var Percentage = otherOutcomes[index].Spike1Percentage;
+                    return new PercentageWithColour(Percentage, this.CompareColours(baselineOutcomes.Spike1Percentage, Percentage, true));
+                }
+            });
+
+            this.RenderRow(table, $"Spike 1.5x ({baseline.Spike1p5Win})", runs, (index, results, args) =>
+            {
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.Spike1p5Percentage);
+                else
+                {
+                    var Percentage = otherOutcomes[index].Spike1p5Percentage;
+                    return new PercentageWithColour(Percentage, this.CompareColours(baselineOutcomes.Spike1p5Percentage, Percentage, true));
+                }
+            });
+
+            this.RenderRow(table, $"Spike 2x ({baseline.Spike2Win})", runs, (index, results, args) =>
+            {
+                if (index == 0)
+                    return new PercentageWithColour(baselineOutcomes.Spike2Percentage);
+                else
+                {
+                    var Percentage = otherOutcomes[index].Spike2Percentage;
+                    return new PercentageWithColour(Percentage, this.CompareColours(baselineOutcomes.Spike2Percentage, Percentage, true));
+                }
+            });
+
+            this.RenderRow(table, $"Spike 3x+ ({baseline.Spike3Win})", runs, (index, results, args) =>
+            {
+                if (index == 0)
+                    return new ValueWithColour(baselineOutcomes.Spike3PlusPercentage);
+                else
+                {
+                    var value = otherOutcomes[index].Spike3PlusPercentage;
+                    return new ValueWithColour(value, this.CompareColours(baselineOutcomes.Spike3PlusPercentage, value, true));
+                }
             });
 
             sep();
 
-            this.RenderRow(table, $"1x ({baseline.InitialMaxInvestment})", runs, (index, results, args) =>
+            this.RenderRow(table, $"EV per $100", runs, (index, results, args) =>
             {
-                var count = results.Count(v => v.Bankroll >= baseline.InitialMaxInvestment);
-                return new ValueWithColour(getPercentage(count), ConsoleColor.Gray);
-            });
-
-            this.RenderRow(table, $"1.5x ({baseline.InitialMaxInvestment * 1.5})", runs, (index, results, args) =>
-            {
-                var count = results.Count(v => v.Bankroll >= baseline.InitialMaxInvestment * 1.5);
-                return new ValueWithColour(getPercentage(count), ConsoleColor.Gray);
-            });
-
-            this.RenderRow(table, $"2x ({baseline.InitialMaxInvestment * 2})", runs, (index, results, args) =>
-            {
-                var count = results.Count(v => v.Bankroll >= baseline.InitialMaxInvestment * 2);
-                return new ValueWithColour(getPercentage(count), ConsoleColor.Gray);
-            });
-
-            this.RenderRow(table, $"3x ({baseline.InitialMaxInvestment * 3})", runs, (index, results, args) =>
-            {
-                var count = results.Count(v => v.Bankroll >= baseline.InitialMaxInvestment * 3);
-                return new ValueWithColour(getPercentage(count), ConsoleColor.Gray);
+                if (index == 0)
+                    return new ValueWithColour(baselineOutcomes.ExpectedValuePerHundredCurrency, ConsoleColor.Gray, true);
+                else
+                {
+                    var value = otherOutcomes[index].ExpectedValuePerHundredCurrency;
+                    return new ValueWithColour(value, this.CompareColours(baselineOutcomes.ExpectedValuePerHundredCurrency, value, true), true);
+                }
             });
 
             sep();
 
-            this.RenderRow(table, $"Max", runs, (index, results, args) =>
+            this.RenderRow(table, $"Average coin-in", runs, (index, results, args) =>
             {
-                return new ValueWithColour(results.Max(v => v.Bankroll), ConsoleColor.Gray);
+                if (index == 0)
+                    return new ValueWithColour(baselineOutcomes.AverageWagered, ConsoleColor.Gray);
+                else
+                {
+                    var value = otherOutcomes[index].AverageWagered;
+                    return new ValueWithColour(value, this.CompareColours(baselineOutcomes.AverageWagered, value, true));
+                }
             });
 
-            this.RenderRow(table, $"Average win", runs, (index, results, args) =>
+            this.RenderRow(table, $"Average hands played", runs, (index, results, args) =>
             {
-                var average = Math.Floor(results.Where(v => !(v.DidBust)).Average(v => v.Bankroll));
-                return new ValueWithColour(average + ", " + this.FormatPercentage((int)average, baseline.InitialMaxInvestment), ConsoleColor.Gray);
+                if (index == 0)
+                    return new ValueWithColour(baselineOutcomes.AverageHandsPlayed);
+                else
+                {
+                    var value = otherOutcomes[index].AverageHandsPlayed;
+                    return new ValueWithColour(value, this.CompareColours(baselineOutcomes.AverageHandsPlayed, value, true));
+                }
             });
+
+            this.RenderRow(table, $"Average win (where won)", runs, (index, results, args) =>
+            {
+                if (index == 0)
+                    return new ValueWithColour(baselineOutcomes.AveragePositiveBankroll);
+                else
+                {
+                    var value = otherOutcomes[index].AveragePositiveBankroll;
+                    return new ValueWithColour(value, this.CompareColours(baselineOutcomes.AveragePositiveBankroll, value, true));
+                }
+            });
+
+            sep();
+
+            this.RenderRow(table, $"Average spike stop", runs, (index, results, args) =>
+            {
+                return new ValueWithColour(results.Where(v => v.StopReason == WalkStopReason.HitSpike1).AverageSafe(v => v.Bankroll));
+            });
+
+            this.RenderRow(table, $"Min spike stop", runs, (index, results, args) =>
+            {
+                return new ValueWithColour(results.Where(v => v.StopReason == WalkStopReason.HitSpike1).MinSafe(v => v.Bankroll));
+            });
+
+            this.RenderRow(table, $"Max spike stop", runs, (index, results, args) =>
+            {
+                return new ValueWithColour(results.Where(v => v.StopReason == WalkStopReason.HitSpike1).MaxSafe(v => v.Bankroll));
+            });
+
+            sep();
+
+            this.RenderRow(table, $"Average spike 0.5x stop", runs, (index, results, args) =>
+            {
+                return new ValueWithColour(results.Where(v => v.StopReason == WalkStopReason.HitSpike0p5).AverageSafe(v => v.Bankroll));
+            });
+
+            this.RenderRow(table, $"Min spike 0.5x stop", runs, (index, results, args) =>
+            {
+                return new ValueWithColour(results.Where(v => v.StopReason == WalkStopReason.HitSpike0p5).MinSafe(v => v.Bankroll));
+            });
+
+            this.RenderRow(table, $"Max spike 0.5x stop", runs, (index, results, args) =>
+            {
+                return new ValueWithColour(results.Where(v => v.StopReason == WalkStopReason.HitSpike0p5).MaxSafe(v => v.Bankroll));
+            });
+
+            sep();
+
+            foreach(var reason in Enum.GetValues<WalkStopReason>())
+            {
+                if (reason != WalkStopReason.HitSpike1p5 && reason != WalkStopReason.HitSpike2 && reason != WalkStopReason.HitSpike3Plus)
+                {
+                    this.RenderRow(table, $"Stop: " + reason, runs, (index, results, args) =>
+                    {
+                        return new PercentageWithColour(results.Where(v => v.StopReason == reason).Percentage(numRounds));
+                    });
+                }
+            }
 
             sep();
 
             this.RenderRow(table, "Check all", runs, (index, results, args) =>
             {
-                var count = results.Count();
-                return getPercentage(count);
+                WalkOutcomesBucket outcome = null;
+                if (index == 0)
+                    outcome = baselineOutcomes;
+                else
+                    outcome = otherOutcomes[index];
+
+                var total = (int)(outcome.MajorBustPercentage + outcome.MinorBustPercentage + outcome.EvensPercentage + outcome.Spike0p5Percentage +
+                    outcome.Spike1Percentage + outcome.Spike1p5Percentage + outcome.Spike2Percentage + outcome.Spike3PlusPercentage);
+                return new PercentageWithColour(total, total == 1 ? ConsoleColor.Green : ConsoleColor.Red);
             });
 
             table.Render();
+
+            this.WriteCsv(table);
+        }
+
+        private void WriteCsv(ConsoleTable table)
+        {
+            var path = @$"c:\Mbrit\Casino\Walks\Walk--{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")}.csv";
+            Runtime.Current.EnsureFolderForFileCreated(path);
+            table.WriteCsv(path);
+        }
+
+        private ConsoleColor CompareColours(decimal a, decimal b, bool higherIsBetter)
+        {
+            if (((a <= b) && !(higherIsBetter)) || ((a > b) && higherIsBetter))
+                return ConsoleColor.Red;
+            else
+                return ConsoleColor.Green;
         }
 
         private static void DumpProbabilities(int min, int maxInvestment, int takeProfit, IEnumerable<WalkResult> results, int numHands)
@@ -329,9 +763,9 @@ namespace Mbrit.Vegas.Utility
                     return 1;
                 else if (result.Outcome == WalkOutcome.Evens)
                     return 2;
-                else if (result.Outcome == WalkOutcome.Minor)
+                else if (result.Outcome == WalkOutcome.Spike0p5)
                     return 3;
-                else if (result.Outcome == WalkOutcome.Spike)
+                else if (result.Outcome == WalkOutcome.Spike1OrBetter)
                     return 4;
                 else
                     throw new NotSupportedException($"Cannot handle '{result.Outcome}'.");
@@ -344,19 +778,19 @@ namespace Mbrit.Vegas.Utility
             {
                 this.LogInfo(() => $"Running '{outcome}' and 'Not {outcome}'...");
 
-                var isSet = this.GetSampleOutcomes(byOutcome[outcome], min);
+                var isSet = byOutcome[outcome].Sample(min, rand);
 
                 var candidates = new List<WalkResult>();
                 foreach (var walk in byOutcome.Keys)
                 {
                     if (walk != outcome)
                     {
-                        var candidatesForOutcome = this.GetSampleOutcomes(byOutcome[walk], min);
+                        var candidatesForOutcome = byOutcome[walk].Sample(min, rand);
                         candidates.AddRange(candidatesForOutcome);
                     }
                 }
 
-                var isNotSet = this.GetSampleOutcomes(candidates, min);
+                var isNotSet = candidates.Sample(min, rand);
 
                 var forDump = new List<WalkResult>(isSet);
                 forDump.AddRange(isNotSet);
@@ -372,19 +806,6 @@ namespace Mbrit.Vegas.Utility
             }
 
             this.LogInfo(() => "Finished dumping vectors.");
-        }
-
-        private IEnumerable<WalkResult> GetSampleOutcomes(IEnumerable<WalkResult> byOutcome, int min)
-        {
-            var forOutcome = byOutcome.ToList();
-
-            if (forOutcome.Count <= min)
-                return forOutcome;
-            else
-            {
-                forOutcome.Wash(this.Random);
-                return forOutcome.Take(min);
-            }
         }
 
         private Random Random => ThreadRandom.Value;
@@ -439,19 +860,20 @@ namespace Mbrit.Vegas.Utility
         }
 
         //public WalkResult Walk(int unit, int maxInvestment, int takeProfit, decimal sideSplit, int numHands, Random rand, bool trace = true)
-        public WalkResult Walk(Round<WinLoseDrawType> round, WalkArgs args, WalkRunArgs runArgs = null)
+        public WalkResult DoWalk(IWinLoseDrawRound round, WalkArgs args, WalkGameSetup setup, WalkRunArgs runArgs = null)
         {
             runArgs ??= new WalkRunArgs();
 
-            var allCasinos = Casino.GetCasinos();
+            //var allCasinos = Casino.GetCasinos();
 
             var rand = this.Random;         // seeded per thread...
 
-            var casinos = new List<Casino>();
-            for (var index = 0; index < args.MaxHands; index++)
-                casinos.Add(allCasinos.PickRandom(rand));
-
-            var bankroll = 0;
+            //var casinos = new List<Casino>();
+            //for (var index = 0; index < args.MaxHands; index++)
+            //{
+            //    //casinos.Add(allCasinos.PickRandom(rand));
+            //    casinos.Add(allCasinos.First());
+            //}
 
             var games = new List<GameType>()
             {
@@ -463,19 +885,16 @@ namespace Mbrit.Vegas.Utility
 
             //const decimal crapsRatio = 0.5M;
 
-            var banked = 0;
+            //var bankroll = 0;
+            //var banked = 0;
             //var invested = 0;
-            var totalWagered = 0;
+            //var totalWagered = 0;
+            //var numInvestments = 0;
 
             var doSideBetsOverall = args.SideSplit > 0;
 
             GameType? lastGame = null;
 
-            Chain winChain = null;
-            Chain loseChain = null;
-
-            var winChains = new List<Chain>();
-            var lossChains = new List<Chain>();
             var vectors = new List<WinLoseDrawType>();
 
             var proxy = new WalkProxy();
@@ -484,49 +903,129 @@ namespace Mbrit.Vegas.Utility
 
             var trace = runArgs.DoTrace;
 
-            var state = this.GetStateMachine(args);
+            WalkState state = null;
+            if (runArgs.CreateState != null)
+                state = runArgs.CreateState(args);
+
+            if(state == null)
+                state = new WalkState(args);
+
+            if (args.StopAtWinMode == WalkGoalMode.StretchToSpike1 && !(args.DoLimitedStretchHands) && !(args.DoLimitedStretchInvestment))
+                throw new InvalidOperationException("Stretch mode has to have a limit.");
+
+            var seenSpike0p5 = false;
+            var seenSpike1 = false;
+            var seenSpike1p5 = false;
+            var seenSpike2 = false;
+            var seenSpike3 = false;
+
+            var abandonAtHand = -1;
+
+            var doStopInvesting = false;
+            var stopInvesting = -1;
 
             var hand = 0;
             while (true)
             {
-                Casino casino = null;
-                if (hand < casinos.Count)
-                    casino = casinos[hand];
-                else
-                    casino = casinos.Last();
+                //Casino casino = null;
+                //if (hand < casinos.Count)
+                //    casino = casinos[hand];
+                //else
+                //    casino = casinos.Last();
 
                 if (trace)
                 {
                     Console.WriteLine("-------------------");
-                    Console.WriteLine($"#{vectors.Count + 1}: {casino.Name} --> {bankroll}, {state.Invested}, {banked}");
+                    Console.WriteLine($"#{vectors.Count + 1}: --> {state.Bankroll}, {state.Invested}, {state.Banked}");
                 }
 
-                GameType? game = null;
-                while (true)
+                //GameType? game = null;
+                //while (true)
+                //{
+                //    game = games.PickRandom(rand);
+                //    if (game != lastGame)
+                //        break;
+                //}
+
+                var game = GameType.Baccarat;
+
+                // are we using evaluations?
+                /*
+                if (args.UseEvaluations)
                 {
-                    game = games.PickRandom(rand);
-                    if (game != lastGame)
-                        break;
+                    var remaining = args.MaxHands - hand;
+                    if(remaining <= 18)
+                    {
+                        var evaluation = this.Evaluate(args, state, remaining, setup, trace);
+                        if(evaluation == EvaluationResult.KeepPlaying)
+                        {
+                            // no-op...
+                        }
+                        else if(evaluation == EvaluationResult.Drop)
+                        {
+                            state.StopReason = WalkStopReason.EvaluatedDrop;
+                            break;
+                        }
+                    }
                 }
+                */
 
-                if (bankroll < state.Unit)
+                // do we have money?
+                if (state.Bankroll < state.CurrentUnit)
                 {
                     //if (invested >= args.MaxInvestment)
                     if (!(state.HasInvestables))
                     {
                         if (trace)
-                            Console.WriteLine("Stopped early.");
+                            Console.WriteLine("Nothing to invest.");
 
+                        state.StopReason = WalkStopReason.NothingToInvest;
                         break;
                     }
+
+                    if (state.Bankroll > 0)
+                    {
+                        // we have to deal with odd amounts...
+                        state.Banked += state.Bankroll;
+                    }
+
+                    state.Bankroll = 0;
 
                     var putIn = state.PutIn();
 
                     if (trace)
                         Console.WriteLine("Investing --> " + putIn);
 
-                    //invested += toInvest;
-                    bankroll = putIn;
+                    if (doStopInvesting)
+                        stopInvesting--;
+                }
+                else
+                {
+                    if (args.DoHailMary && state.BankrollUnits == args.TakeProfitMultiplier && state.HailMarysRemaining > 0 && state.Banked > 0)
+                    {
+                        if (this.ChooseHailMary())
+                        {
+                            if ((args.HailMaryMode == WalkHailMary.Double && state.InvestablesRemaining >= 4) ||
+                                (args.HailMaryMode == WalkHailMary.Half && state.InvestablesRemaining >= 3) ||
+                                (args.HailMaryMode == WalkHailMary.Single && state.InvestablesRemaining >= 2))
+                            {
+                                var until = 0;
+                                if (args.HailMaryMode == WalkHailMary.Single)
+                                    until = 2;
+                                else if (args.HailMaryMode == WalkHailMary.Half)
+                                    until = 3;
+                                else if (args.HailMaryMode == WalkHailMary.Double)
+                                    until = 4;
+                                else
+                                    throw new NotSupportedException($"Cannot handle '{args.HailMaryMode}'.");
+
+                                for (var index = 0; index < until; index++)
+                                    state.PutIn();
+
+                                state.HailMarysRemaining--;
+                            }
+                        }
+                    }
                 }
 
                 //var win = strategy.GetWin(rand);
@@ -536,53 +1035,51 @@ namespace Mbrit.Vegas.Utility
 
                 var sideWin = SideBetWin.None;
                 if (doSideBets)
-                    sideWin = this.GetSideWin(game.Value);
+                    sideWin = this.GetSideWin(game);
 
                 try
                 {
-                    var theBaseBet = bankroll;
-                    if (doSideBets)
-                        theBaseBet = (int)((decimal)bankroll * args.SideSplit);
+                    var theBaseBet = state.Bankroll;
 
-                    var theSideBet = bankroll - theBaseBet;
+                    //if (args.TopUp4Bet && state.BankrollUnits == 2 && state.HasInvestables && (args.MaxTopUp4Bets == 0 || state.TopUp4BetCount < args.MaxTopUp4Bets))
+                    //{
+                    //    theBaseBet += state.PutIn();
+                    //    state.TopUp4BetCount++;
+                    //}
+
+                    if (doSideBets)
+                        theBaseBet = (int)((decimal)state.Bankroll * args.SideSplit);
+
+                    var theSideBet = state.Bankroll - theBaseBet;
 
                     if (trace)
                         Console.WriteLine($"Betting --> {theBaseBet} + {theSideBet}");
 
-                    totalWagered += (theBaseBet + theSideBet);
+                    state.TotalWagered += (theBaseBet + theSideBet);
 
-                    bankroll = 0;
+                    state.Bankroll = 0;
 
                     if (win == WinLoseDrawType.Win || sideWin != SideBetWin.None)
                     {
                         if (win == WinLoseDrawType.Win)
-                            bankroll += theBaseBet + theBaseBet;
+                            state.Bankroll += theBaseBet + theBaseBet;      // as in, evens (because we reset the bankroll to 0 before check the status...)
 
                         if (sideWin != SideBetWin.None)
-                            bankroll += theSideBet + this.GetSideWinValue(theSideBet, sideWin);
+                            state.Bankroll += theSideBet + this.GetSideWinValue(theSideBet, sideWin);
 
                         if (trace)
                         {
                             Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine($"*** {game} win *** --> now " + bankroll);
+                            Console.WriteLine($"*** {game} win *** --> now " + state.Bankroll + ", " + state.Banked + ", profit: " + state.Profit);
                         }
-
-                        if (winChain == null)
-                        {
-                            winChain = new Chain();
-                            winChains.Add(winChain);
-                        }
-
-                        winChain.Increment();
-
-                        if (loseChain != null)
-                            loseChain = null;
 
                         vectors.Add(WinLoseDrawType.Win);
 
-                        if (bankroll > state.TakeProfit)
+                        state.AddWin();
+
+                        if (state.Bankroll > state.TakeProfit)
                         {
-                            var toTake = bankroll - state.TakeProfit;
+                            var toTake = state.Bankroll - state.TakeProfit;
 
                             if (trace)
                             {
@@ -590,8 +1087,15 @@ namespace Mbrit.Vegas.Utility
                                 Console.WriteLine("Taking profit --> " + toTake);
                             }
 
-                            banked += toTake;
-                            bankroll = state.TakeProfit;
+                            state.Banked += toTake;
+                            //bankroll = state.TakeProfit;
+                            state.Bankroll -= toTake;
+
+                            if (trace)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Cyan;
+                                Console.WriteLine($"After take --> bankroll: {state.Bankroll}, banked: {state.Banked}");
+                            }
                         }
                     }
                     else if (win == WinLoseDrawType.Lose)
@@ -602,18 +1106,9 @@ namespace Mbrit.Vegas.Utility
                             Console.WriteLine($"*** {game} loss ***");
                         }
 
-                        if (loseChain == null)
-                        {
-                            loseChain = new Chain();
-                            lossChains.Add(loseChain);
-                        }
-
-                        loseChain.Increment();
-
-                        if (winChain != null)
-                            winChain = null;
-
                         vectors.Add(WinLoseDrawType.Lose);
+
+                        state.AddLoss();
                     }
                     else
                         throw new NotSupportedException($"Cannot handle '{win}'.");
@@ -671,41 +1166,324 @@ namespace Mbrit.Vegas.Utility
 
                 // are we leaving early?
                 if (state.IsAborted)
+                {
+                    if (trace)
+                        Console.WriteLine("Aborted.");
+
                     break;
+                }
 
                 if (hand == args.MaxHands)
+                {
+                    if (trace)
+                        Console.WriteLine($"Stopping at max hands ({args.MaxHands}).");
+
                     break;
+                }
+
+                /*
+                if(!(seenSpike0p5) && state.Bankroll + state.Banked - state.Invested >= args.Spike0p5Win)
+                {
+                    // set...
+                    seenSpike0p5 = true;
+
+                    if (args.StopAtWinType == WalkStopType.ReachedSpike0p5)
+                    {
+                        state.StopReason = WalkStopReason.HitSpike0p5;
+                        break;
+                    }
+                }
+                */
+
+                /*
+                if (!(seenSpike1) && state.Bankroll + state.Banked - state.Invested >= args.Spike1Win)
+                {
+                    // set...
+                    seenSpike1 = true;
+
+                    if (args.StopAtWinType == WalkStopType.ReachedSpike1 || args.StopAtWinType == WalkStopType.StretchToSpike1)
+                    {
+                        state.StopReason = WalkStopReason.HitSpike1;
+                        break;
+                    }
+                }
+                */
+
+                /*
+                if (args.DoStopAtWin && args.StopAtWinMode == WalkStopMode.ReachedSpike0p5 &&
+                    //(state.Bankroll + state.Banked + state.Investable) >= (2 * args.Spike0p5Win) &&
+                    //state.Bankroll + state.Banked - state.Invested >= args.Spike0p5Win)
+                    this.HasReached(state, args.Spike0p5Win))
+                {
+                    if (trace)
+                        Console.WriteLine("Stopping at spike 0.5x.");
+
+                    state.StopReason = WalkStopReason.HitSpike0p5;
+                    break;
+                }
+
+                if (args.DoStopAtWin && args.StopAtWinMode == WalkStopMode.ReachedSpike1 && 
+                    //(state.Bankroll + state.Banked + state.Investable) >= (2 * args.Spike1Win) &&
+                    //state.Bankroll + state.Banked - state.Invested >= args.Spike1Win)
+                    HasReached(state, args.Spike1Win))
+                {
+                    if (trace)
+                        Console.WriteLine("Stopping at spike.");
+
+                    state.StopReason = WalkStopReason.HitSpike1;
+                    break;
+                }
+                */
+
+                var atOrAboveSpike0p5 = this.HasReached(state, args.Spike0p5Win);
+                var atOrAboveSpike1 = this.HasReached(state, args.Spike1Win);
+                var atOrAboveSpike1p5 = this.HasReached(state, args.Spike1p5Win);
+                var atOrAboveSpike2 = this.HasReached(state, args.Spike2Win);
+                var atOrAboveSpike3 = this.HasReached(state, args.Spike3Win);
+
+                Action<WalkStopReason> stopAtSpike1 = (reason) =>
+                {
+                    if (trace)
+                        Console.WriteLine($"Stopping at '{reason}'.");
+
+                    state.StopReason = reason;
+                };
+
+                var stopReason = WalkStopReason.None;
+                if (args.DoStopAtWin)
+                {
+                    if (args.StopAtWinMode == WalkGoalMode.ReachSpike0p5 || args.StopAtWinMode == WalkGoalMode.ReachSpike1 ||
+                        args.StopAtWinMode == WalkGoalMode.ReachSpike2 || args.StopAtWinMode == WalkGoalMode.ReachSpike3)
+                    {
+                        if (this.CheckStop(state, args, out stopReason))
+                        {
+                            stopAtSpike1(stopReason);
+                            break;
+                        }
+                    }
+                    else if(args.StopAtWinMode == WalkGoalMode.StretchToSpike1)
+                    {
+                        /*
+                        if (atOrAboveSpike0p5 || seenSpike0p5)
+                        {
+                            var remaining = args.MaxHands - hand;
+                            var evaluation = this.Evaluate(args, state, remaining, setup, trace);
+
+                            var bucket = setup.GetTag<EvaluationBucket>();
+                            bucket.AddEvaluation(round, hand, state, evaluation);
+                        }
+                        */
+
+                        if ((args.DoLimitedStretchHands || args.DoLimitedStretchInvestment) && this.HasReached(state, args.Spike0p5Win))
+                        {
+                            if (args.DoLimitedStretchHands && abandonAtHand == -1)
+                                abandonAtHand = hand + args.LimitedStretchHands;
+
+                            if (args.DoLimitedStretchInvestment && !(doStopInvesting))
+                            {
+                                doStopInvesting = true;
+                                stopInvesting = args.LimitedStretchInvestments;
+                            }
+                        }
+                    }
+                }
+
+                // set it...
+                if (!(seenSpike0p5) && atOrAboveSpike0p5)
+                    seenSpike0p5 = true;
+                if (!(seenSpike1) && atOrAboveSpike1)
+                    seenSpike1 = true;
+                if (!(seenSpike1p5) && atOrAboveSpike1p5)
+                    seenSpike1p5 = true;
+                if (!(seenSpike2) && atOrAboveSpike2)
+                    seenSpike2 = true;
+                if (!(seenSpike3) && atOrAboveSpike3)
+                    seenSpike3 = true;
+
+                Action<string> logStop = (message) =>
+                {
+                    if (trace)
+                        Console.WriteLine(message);
+                };
+
+                if(args.DoStopAtWin && args.StopAtWinMode == WalkGoalMode.StretchToSpike1 && seenSpike1)
+                {
+                    logStop($"Hit Spike 1x.");
+                    stopAtSpike1(WalkStopReason.HitSpike1);
+                    break;
+                }
+
+                if (abandonAtHand > 0 && hand >= abandonAtHand)
+                {
+                    logStop($"Instructed to abandon at '{abandonAtHand}' hand.");
+                    state.StopReason = WalkStopReason.DynamicHandsLimit;
+                    break;
+                }
+
+                if (doStopInvesting && stopInvesting == 0)
+                {
+                    logStop($"Instructed to abandon after limited investment.");
+                    state.StopReason = WalkStopReason.DynamicInvestmentLimit;
+                    break;
+                }
+
+                /*
+                if(args.StopAtWinMode == WalkGoalMode.StretchToSpike1 && seenSpike0p5 &&
+                    args.DoAbandonAtOrUnderChainScore && state.ChainScore <= args.AbandonAtOrUnderChainScore)
+                {
+                    logStop($"Negative chain score.");
+                    state.StopReason = WalkStopReason.NegativeChainScore;
+                    break;
+                }
+                */
+
+                /*
+                if (args.HasBadRunLimit && state.MaxLossChain > args.BadRunLimit)
+                {
+                    logStop($"Hit bad run");
+                    state.StopReason = WalkStopReason.BadRun;
+                    break;
+                }
+
+                if (args.HasGoodRunLimit && state.MaxWinChain > args.GoodRunLimit)
+                {
+                    logStop($"Hit good run");
+                    state.StopReason = WalkStopReason.GoodRun;
+                    break;
+                }
+                */
+
+                /*
+                if (args.DoStopAtMinusUnits && state.InvestedUnits >= args.StopAtMinusUnits && !(seenSpike0p5))
+                {
+                    logStop($"Stopped because bleeding.");
+                    state.StopReason = WalkStopReason.Bleeding;
+                    break;
+                }
+                */
             }
 
-            var final = (bankroll + banked) - state.Invested;
+            var final = (state.Bankroll + state.Banked) - state.Invested;
+
+            //if (args.AddInvestablesToFinal)
+            //    final += state.Investable;
 
             //var minor = invested * .5;
             //var spike = invested;
 
             WalkOutcome outcome;
+            var spikeType = WalkSpikeType.One;
+
             if (final < args.MinorBust)
                 outcome = WalkOutcome.MajorBust;
             else if (final <= 0)
                 outcome = WalkOutcome.MinorBust;
-            else if (final < args.MinorWin)
+            else if (final < args.Spike0p5Win)
                 outcome = WalkOutcome.Evens;
-            else if (final < args.Spike)
-                outcome = WalkOutcome.Minor;
+            else if (final < args.Spike1Win)
+                outcome = WalkOutcome.Spike0p5;
             else
-                outcome = WalkOutcome.Spike;
+            {
+                outcome = WalkOutcome.Spike1OrBetter;
+
+                if (final >= args.Spike3Win)
+                    spikeType = WalkSpikeType.ThreePlus;
+                else if (final >= args.Spike2Win)
+                    spikeType = WalkSpikeType.Two;
+                else if (final >= args.Spike1p5Win)
+                    spikeType = WalkSpikeType.OnePointFive;
+                else
+                    spikeType = WalkSpikeType.One;
+            }
 
             if (trace)
             {
                 Console.WriteLine("==================");
-                Console.WriteLine("Investment --> " + state.Invested);
-                Console.WriteLine($"Cash in hand --> {bankroll} + {banked} = {bankroll + banked}");
-                Console.WriteLine("Final --> " + final);
+                Console.WriteLine("Invested --> " + state.Invested + ", count: " + state.NumInvestments);
+                Console.WriteLine($"Cash in hand (bankroll, banked, remaining investment) --> {state.Bankroll} + {state.Banked} + {state.Investable} = {state.Bankroll + state.Banked + state.Investable}");
+                Console.WriteLine("Final (ignoring what we didn't invest) --> " + final);
+                Console.WriteLine("Final (ignoring what we didn't invest) [state] --> " + state.Profit);
             }
 
-            return new WalkResult(final, totalWagered, winChains, lossChains, vectors, outcome);
+            var result = new WalkResult(state, round, vectors, outcome, spikeType);
+
+            if (runArgs.Finished != null)
+                runArgs.Finished(state, final);
+
+            return result;
         }
 
-        private WalkState GetStateMachine(WalkArgs args) => new WalkState(args);
+        private bool ChooseHailMary() => this.Random.Next(0, 999) >= 500;
+
+        private bool CheckStop(WalkState state, WalkArgs args, out WalkStopReason stopReason)
+        {
+            stopReason = WalkStopReason.None;
+
+            if (args.StopAtWinMode == WalkGoalMode.ReachSpike0p5 && this.HasReached(state, args.Spike0p5Win))
+            {
+                stopReason = WalkStopReason.HitSpike0p5;
+                return true;
+            }
+            else if ((args.StopAtWinMode == WalkGoalMode.ReachSpike1) && this.HasReached(state, args.Spike1Win))
+            {
+                stopReason = WalkStopReason.HitSpike1;
+                return true;
+            }
+            else if (args.StopAtWinMode == WalkGoalMode.ReachSpike1p5 && this.HasReached(state, args.Spike1p5Win))
+            {
+                stopReason = WalkStopReason.HitSpike1p5;
+                return true;
+            }
+            else if (args.StopAtWinMode == WalkGoalMode.ReachSpike2 && this.HasReached(state, args.Spike2Win))
+            {
+                stopReason = WalkStopReason.HitSpike2;
+                return true;
+            }
+            else if (args.StopAtWinMode == WalkGoalMode.ReachSpike3 && this.HasReached(state, args.Spike3Win))
+            {
+                stopReason = WalkStopReason.HitSpike3Plus;
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private bool HasReached(WalkState state, int win)
+        {
+            return (state.Bankroll + state.Banked + state.Investable) >= (2 * win) &&
+                state.Bankroll + state.Banked - state.Invested >= win;
+        }
+
+        private WalkOutcomesBucket Evaluate(WalkArgs args, WalkState state, int remainingHands, WalkGameSetup setup, bool trace)
+        {
+            if (trace)
+                Console.WriteLine($"Evaluating game with '{remainingHands}' hand(s)...");
+
+            var rounds = WinLoseDrawRoundsBucket.GetAllWinLosePermutations(remainingHands, MaxEvaluationSampleSize, this.Random, false);
+
+            var evalSetup = new WalkGameSetup(rounds);
+            evalSetup.HandsPerRound = remainingHands;
+
+            var evalArgs = new WalkArgs(evalSetup);
+            evalArgs.StopAtWinMode = WalkGoalMode.ReachSpike1;
+
+            var run = this.DoRun(evalSetup, (runArgs) =>
+            {
+                runArgs.CreateState = (theArgs) =>
+                {
+                    return state.Clone();
+                };
+
+            }, () =>
+            {
+                return evalArgs;
+            });
+
+            var outcomes = run.GetOutcomes();
+            if (trace)
+                outcomes.Dump();
+            return outcomes;
+        }
 
         private int GetSideWinValue(int sideBet, SideBetWin sideWin) => (int)((decimal)sideBet * sideWin.GetPayoutMultiplier()) - sideBet;
 
@@ -833,6 +1611,7 @@ namespace Mbrit.Vegas.Utility
             }
         }
 
+        /*
         internal void MeasureSpikes() => this.Measure(WalkOutcome.Spike);
 
         internal void MeasureMajorBusts() => this.Measure(WalkOutcome.MajorBust);
@@ -842,23 +1621,21 @@ namespace Mbrit.Vegas.Utility
         internal void MeasureMinors() => this.Measure(WalkOutcome.Minor);
 
         internal void MeasureEvens() => this.Measure(WalkOutcome.Evens);
+        */
 
         internal void Measure(WalkOutcome outcome)
         {
+            /*
             var args = GetDefaultArgs();
 
             var results = new List<WalkResult>();
             while (results.Count < 16)
             {
-                /*
                 var result = this.Walk(args);
                 if (result.Outcome == outcome && result.Vectors.Count() == args.MaxHands)
                 {
                     results.Add(result);
                 }
-                */
-
-                throw new NotImplementedException("This operation has not been implemented.");
             }
 
             var proxy = new WalkProxy()
@@ -904,7 +1681,6 @@ namespace Mbrit.Vegas.Utility
             var header = table.AddHeaderRow();
             header.AddCell(string.Empty);
 
-            /*
             this.RenderRow(header, results, (index, result) => index);
 
             this.RenderRow(table, "Outcome", results, (index, result) => result.Outcome);
@@ -931,14 +1707,17 @@ namespace Mbrit.Vegas.Utility
                     return new ValueWithColour(value, colour);
                 });
             }
-            */
 
             table.Render();
+            */
+
+            throw new NotImplementedException("This operation has not been implemented.");
         }
 
+        /*
         private WalkPrediction GetPrediction(WalkOutcome outcome, decimal value)
         {
-            if (outcome == WalkOutcome.Evens || outcome == WalkOutcome.Minor)
+            if (outcome == WalkOutcome.Evens || outcome == WalkOutcome.Spike0p5)
             {
                 if (value >= .5M)
                     return WalkPrediction.WillHit;
@@ -955,6 +1734,7 @@ namespace Mbrit.Vegas.Utility
                     return WalkPrediction.WillNotHit;
             }
         }
+        */
 
         private void RenderRow<T>(ConsoleTable table, string name, IEnumerable<WalkRun> runs, Func<int, IEnumerable<WalkResult>, WalkArgs, T> callback)
         {
@@ -969,15 +1749,30 @@ namespace Mbrit.Vegas.Utility
             {
                 var value = callback(index, run.Results, run.Args);
 
-                if(value is ValueWithColour)
+                if (value is ValueWithColour)
                 {
                     var theValue = (ValueWithColour)(object)value;
 
                     string asString = null;
-                    if(theValue.value is decimal)
-                        asString = ((decimal)theValue.value).ToString("n3");    
+                    if (theValue.Value is decimal)
+                        asString = ((decimal)theValue.Value).ToString("n3");    
                     else
-                        asString = theValue.value.ToString();
+                        asString = theValue.Value.ToString();
+
+                    if (theValue.Flagged)
+                        asString = this.Flag(asString);
+
+                    var cell = row.AddCell(asString);
+                    cell.ForegroundColor = theValue.colour;
+                }
+                else if (value is PercentageWithColour)
+                {
+                    var theValue = (PercentageWithColour)(object)value;
+
+                    var asString = (theValue.Value * 100).ToString("n2") + "%";
+
+                    if (theValue.Flagged)
+                        asString = this.Flag(asString);
 
                     var cell = row.AddCell(asString);
                     cell.ForegroundColor = theValue.colour;
@@ -989,143 +1784,6 @@ namespace Mbrit.Vegas.Utility
             }
         }
 
-        internal void PushSpike(int runs = 500)
-        {
-            this.LogInfo(() => $"Running '{runs}' comparison simulation(s)...");
-
-            var args = GetDefaultArgs();
-
-            this.Preamble(args);
-
-            var unadvisedResults = new List<WalkResult>();
-            var advisedResults = new List<WalkResult>();
-
-            var _lock = new object();
-
-            // do the unadvised runs...
-            this.LogInfo(() => "Doing unadvised runs...");
-
-            var logAt = DateTime.UtcNow.AddSeconds(2);
-            for (var index = 0; index < runs; index++)
-            {
-                var runArgs = new WalkRunArgs()
-                {
-                    DoTrace = runs == 1
-                };
-
-                /*
-                var result = this.Walk(args, runArgs);
-
-                lock (_lock)
-                    unadvisedResults.Add(result);
-
-                if (DateTime.UtcNow >= logAt)
-                {
-                    this.LogInfo(() => $"Done {index + 1:n0} of {runs:n0} (unadvised)...");
-                    logAt = DateTime.UtcNow.AddSeconds(2);
-                }
-                */
-
-                throw new NotImplementedException("This operation has not been implemented.");
-            }
-
-            // do the unadvised runs...
-            this.LogInfo(() => "Doing advised runs...");
-
-            var proxy = new WalkProxy();
-
-            logAt = DateTime.UtcNow.AddSeconds(2);
-
-            var pressedRuns = new List<int>();
-            var correctPressed = 0;
-            var pressErrorBusts = 0;
-            var pressErrorOthers = 0;
-            var pressSwerved = 0;
-            var missedPresses = 0;
-
-            for (var index = 0; index < runs; index++)
-            {
-                var lastPressAt = -1;
-
-                var unadvisedResult = unadvisedResults[index];
-
-                var runArgs = new WalkRunArgs()
-                {
-                    DoTrace = runs == 1,
-                    Strategy = new PlaybackWalkStrategy(unadvisedResult.Vectors),
-                    Step = (stepIndex, win, vectorsBefore, adjuster) =>
-                    {
-                        var vectorIndex = vectorsBefore.Count();
-
-                        if (vectorIndex > StartAdvisingAt && vectorIndex < StopAdvisingAt)
-                        {
-                            if (lastPressAt == -1) // || (vectorIndex - lastPressAt > 3 && numPresses < 2))
-                            {
-                                var spikeResponse = proxy.Predict(WalkOutcome.Spike, vectorsBefore);
-                                var spikeProbability = spikeResponse.Probabilities[1];
-
-                                var spikePrediction = this.GetPrediction(WalkOutcome.Spike, spikeProbability);
-                                if (spikePrediction == WalkPrediction.WillHit)
-                                {
-                                    var minorResponse = proxy.Predict(WalkOutcome.Minor, vectorsBefore);
-                                    var minorProbability = minorResponse.Probabilities[1];
-
-                                    var minorPrediction = this.GetPrediction(WalkOutcome.Minor, minorProbability);
-                                    if (!(minorPrediction == WalkPrediction.WillHit))
-                                    {
-                                        adjuster.PressUnit();
-                                        lastPressAt = vectorIndex;
-                                        pressedRuns.Add(index);
-
-                                        if (unadvisedResult.Outcome == WalkOutcome.Spike)
-                                            correctPressed++;
-                                        else if (unadvisedResult.DidBust)
-                                            pressErrorBusts++;
-                                        else
-                                            pressErrorOthers++;
-                                    }
-                                    else
-                                        pressSwerved++;
-                                }
-                            }
-                        }
-                    }
-                };
-
-                /*
-                var result = this.Walk(args, runArgs);
-
-                lock (_lock)
-                    advisedResults.Add(result);
-
-                if (lastPressAt == -1 && unadvisedResult.Outcome == WalkOutcome.Spike)
-                    missedPresses++;
-
-                if (DateTime.UtcNow >= logAt)
-                {
-                    this.LogInfo(() => $"Done {index + 1:n0} of {runs:n0} (unadvised)...");
-                    logAt = DateTime.UtcNow.AddSeconds(2);
-                }
-                */
-
-                throw new NotImplementedException("This operation has not been implemented.");
-            }
-
-            /*
-            ConsoleHelper.WriteBanner("UNADVISED");
-            this.DumpResults(unadvisedResults, args, runs);
-
-            ConsoleHelper.WriteBanner("ADVISED");
-            this.DumpResults(advisedResults, args, runs);
-            */
-
-            ConsoleHelper.WriteBanner("PRESSING");
-            Console.WriteLine($"Pressed runs --> {pressedRuns.Count} of {runs}");
-            Console.WriteLine($"Correct presses --> {correctPressed}");
-            Console.WriteLine($"Missed presses --> {missedPresses}");
-            Console.WriteLine($"Pressed into busts --> {pressErrorBusts}");
-            Console.WriteLine($"Pressed into others --> {pressErrorOthers}");
-            Console.WriteLine($"Swerved presses --> {pressSwerved}");
-        }
+        private string Flag(string value) => value + " " + Card.GetSuitSymbol(Suit.Diamond);
     }
 }

@@ -19,6 +19,7 @@ namespace Mbrit.Vegas.Games
         public int DecisionsPerHour { get; }
 
         public const decimal AverageHouseEdge = 0.015M;
+        public const decimal Blackjack32HouseEdge = 0.005M;
 
         //protected Game(decimal winIncludingBonusPercentage, decimal bonusWinPercentage, decimal losePercentage, decimal drawPercentage, 
         //    decimal standardDeviation, int handsPerHour)

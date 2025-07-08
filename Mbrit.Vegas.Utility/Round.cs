@@ -1,16 +1,14 @@
-﻿
-
-using System.Collections;
+﻿using System.Collections;
 
 namespace Mbrit.Vegas.Utility
 {
-    internal class Round<T> : IEnumerable<T>
+    internal struct Round<T> : IEnumerable<T>
     {
-        private List<T> Vectors;
+        private List<T> Vectors { get; }
 
-        public Round(List<T> vectors)
+        internal Round(IEnumerable<T> vectors)
         {
-            this.Vectors = vectors;
+            this.Vectors = new List<T>(vectors);
         }
 
         public IEnumerator<T> GetEnumerator() => this.Vectors.GetEnumerator();

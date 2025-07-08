@@ -3,6 +3,12 @@ import 'models/run_state.dart';
 import 'models/location.dart';
 import 'models/hand_result.dart';
 import 'models/investment_state.dart';
+import 'widgets/unit_size_selector.dart';
+import 'widgets/play_mode_selector.dart';
+import 'widgets/investment_display.dart';
+import 'widgets/hail_mary_selector.dart';
+import 'widgets/configurable_table.dart';
+import 'models/outcomes.dart';
 
 class RunPage extends StatefulWidget {
   const RunPage({super.key});
@@ -14,15 +20,31 @@ class RunPage extends StatefulWidget {
 class _RunPageState extends State<RunPage> {
   late RunState _runState;
   late TextEditingController _nameController;
-  bool _isRunDetailsExpanded = false;
-  bool _isHandsExpanded = true;
-  bool _isInvestmentExpanded = true;
+  bool _isRunSetupExpanded = true;
+  
+  // Unit size state
+  int _selectedUnitSize = 100;
+  
+  // Play mode state
+  PlayMode _selectedPlayMode = PlayMode.balanced;
+  
+  // Hail Mary state
+  int _selectedHailMary = 1;
+  
+  // Simulate & Test state
+  bool _isSimulateTestExpanded = false;
+  
+  // Currency symbol state
+  String _currencySymbol = '\$';
 
   @override
   void initState() {
     super.initState();
     _runState = RunState.defaultRun();
     _nameController = TextEditingController(text: _runState.name);
+    _selectedUnitSize = _runState.unitSize;
+    _selectedPlayMode = _runState.playMode;
+    _currencySymbol = _runState.currencySymbol;
   }
 
   @override
@@ -61,30 +83,20 @@ class _RunPageState extends State<RunPage> {
         ),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // First component: Run name, date/time, and location
-              _buildRunInfoCard(),
-              
-              // Second component: Progress tracking
-              const SizedBox(height: 20),
-              _buildProgressCard(),
-              
-              // Third component: Investment tracking
-              const SizedBox(height: 20),
-              _buildInvestmentCard(),
-              
-              // Placeholder for future components
-              const SizedBox(height: 20),
-              _buildPlaceholderCard(),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                _buildRunSetupCard(),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildRunInfoCard() {
+  Widget _buildRunSetupCard() {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -104,11 +116,11 @@ class _RunPageState extends State<RunPage> {
       ),
       child: Column(
         children: [
-          // Header with icon, title, and expand/collapse button
+          // Header with dice icon, title, and expand/collapse button
           InkWell(
             onTap: () {
               setState(() {
-                _isRunDetailsExpanded = !_isRunDetailsExpanded;
+                _isRunSetupExpanded = !_isRunSetupExpanded;
               });
             },
             child: Padding(
@@ -129,7 +141,7 @@ class _RunPageState extends State<RunPage> {
                   ),
                   const SizedBox(width: 12),
                   const Text(
-                    'Run Details',
+                    'Run Setup',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -138,7 +150,7 @@ class _RunPageState extends State<RunPage> {
                   ),
                   const Spacer(),
                   Icon(
-                    _isRunDetailsExpanded ? Icons.expand_less : Icons.expand_more,
+                    _isRunSetupExpanded ? Icons.expand_less : Icons.expand_more,
                     color: Colors.white,
                     size: 24,
                   ),
@@ -147,87 +159,81 @@ class _RunPageState extends State<RunPage> {
             ),
           ),
           // Collapsible content
-          if (_isRunDetailsExpanded)
+          if (_isRunSetupExpanded)
             Padding(
               padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Run name
-                  _buildInputField(
-                    label: 'Run Name',
-                    icon: Icons.edit,
-                    child: TextField(
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Enter run name',
-                        hintStyle: TextStyle(color: Colors.grey[400]),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[600]!),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.grey[600]!),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
-                        ),
-                        filled: true,
-                        fillColor: const Color(0xFF2D3748),
-                      ),
-                      controller: _nameController,
-                      onChanged: (value) {
-                        setState(() {
-                          _runState = RunState(
-                            name: value,
-                            startTime: _runState.startTime,
-                            location: _runState.location,
-                            numHands: _runState.numHands,
-                            currentHand: _runState.currentHand,
-                            handResults: _runState.handResults,
-                            investments: _runState.investments,
-                          );
-                        });
-                      },
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Date/time
-                  _buildInfoRow(
-                    label: 'Started',
-                    icon: Icons.access_time,
-                    value: _runState.formattedStartTime,
-                    valueColor: const Color(0xFF10B981),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Area
-                  _buildDropdownField(
-                    label: 'Area',
-                    icon: Icons.location_on,
-                    value: _runState.location,
-                    items: Location.values,
-                    onChanged: (Location? newLocation) {
-                      if (newLocation != null) {
-                        setState(() {
-                          _runState = RunState(
-                            name: _runState.name,
-                            startTime: _runState.startTime,
-                            location: newLocation,
-                            numHands: _runState.numHands,
-                            currentHand: _runState.currentHand,
-                            handResults: _runState.handResults,
-                            investments: _runState.investments,
-                          );
-                        });
-                      }
+                  // Unit size
+                  UnitSizeSelector(
+                    initialIndex: 10, // Default to $100
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedUnitSize = value;
+                        _runState = RunState(
+                          name: _runState.name,
+                          startTime: _runState.startTime,
+                          location: _runState.location,
+                          numHands: _runState.numHands,
+                          currentHand: _runState.currentHand,
+                          handResults: _runState.handResults,
+                          investments: _runState.investments,
+                          unitSize: value,
+                          playMode: _runState.playMode,
+                          currencySymbol: _runState.currencySymbol,
+                        );
+                      });
                     },
                   ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Investments
+                  InvestmentDisplay(
+                    unitSize: _selectedUnitSize,
+                    maxInvestment: _selectedUnitSize * 12, // Simple multiplication
+                    currencySymbol: _currencySymbol,
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Play mode
+                  PlayModeSelector(
+                    unitSize: _selectedUnitSize,
+                    currencySymbol: _currencySymbol,
+                    initialMode: PlayMode.balanced,
+                    onChanged: (mode) {
+                      setState(() {
+                        _selectedPlayMode = mode;
+                      });
+                    },
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Hail Mary
+                  HailMarySelector(
+                    initialValue: 1,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedHailMary = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  // Simulate & Test section header
+                  const Text(
+                    'Simulate & Test',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Simulate & Test table (classic grid)
+                  _buildSimulateTestTable(),
                 ],
               ),
             ),
@@ -326,338 +332,162 @@ class _RunPageState extends State<RunPage> {
             borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey[600]!),
           ),
-                      child: DropdownButtonHideUnderline(
-              child: DropdownButton<Location>(
-                value: value,
-                dropdownColor: const Color(0xFF2D3748),
-                style: const TextStyle(color: Colors.white),
-                items: items.map((location) {
-                  return DropdownMenuItem(
-                    value: location,
-                    child: Text(location.displayName),
-                  );
-                }).toList(),
-                onChanged: onChanged,
-              ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<Location>(
+              value: value,
+              dropdownColor: const Color(0xFF2D3748),
+              style: const TextStyle(color: Colors.white),
+              items: items.map((location) {
+                return DropdownMenuItem(
+                  value: location,
+                  child: Text(location.displayName),
+                );
+              }).toList(),
+              onChanged: onChanged,
             ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildProgressCard() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2D3748),
-            Color(0xFF1A202C),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header with icon, title, and expand/collapse button
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isHandsExpanded = !_isHandsExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.timeline,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Hands',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    _isHandsExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Collapsible content
-          if (_isHandsExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 20.0),
-              child: _buildProgressDots(),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressDots() {
-    const int dotsPerRow = 14; // 14 dots per row
-    final int numHands = _runState.numHands;
-    final int rows = (numHands / dotsPerRow).ceil();
+  Widget _buildSimulateTestTable() {
+    final currency = _currencySymbol;
+    final maxInvestment = _runState.maxInvestment;
+    final spike0p5 = _runState.spike0p5;
+    final spike1 = _runState.spike1;
+    final spike3 = _runState.spike3;
+    final outcomes = Outcomes.defaultOutcomes;
+    // Helper to format percentage (always positive)
+    String fmtPct(double pct) {
+      final val = (pct * 100).toStringAsFixed(2);
+      return '$val%';
+    }
+    // Helper to format negative currency
+    String negCurrency(num value) => '-$currency${value.abs()}';
+    // Determine which rows to highlight based on play mode
+    final playMode = _selectedPlayMode;
+    Set<int> highlightedRows = {};
+    if (playMode == PlayMode.goForBroke) {
+      highlightedRows = {5};
+    } else if (playMode == PlayMode.make50PercentProfit) {
+      highlightedRows = {3};
+    } else if (playMode == PlayMode.doubleYourMoney) {
+      highlightedRows = {4};
+    } else if (playMode == PlayMode.balanced) {
+      highlightedRows = {3, 4};
+    }
+    // Helper functions for different play modes
+    String get50PercentLabel() {
+      return "50% Profit";
+    }
     
-    return Column(
-      children: List.generate(rows, (rowIndex) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 4.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(dotsPerRow, (colIndex) {
-              final handIndex = rowIndex * dotsPerRow + colIndex;
-              if (handIndex >= numHands) {
-                return const SizedBox(width: 12, height: 12);
-              }
-              
-              final handResult = _runState.handResults[handIndex];
-              final isCurrentHand = handIndex == _runState.currentHand;
-              
-              return Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: handResult.isFilled ? handResult.color : Colors.transparent,
-                  border: Border.all(
-                    color: isCurrentHand 
-                        ? const Color(0xFF3B82F6) 
-                        : handResult.color,
-                    width: isCurrentHand ? 2 : 1,
-                  ),
-                  boxShadow: isCurrentHand ? [
-                    BoxShadow(
-                      color: const Color(0xFF3B82F6).withOpacity(0.5),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                    ),
-                  ] : null,
-                ),
-                child: isCurrentHand
-                    ? const Icon(
-                        Icons.play_arrow,
-                        color: Colors.white,
-                        size: 6,
-                      )
-                    : null,
-              );
-            }),
-          ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildInvestmentCard() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2D3748),
-            Color(0xFF1A202C),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header with icon, title, and expand/collapse button
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isInvestmentExpanded = !_isInvestmentExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF59E0B),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.account_balance_wallet,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Investment',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    _isInvestmentExpanded ? Icons.expand_less : Icons.expand_more,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Collapsible content
-          if (_isInvestmentExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 20.0),
-              child: _buildBankNotesGrid(),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBankNotesGrid() {
-    const int notesPerRow = 8;
-    final int numNotes = _runState.investments.length;
-    final int rows = (numNotes / notesPerRow).ceil();
+    String get50PercentBlurb() {
+      if (playMode == PlayMode.balanced) 
+        return 'Can walk at $currency$spike0p5 profit, try to get to $currency$spike1';
+      else if (playMode == PlayMode.make50PercentProfit) 
+        return 'Walk at $currency$spike0p5 profit';
+      else
+        return '$currency$spike0p5';
+    }
     
-    return Column(
-      children: List.generate(rows, (rowIndex) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(notesPerRow, (colIndex) {
-              final noteIndex = rowIndex * notesPerRow + colIndex;
-              if (noteIndex >= numNotes) {
-                return const SizedBox(width: 32, height: 20);
-              }
-              
-              final investmentState = _runState.investments[noteIndex];
-              
-              return Container(
-                width: 32,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  border: Border.all(
-                    color: investmentState == InvestmentState.available 
-                        ? Colors.white 
-                        : investmentState.color,
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
+    Color get50PercentColor() {
+      return playMode == PlayMode.make50PercentProfit || playMode == PlayMode.balanced ? Colors.green : Colors.grey;
+    }
+    
+    String get100PercentLabel() {
+      return "100% Profit";
+    }
+    
+    String get100PercentBlurb() {
+      if (playMode == PlayMode.doubleYourMoney || playMode == PlayMode.balanced) 
+        return 'Walk at $currency$spike1 profit';
+      else
+        return '$currency$spike1';
+    }
+    
+    Color get100PercentColor() {
+      return playMode == PlayMode.doubleYourMoney || playMode == PlayMode.balanced ? Colors.green : Colors.grey;
+    }
+    
+    String getMoreThan100PercentBlurb() {
+      if (playMode == PlayMode.goForBroke) 
+        return 'A chance to get from $currency$spike1 profit to $currency$spike3 profit';
+      else
+        return '$currency$spike1 to $currency$spike3';
+    }
+    
+    Color getMoreThan100PercentColor() {
+      return playMode == PlayMode.goForBroke ? Colors.green : Colors.grey;
+    }
+    
+    // Table data: label, explanation (empty), currency, value, color
+    final rows = [
+      ['Big Loss', '', '${negCurrency(maxInvestment)} to ${negCurrency(maxInvestment ~/ 1.5)}', fmtPct(outcomes.majorBustPercentage), Colors.red],
+      ['Small Loss', '', '${negCurrency(maxInvestment ~/ 1.5)} to ${negCurrency(0)}', fmtPct(outcomes.minorBustPercentage), Colors.orange],
+      ['Evens', '', '${currency}0 to ${currency}$spike0p5', fmtPct(outcomes.evensPercentage), Colors.grey],
+      [get50PercentLabel(), '', get50PercentBlurb(), fmtPct(outcomes.spike0p5Percentage), get50PercentColor()],
+      [get100PercentLabel(), '', get100PercentBlurb(), fmtPct(outcomes.spike1Percentage), get100PercentColor()],
+      ['More Than 100% Profit', '', getMoreThan100PercentBlurb(), fmtPct(outcomes.spike1PlusPercentage), getMoreThan100PercentColor()],
+    ];
+    return Table(
+      border: TableBorder(
+        top: BorderSide(color: Colors.grey[700]!, width: 1),
+        bottom: BorderSide(color: Colors.grey[700]!, width: 1),
+        left: BorderSide(color: Colors.grey[700]!, width: 1),
+        right: BorderSide(color: Colors.grey[700]!, width: 1),
+        verticalInside: BorderSide.none,
+      ),
+      columnWidths: const {
+        0: FlexColumnWidth(2),
+        1: IntrinsicColumnWidth(),
+      },
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      children: [
+        for (int i = 0; i < rows.length; i++)
+          TableRow(
+            decoration: highlightedRows.contains(i)
+                ? BoxDecoration(color: const Color(0xFF3B82F6).withOpacity(0.25))
+                : null,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Bank note icon
-                    Icon(
-                      Icons.attach_money,
-                      color: investmentState == InvestmentState.available 
-                          ? Colors.white 
-                          : investmentState.color,
-                      size: 12,
-                    ),
-                    // X overlay for consumed investments
-                    if (investmentState == InvestmentState.consumed)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                          size: 10,
+                    Text(rows[i][0] as String, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    if ((rows[i][2] as String).isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Text(
+                          rows[i][2] as String,
+                          style: TextStyle(
+                            color: rows[i].length > 4 ? rows[i][4] as Color : Colors.green,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                   ],
                 ),
-              );
-            }),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    rows[i][3] as String,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24, // Match investment box
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        );
-      }),
-    );
-  }
-
-  Widget _buildPlaceholderCard() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2D3748),
-            Color(0xFF1A202C),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey[600],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                Icons.add,
-                color: Colors.grey[400],
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'More components will go here...',
-              style: TextStyle(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey[400],
-              ),
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 } 

@@ -10,14 +10,7 @@ namespace Mbrit.Vegas
     {
         public string Name { get; set; }
 
-        private Casino(string name)
-        {
-            this.Name = name;
-        }
-
-        public static IEnumerable<Casino> GetCasinos()
-        {
-            return new List<Casino>()
+        private static IEnumerable<Casino> Casinos { get; } =  new List<Casino>()
             {
                 new Casino("Flamingo"),
                 new Casino("The Cromwell"),
@@ -48,6 +41,12 @@ namespace Mbrit.Vegas
                 new Casino("Harrah's"),
                 new Casino("The Linq"),
             };
+
+        private Casino(string name)
+        {
+            this.Name = name;
         }
+
+        public static IEnumerable<Casino> GetCasinos() => Casinos;
     }
 }

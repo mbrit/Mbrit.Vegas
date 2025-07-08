@@ -45,9 +45,9 @@ namespace Mbrit.Vegas.Utility
 
             if (outcome == WalkOutcome.MajorBust)
                 label = 0;
-            else if (outcome == WalkOutcome.Minor)
+            else if (outcome == WalkOutcome.Spike0p5)
                 label = 2;
-            else if (outcome == WalkOutcome.Spike)
+            else if (outcome == WalkOutcome.Spike1OrBetter)
                 label = 3;
             else
             {

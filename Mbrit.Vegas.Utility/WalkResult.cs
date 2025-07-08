@@ -10,19 +10,33 @@ namespace Mbrit.Vegas.Utility
     {
         internal int Bankroll { get; }
         internal int TotalWagered { get; }
-        internal IEnumerable<Chain> WinChains { get; }
-        internal IEnumerable<Chain> LossChains { get; }
+        internal IWinLoseDrawRound Round { get; }
+        //internal IEnumerable<Chain> WinChains { get; }
+        //internal IEnumerable<Chain> LossChains { get; }
         internal IEnumerable<WinLoseDrawType> Vectors { get; }
         internal WalkOutcome Outcome { get; }
+        internal decimal WinChainScore { get; }
+        internal decimal LossChainScore { get; }
+        internal decimal ChainScore { get; }
+        internal WalkStopReason StopReason { get; }
+        internal WalkSpikeType SpikeType { get; }
 
-        internal WalkResult(int bankroll, int totalWagered, IEnumerable<Chain> winChains, IEnumerable<Chain> lossChains, IEnumerable<WinLoseDrawType> vectors, WalkOutcome outcome)
+        internal WalkResult(WalkState state, IWinLoseDrawRound round, IEnumerable<WinLoseDrawType> vectors, WalkOutcome outcome, WalkSpikeType spikeType)
         {
-            this.Bankroll = bankroll;
-            this.TotalWagered = totalWagered;
-            this.WinChains = winChains.ToList();
-            this.LossChains = lossChains.ToList();
+            this.Bankroll = state.Profit;
+            this.TotalWagered = state.TotalWagered;
+            this.StopReason = state.StopReason;
+
+            this.Round = round;
+
             this.Vectors = vectors.ToList();
             this.Outcome = outcome;
+
+            this.WinChainScore = state.WinChainScore;
+            this.LossChainScore = state.LossChainScore;
+            this.ChainScore = state.ChainScore;
+
+            this.SpikeType = spikeType;
         }
 
         internal WinLoseDrawType WinLose
@@ -37,5 +51,19 @@ namespace Mbrit.Vegas.Utility
         }
 
         public bool DidBust => this.Outcome == WalkOutcome.MajorBust || this.Outcome == WalkOutcome.MinorBust;
+
+        public bool IsSpike0p5 => this.Outcome == WalkOutcome.Spike0p5;
+
+        public bool IsSpike1 => this.CheckSpike1OrBetterType(WalkSpikeType.One);
+
+        public bool IsSpike1p5 => this.CheckSpike1OrBetterType(WalkSpikeType.OnePointFive);
+
+        public bool IsSpike2 => this.CheckSpike1OrBetterType(WalkSpikeType.Two);
+
+        public bool IsSpike3Plus => this.CheckSpike1OrBetterType(WalkSpikeType.ThreePlus);
+
+        public int Index => this.Round.Index;
+
+        private bool CheckSpike1OrBetterType(WalkSpikeType type) => this.Outcome == WalkOutcome.Spike1OrBetter && this.SpikeType == type;
     }
 }

@@ -6,12 +6,10 @@ using System.Threading.Tasks;
 
 namespace Mbrit.Vegas.Utility
 {
-    public enum WalkOutcome
+    internal interface IWinLoseDrawRoundsBucket
     {
-        MajorBust = 0,
-        Evens = 1,
-        Spike0p5 = 2,
-        Spike1OrBetter = 3,
-        MinorBust = 4
+        int Count { get; }
+        decimal HouseEdge { get; }
+        IWinLoseDrawRound this[int index] { get; } 
     }
 }

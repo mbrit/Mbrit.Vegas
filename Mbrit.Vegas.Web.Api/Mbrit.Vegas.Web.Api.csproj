@@ -19,8 +19,6 @@
       <HintPath>D:\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.Web.dll</HintPath>
     </Reference>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="BootFX" Version="7.0.11112.1645" />
-    <PackageReference Include="BootFX-Web" Version="7.0.11112.1645" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.0" />
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
