@@ -1,0 +1,33 @@
+﻿game: Baccarat
+  bets:
+    - bet: Banker
+      houseEdge: 1.06%
+    - bet: Player
+      houseEdge: 1.24%
+
+game: Blackjack (3:2)
+  bets:
+    - bet: Play
+      houseEdge: 1.24%
+
+game: Blackjack (6:5)
+  bets:
+    - bet: Play
+      houseEdge: 1.24%
+
+game: Craps
+  bets:
+    - bet: Place 6 or 8
+      houseEdge: 1.24%
+    - bet: Don't Come
+      houseEdge: 1.36%
+      notes: Don't take oddds
+    - bet: Come
+      houseEdge: 1.41%
+      notes: Don't take oddds
+
+game: Pai Gow
+  bets:
+    - bet: Play
+      houseEdge: 2.5%
+

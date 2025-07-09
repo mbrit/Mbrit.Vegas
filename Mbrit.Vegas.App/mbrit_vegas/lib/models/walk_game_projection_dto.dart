@@ -60,6 +60,9 @@ class WalkOutcomesBucketDto {
   @JsonKey(name: 'averageProfitWhenWon')
   final double averageProfitWhenWon;
 
+  @JsonKey(name: 'averageCoinIn')
+  final double averageCoinIn;
+
   const WalkOutcomesBucketDto({
     required this.majorBustPercentage,
     required this.minorBustPercentage,
@@ -68,6 +71,7 @@ class WalkOutcomesBucketDto {
     required this.spike1Percentage,
     required this.spike1PlusPercentage,
     required this.averageProfitWhenWon,
+    required this.averageCoinIn,
   });
 
   factory WalkOutcomesBucketDto.fromJson(Map<String, dynamic> json) => 

@@ -1,0 +1,106 @@
+﻿location: Las Vegas Strip
+  casinos:
+    - Sahara
+    - The Strat
+    - Circus Circus
+    - Resorts World Las Vegas
+    - Encore at Wynn
+    - Wynn Las Vegas
+    - The Venetian/The Palazzo
+    - Treasure Island (TI)
+    - Casino Royale
+    - Harrah’s
+    - LINQ
+    - Flamingo
+    - The Cromwell/Vanderpump
+    - Caesars Palace
+    - Bellagio
+    - Horseshoe
+    - Paris
+    - Planet Hollywood
+    - The Cosmopolitan
+    - Aria
+    - Park MGM
+    - New York-New York
+    - MGM Grand
+    - Luxor
+    - Excalibur
+    - Mandalay Bay
+
+location: Las Vegas Downtown
+  casinos:
+    - Golden Nugget
+    - Circa
+    - The D
+    - Four Queens
+    - Fremont Hotel & Casino
+    - Binion’s Gambling Hall
+    - California Hotel & Casino
+    - Main Street Station
+    - El Cortez
+    - Downtown Grand
+    - Plaza Hotel & Casino
+
+location: Las Vegas Off-strip
+  casinos:
+    - Palms
+    - Rio
+    - Westgate
+    - Ellis Island
+    - OYO
+    - Tuscany Suites
+    - Virgin Hotels
+    - The Orleans
+    - Gold Coast
+    - Palace Station
+
+location: Las Vegas Valley
+  casinos:
+    - Red Rock
+    - Green Valley Ranch
+    - M Resort
+    - South Point
+    - Suncoast
+    - Boulder Station
+    - Santa Fe Station
+    - Rampart
+    - Aliante
+    - Sam’s Town
+
+location: Atlantic City
+  casinos:
+    - Borgata
+    - Hard Rock
+    - Ocean Casino Resort
+    - Caesars
+    - Tropicana
+    - Harrah’s
+    - Bally’s
+    - Golden Nugget
+    - Resorts Casino Hotel
+
+location: London, UK
+  casinos:
+    - Hippodrome Casino
+    - Empire Casino (Leicester Square)
+    - Aspers Casino (Stratford)
+    - Grosvenor Victoria Casino (The Vic)
+    - Park Lane Club
+    - Palm Beach Casino (Mayfair)
+    - Genting Casino Cromwell Mint
+    - Metropolitan Casino Mayfair
+    - Grosvenor St Giles
+
+location: Macau
+  casinos:
+    - The Venetian
+    - Wynn
+    - Galaxy
+    - City of Dreams
+    - MGM Cotai
+    - Grand Lisboa
+    - Studio City
+    - Sands Macao
+    - StarWorld
+    - The Parisian
+

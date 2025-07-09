@@ -16,9 +16,12 @@ import 'widgets/hail_mary_selector.dart';
 import 'widgets/configurable_table.dart';
 import 'models/run_state.dart';
 import 'run_page.dart';
+import 'widgets/gambling_help.dart';
+import 'main.dart';
 
 class SetupRunPage extends StatefulWidget {
-  const SetupRunPage({super.key});
+  final bool fromSplash;
+  const SetupRunPage({super.key, this.fromSplash = false});
 
   @override
   State<SetupRunPage> createState() => _SetupRunPageState();
@@ -28,29 +31,37 @@ class _SetupRunPageState extends State<SetupRunPage> {
   late SetupRunState _runState;
   late TextEditingController _nameController;
   bool _isRunSetupExpanded = true;
-  
+
   // Play mode state
   PlayMode _selectedPlayMode = PlayMode.balanced;
-  
+
   // Hail Mary state
   int _selectedHailMary = 1;
-  
+
   // Simulate & Test state
   bool _isSimulateTestExpanded = false;
-  
+
   // Currency symbol state
   String _currencySymbol = '\$';
-  
+
   // API state
   bool _isLoading = false;
   bool _isDebouncedLoading = false;
   WalkGameProjectionDto? _projection;
   final WalkGameService _walkGameService = WalkGameService();
-  
+
   // Debounce timers
   Timer? _unitSizeDebounceTimer;
   Timer? _hailMaryDebounceTimer;
   Timer? _refreshDebounceTimer;
+  int _selectedTab = 0;
+
+  void _onTabTapped(int index) {
+    // TODO: Implement navigation for each tab
+    setState(() {
+      _selectedTab = index;
+    });
+  }
 
   @override
   void initState() {
@@ -60,7 +71,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
 
     _selectedPlayMode = _runState.playMode;
     _currencySymbol = _runState.currencySymbol;
-    
+
     // Fetch initial projection from server
     _fetchWalkGameProjection();
   }
@@ -119,24 +130,27 @@ class _SetupRunPageState extends State<SetupRunPage> {
 
   WalkOutcomesBucketDto? getCurrentOutcomes() {
     if (_projection == null) return null;
-    
-    return _projection!.outcomes.firstWhere(
-      (item) => item.mode == ModeMapper.playModeToWalkGameMode(_selectedPlayMode),
-      orElse: () => _projection!.outcomes.first,
-    ).outcomes;
+
+    return _projection!.outcomes
+        .firstWhere(
+          (item) =>
+              item.mode == ModeMapper.playModeToWalkGameMode(_selectedPlayMode),
+          orElse: () => _projection!.outcomes.first,
+        )
+        .outcomes;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    Widget page = Scaffold(
       backgroundColor: const Color(0xFF0F1419),
       appBar: AppBar(
-        title: const Text(
-          'Vegas Walk',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+        title: Row(
+          children: const [
+            Icon(Icons.casino, color: Colors.white, size: 24),
+            SizedBox(width: 8),
+            Text('Setup Walk'),
+          ],
         ),
         backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
@@ -147,10 +161,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1E3A8A),
-              Color(0xFF0F1419),
-            ],
+            colors: [Color(0xFF1E3A8A), Color(0xFF0F1419)],
             stops: [0.0, 0.3],
           ),
         ),
@@ -160,23 +171,39 @@ class _SetupRunPageState extends State<SetupRunPage> {
             child: Column(
               children: [
                 _buildRunSetupCard(),
+                const SizedBox(height: 24),
+                const GamblingHelp(),
                 const SizedBox(height: 20),
               ],
             ),
           ),
         ),
       ),
+      // No bottomNavigationBar here
     );
+    if (widget.fromSplash) {
+      return WillPopScope(
+        onWillPop: () async {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => const MainScaffold(initialTab: 0),
+            ),
+            (route) => false,
+          );
+          return false;
+        },
+        child: page,
+      );
+    } else {
+      return page;
+    }
   }
 
   Widget _buildRunSetupCard() {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2D3748),
-            Color(0xFF1A202C),
-          ],
+          colors: [Color(0xFF2D3748), Color(0xFF1A202C)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -187,167 +214,106 @@ class _SetupRunPageState extends State<SetupRunPage> {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Header with dice icon, title, and expand/collapse button
-          InkWell(
-            onTap: () {
-              setState(() {
-                _isRunSetupExpanded = !_isRunSetupExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.casino,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Setup Walk',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    _isRunSetupExpanded ? Icons.expand_less : Icons.expand_more,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20.0, 20.0, 20.0, 20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // All the setup controls and summary go here, no header or collapse logic
+            // Unit size
+            UnitSizeSelector(
+              initialIndex: 9, // Default to $50
+              onChanged: (value) {
+                setState(() {
+                  _runState = SetupRunState(
+                    name: _runState.name,
+                    startTime: _runState.startTime,
+                    location: _runState.location,
+                    numHands: _runState.numHands,
+                    currentHand: _runState.currentHand,
+                    handResults: _runState.handResults,
+                    investments: _runState.investments,
+                    unitSize: value,
+                    playMode: _runState.playMode,
+                    currencySymbol: _runState.currencySymbol,
+                  );
+                });
+                _fetchWalkGameProjectionDebounced();
+              },
+            ),
+            const SizedBox(height: 16),
+            // Investments
+            InvestmentDisplay(
+              unitSize: _runState.unitSize,
+              maxInvestment: _runState.maxInvestment,
+              currencySymbol: _currencySymbol,
+            ),
+            const SizedBox(height: 16),
+            // Play mode
+            PlayModeSelector(
+              unitSize: _runState.unitSize,
+              currencySymbol: _currencySymbol,
+              initialMode: _runState.playMode,
+              onChanged: (mode) {
+                setState(() {
+                  _runState = SetupRunState(
+                    name: _runState.name,
+                    startTime: _runState.startTime,
+                    location: _runState.location,
+                    numHands: _runState.numHands,
+                    currentHand: _runState.currentHand,
+                    handResults: _runState.handResults,
+                    investments: _runState.investments,
+                    unitSize: _runState.unitSize,
+                    playMode: mode,
+                    currencySymbol: _runState.currencySymbol,
+                  );
+                  _selectedPlayMode = mode;
+                });
+                // Do NOT call _fetchWalkGameProjectionDebounced() here
+              },
+            ),
+            const SizedBox(height: 16),
+            // Hail Mary
+            HailMarySelector(
+              initialValue: _selectedHailMary,
+              onChanged: (value) {
+                setState(() {
+                  _selectedHailMary = value;
+                });
+                _fetchWalkGameProjectionDebounced();
+              },
+            ),
+            const SizedBox(height: 24),
+            _buildAverageProfitDisplay(),
+            // Simulate & Test section header
+            Row(
+              children: [
+                const Text(
+                  'Simulate & Test',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    size: 24,
                   ),
-                ],
-              ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: Icon(Icons.refresh, color: Colors.white),
+                  tooltip: 'Refresh projections',
+                  onPressed: _isLoading ? null : _fetchWalkGameProjection,
+                ),
+              ],
             ),
-          ),
-          // Collapsible content
-          if (_isRunSetupExpanded)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Unit size
-                  UnitSizeSelector(
-                    initialIndex: 9, // Default to $50
-                    onChanged: (value) {
-                      setState(() {
-                        _runState = SetupRunState(
-                          name: _runState.name,
-                          startTime: _runState.startTime,
-                          location: _runState.location,
-                          numHands: _runState.numHands,
-                          currentHand: _runState.currentHand,
-                          handResults: _runState.handResults,
-                          investments: _runState.investments,
-                          unitSize: value,
-                          playMode: _runState.playMode,
-                          currencySymbol: _runState.currencySymbol,
-                        );
-                      });
-                      
-                      // Cancel previous timer and start a new one
-                      _unitSizeDebounceTimer?.cancel();
-                      _unitSizeDebounceTimer = Timer(const Duration(milliseconds: 500), () {
-                        _fetchWalkGameProjectionDebounced();
-                      });
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Investments
-                  InvestmentDisplay(
-                    unitSize: _runState.unitSize,
-                    maxInvestment: _runState.maxInvestment,
-                    currencySymbol: _currencySymbol,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Hail Mary
-                  HailMarySelector(
-                    initialValue: 1,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedHailMary = value;
-                      });
-                      
-                      // Cancel previous timer and start a new one
-                      _hailMaryDebounceTimer?.cancel();
-                      _hailMaryDebounceTimer = Timer(const Duration(milliseconds: 500), () {
-                        _fetchWalkGameProjectionDebounced();
-                      });
-                    },
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Play mode
-                  PlayModeSelector(
-                    unitSize: _runState.unitSize,
-                    currencySymbol: _currencySymbol,
-                    initialMode: PlayMode.balanced,
-                    onChanged: (mode) {
-                      setState(() {
-                        _selectedPlayMode = mode;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  // Simulate & Test section header with refresh button
-                  Row(
-                    children: [
-                      const Text(
-                        'Simulate & Test',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: (_isLoading || _isDebouncedLoading) ? null : () {
-                          // Cancel previous timer and start a new one
-                          _refreshDebounceTimer?.cancel();
-                          _refreshDebounceTimer = Timer(const Duration(milliseconds: 300), () {
-                            _fetchWalkGameProjectionDebounced();
-                          });
-                        },
-                        icon: Icon(
-                          Icons.refresh,
-                          color: (_isLoading || _isDebouncedLoading) ? Colors.grey[600] : Colors.grey[400],
-                          size: 20,
-                        ),
-                        tooltip: 'Refresh projections',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  // Average Profit display
-                  _buildAverageProfitDisplay(),
-                  const SizedBox(height: 16),
-                  // Simulate & Test table (classic grid)
-                  _buildSimulateTestTable(),
-                  const SizedBox(height: 24),
-                  // Start Run button
-                  _buildStartRunButton(),
-                ],
-              ),
-            ),
-        ],
+            const SizedBox(height: 12),
+            // Simulate & Test table (classic grid)
+            _buildSimulateTestTable(),
+            const SizedBox(height: 24),
+            // Start Run button
+            _buildStartRunButton(),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -467,10 +433,10 @@ class _SetupRunPageState extends State<SetupRunPage> {
     final spike0p5 = _runState.spike0p5;
     final spike1 = _runState.spike1;
     final spike3 = _runState.spike3;
-    
+
     // Use server data if available
     final outcomes = getCurrentOutcomes();
-    
+
     // Show loading indicator if no data yet (only for immediate loading, not debounced)
     if (_isLoading || outcomes == null) {
       return Container(
@@ -494,10 +460,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
             const SizedBox(width: 12),
             Text(
               'Loading projections...',
-              style: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey[400], fontSize: 16),
             ),
           ],
         ),
@@ -508,6 +471,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
       final val = (pct * 100).toStringAsFixed(2);
       return '$val%';
     }
+
     // Helper to format negative currency
     String negCurrency(num value) => '-$currency${value.abs()}';
     // Determine which rows to highlight based on play mode
@@ -526,54 +490,96 @@ class _SetupRunPageState extends State<SetupRunPage> {
     String get50PercentLabel() {
       return "50% Profit";
     }
-    
+
     String get50PercentBlurb() {
-      if (playMode == PlayMode.balanced) 
+      if (playMode == PlayMode.balanced)
         return 'Can walk at $currency$spike0p5 profit, try to get to $currency$spike1';
-      else if (playMode == PlayMode.make50PercentProfit) 
+      else if (playMode == PlayMode.make50PercentProfit)
         return 'Walk at $currency$spike0p5 profit';
       else
         return '$currency$spike0p5';
     }
-    
+
     Color get50PercentColor() {
-      return playMode == PlayMode.make50PercentProfit || playMode == PlayMode.balanced ? Colors.green : Colors.grey;
+      return playMode == PlayMode.make50PercentProfit ||
+              playMode == PlayMode.balanced
+          ? Colors.green
+          : Colors.grey;
     }
-    
+
     String get100PercentLabel() {
       return "100% Profit";
     }
-    
+
     String get100PercentBlurb() {
-      if (playMode == PlayMode.doubleYourMoney || playMode == PlayMode.balanced) 
+      if (playMode == PlayMode.doubleYourMoney || playMode == PlayMode.balanced)
         return 'Walk at $currency$spike1 profit';
       else
         return '$currency$spike1';
     }
-    
+
     Color get100PercentColor() {
-      return playMode == PlayMode.doubleYourMoney || playMode == PlayMode.balanced ? Colors.green : Colors.grey;
+      return playMode == PlayMode.doubleYourMoney ||
+              playMode == PlayMode.balanced
+          ? Colors.green
+          : Colors.grey;
     }
-    
+
     String getMoreThan100PercentBlurb() {
-      if (playMode == PlayMode.goForBroke) 
+      if (playMode == PlayMode.goForBroke)
         return 'A chance to more profit between $currency$spike1 and $currency$spike3';
       else
         return '$currency$spike1 to $currency$spike3';
     }
-    
+
     Color getMoreThan100PercentColor() {
       return playMode == PlayMode.goForBroke ? Colors.green : Colors.grey;
     }
-    
+
     // Table data: label, explanation (empty), currency, value, color
     final rows = [
-      ['Big Loss', '', '${negCurrency(maxInvestment)} to ${negCurrency(maxInvestment ~/ 1.5)}', fmtPct(outcomes.majorBustPercentage), Colors.red],
-      ['Small Loss', '', '${negCurrency(maxInvestment ~/ 1.5)} to ${negCurrency(0)}', fmtPct(outcomes.minorBustPercentage), Colors.orange],
-      ['Evens', '', '${currency}0 to ${currency}$spike0p5', fmtPct(outcomes.evensPercentage), Colors.grey],
-      [get50PercentLabel(), '', get50PercentBlurb(), fmtPct(outcomes.spike0p5Percentage), get50PercentColor()],
-      [get100PercentLabel(), '', get100PercentBlurb(), fmtPct(outcomes.spike1Percentage), get100PercentColor()],
-      ['More Than 100% Profit', '', getMoreThan100PercentBlurb(), fmtPct(outcomes.spike1PlusPercentage), getMoreThan100PercentColor()],
+      [
+        'Big Loss',
+        '',
+        '${negCurrency(maxInvestment)} to ${negCurrency(maxInvestment ~/ 1.5)}',
+        fmtPct(outcomes.majorBustPercentage),
+        Colors.red,
+      ],
+      [
+        'Small Loss',
+        '',
+        '${negCurrency(maxInvestment ~/ 1.5)} to ${negCurrency(0)}',
+        fmtPct(outcomes.minorBustPercentage),
+        Colors.orange,
+      ],
+      [
+        'Evens',
+        '',
+        '${currency}0 to ${currency}$spike0p5',
+        fmtPct(outcomes.evensPercentage),
+        Colors.grey,
+      ],
+      [
+        get50PercentLabel(),
+        '',
+        get50PercentBlurb(),
+        fmtPct(outcomes.spike0p5Percentage),
+        get50PercentColor(),
+      ],
+      [
+        get100PercentLabel(),
+        '',
+        get100PercentBlurb(),
+        fmtPct(outcomes.spike1Percentage),
+        get100PercentColor(),
+      ],
+      [
+        'More Than 100% Profit',
+        '',
+        getMoreThan100PercentBlurb(),
+        fmtPct(outcomes.spike1PlusPercentage),
+        getMoreThan100PercentColor(),
+      ],
     ];
     return Table(
       border: TableBorder(
@@ -583,16 +589,15 @@ class _SetupRunPageState extends State<SetupRunPage> {
         right: BorderSide(color: Colors.grey[700]!, width: 1),
         verticalInside: BorderSide.none,
       ),
-      columnWidths: const {
-        0: FlexColumnWidth(2),
-        1: IntrinsicColumnWidth(),
-      },
+      columnWidths: const {0: FlexColumnWidth(2), 1: IntrinsicColumnWidth()},
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
       children: [
         for (int i = 0; i < rows.length; i++)
           TableRow(
             decoration: highlightedRows.contains(i)
-                ? BoxDecoration(color: const Color(0xFF3B82F6).withOpacity(0.25))
+                ? BoxDecoration(
+                    color: const Color(0xFF3B82F6).withOpacity(0.25),
+                  )
                 : null,
             children: [
               Padding(
@@ -600,14 +605,23 @@ class _SetupRunPageState extends State<SetupRunPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(rows[i][0] as String, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      rows[i][0] as String,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     if ((rows[i][2] as String).isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 2.0),
                         child: Text(
                           rows[i][2] as String,
                           style: TextStyle(
-                            color: rows[i].length > 4 ? rows[i][4] as Color : Colors.green,
+                            color: rows[i].length > 4
+                                ? rows[i][4] as Color
+                                : Colors.green,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
@@ -639,12 +653,12 @@ class _SetupRunPageState extends State<SetupRunPage> {
   Widget _buildAverageProfitDisplay() {
     final currency = _currencySymbol;
     final outcomes = getCurrentOutcomes();
-    
+
     // Don't show anything if loading or no data yet (only for immediate loading, not debounced)
     if (_isLoading || outcomes == null) {
       return const SizedBox.shrink();
     }
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -652,25 +666,53 @@ class _SetupRunPageState extends State<SetupRunPage> {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey[600]!),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.trending_up, color: Colors.grey[400], size: 16),
-          const SizedBox(width: 8),
-          Text(
-            'Average Profit (When Won): ',
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
+          Row(
+            children: [
+              Icon(Icons.trending_up, color: Colors.grey[400], size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Average profit (when won): ',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                '$currency${outcomes.averageProfitWhenWon.toStringAsFixed(0)}',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ],
           ),
-          Text(
-            '$currency${outcomes.averageProfitWhenWon.toStringAsFixed(0)}',
-            style: TextStyle(
-              color: Colors.green,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.monetization_on, color: Colors.grey[400], size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Average coin-in: ',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14, // Match 'Average profit (when won):' label
+                ),
+              ),
+              Text(
+                '$currency${outcomes.averageCoinIn.toStringAsFixed(0)}',
+                style: TextStyle(
+                  color: const Color(0xFF059669), // Darker shade of green
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18, // Match value size
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -728,7 +770,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
                 ),
                 const SizedBox(width: 12),
                 const Text(
-                  'START RUN',
+                  'START WALK',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -743,4 +785,4 @@ class _SetupRunPageState extends State<SetupRunPage> {
       ),
     );
   }
-} 
+}

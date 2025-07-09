@@ -51,6 +51,7 @@ WalkOutcomesBucketDto _$WalkOutcomesBucketDtoFromJson(
   spike1Percentage: (json['spike1Percentage'] as num).toDouble(),
   spike1PlusPercentage: (json['spike1PlusPercentage'] as num).toDouble(),
   averageProfitWhenWon: (json['averageProfitWhenWon'] as num).toDouble(),
+  averageCoinIn: (json['averageCoinIn'] as num).toDouble(),
 );
 
 Map<String, dynamic> _$WalkOutcomesBucketDtoToJson(
@@ -63,4 +64,5 @@ Map<String, dynamic> _$WalkOutcomesBucketDtoToJson(
   'spike1Percentage': instance.spike1Percentage,
   'spike1PlusPercentage': instance.spike1PlusPercentage,
   'averageProfitWhenWon': instance.averageProfitWhenWon,
+  'averageCoinIn': instance.averageCoinIn,
 };

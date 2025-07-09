@@ -17,7 +17,8 @@ namespace Mbrit.Vegas.Web.Api.Model
                 Spike0p5Percentage = item.Spike0p5Percentage,
                 Spike1Percentage = item.Spike1Percentage,
                 Spike1PlusPercentage = item.Spike1PlusPercentage,
-                AverageProfitWhenWon = item.AveragePositiveBankroll
+                AverageProfitWhenWon = item.AveragePositiveBankroll,
+                AverageCoinIn = item.AverageWagered
             };
         }
 

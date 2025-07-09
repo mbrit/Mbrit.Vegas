@@ -27,5 +27,8 @@ namespace Mbrit.Vegas.Web.Api.Model
 
         [JsonPropertyName("averageProfitWhenWon")]
         public int AverageProfitWhenWon { get; set; }
+
+        [JsonPropertyName("averageCoinIn")]
+        public int AverageCoinIn { get; set; }
     }
 }

@@ -14,6 +14,14 @@
     <Compile Remove="Objects\AsStringConverter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Remove="Resources\Casinos.txt" />
+    <None Remove="Resources\Games.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Casinos.txt" />
+    <EmbeddedResource Include="Resources\Games.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="BootFX.Common">
       <HintPath>D:\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.dll</HintPath>
     </Reference>

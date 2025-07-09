@@ -5,6 +5,7 @@ class Outcomes {
   final double spike0p5Percentage;
   final double spike1Percentage;
   final double spike1PlusPercentage;
+  final double averageCoinIn;
 
   const Outcomes({
     required this.majorBustPercentage,
@@ -13,6 +14,7 @@ class Outcomes {
     required this.spike0p5Percentage,
     required this.spike1Percentage,
     required this.spike1PlusPercentage,
+    this.averageCoinIn = 0.0,
   });
 
   static const defaultOutcomes = Outcomes(

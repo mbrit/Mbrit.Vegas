@@ -57,6 +57,26 @@ class RunState {
         playMode = PlayMode.balanced,
         currencySymbol = '\$';
 
+  static String generateDefaultName(Location location, DateTime dateTime) {
+    final hour = dateTime.hour;
+    String period;
+    if (hour >= 5 && hour < 12) {
+      period = 'Morning';
+    } else if (hour >= 12 && hour < 17) {
+      period = 'Afternoon';
+    } else if (hour >= 17 && hour < 22) {
+      period = 'Evening';
+    } else {
+      period = 'Late Night';
+    }
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final dateStr = '${dateTime.day}/${months[dateTime.month - 1]}/${dateTime.year}';
+    return '$period walk in ${location.name} on $dateStr';
+  }
+
   String get formattedStartTime {
     return '${startTime.month}/${startTime.day}/${startTime.year} ${startTime.hour}:${startTime.minute.toString().padLeft(2, '0')}';
   }
