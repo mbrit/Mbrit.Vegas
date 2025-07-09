@@ -1,5 +1,6 @@
 ﻿using BootFX.Common;
 using Mbrit.Vegas.Games;
+using Mbrit.Vegas.Simulator;
 using System;
 using System.Collections;
 using System.Collections.Generic;

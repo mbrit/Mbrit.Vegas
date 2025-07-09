@@ -77,14 +77,25 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
               // Center display
               Expanded(
                 child: Center(
-                                       child: Text(
-                       '\$${widget.unitSizes[_currentIndex]}',
-                       style: const TextStyle(
-                         color: Color(0xFFF59E0B), // Orange color
-                         fontSize: 24,
-                         fontWeight: FontWeight.bold,
-                       ),
-                     ),
+                  child: GestureDetector(
+                    onTap: () => _showUnitSizeDialog(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[700]!.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey[600]!.withOpacity(0.5)),
+                      ),
+                      child: Text(
+                        '\$${widget.unitSizes[_currentIndex]}',
+                        style: const TextStyle(
+                          color: Color(0xFFF59E0B), // Orange color
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               
@@ -108,6 +119,97 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showUnitSizeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2D3748),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.casino, color: Colors.grey[400], size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Select Unit Size',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 300,
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 2.5,
+              ),
+              itemCount: widget.unitSizes.length,
+              itemBuilder: (context, index) {
+                final isSelected = index == _currentIndex;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _currentIndex = index;
+                    });
+                    widget.onChanged?.call(widget.unitSizes[index]);
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected 
+                          ? const Color(0xFFF59E0B).withOpacity(0.2)
+                          : Colors.grey[700]!.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected 
+                            ? const Color(0xFFF59E0B)
+                            : Colors.grey[600]!.withOpacity(0.5),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '\$${widget.unitSizes[index]}',
+                        style: TextStyle(
+                          color: isSelected 
+                              ? const Color(0xFFF59E0B)
+                              : Colors.white,
+                          fontSize: 16,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 } 

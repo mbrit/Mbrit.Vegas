@@ -2,11 +2,10 @@
   "profiles": {
     "Mbrit.Vegas.Web.Api": {
       "commandName": "Project",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:61653;http://localhost:61655"
+      "applicationUrl": "http://0.0.0.0:61655"
     }
   }
 }

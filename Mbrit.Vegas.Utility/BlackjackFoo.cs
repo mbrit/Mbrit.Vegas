@@ -2,6 +2,7 @@
 using BootFX.Common.Data.Text;
 using BootFX.Common.Management;
 using Mbrit.Vegas.Games;
+using Mbrit.Vegas.Simulator;
 using Microsoft.VisualBasic;
 using System.Collections.Immutable;
 using System.Net.Mail;

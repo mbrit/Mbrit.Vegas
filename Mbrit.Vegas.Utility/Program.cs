@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Mbrit.Vegas.Service;
 using BootFX.Common.Data;
 using System.Runtime.CompilerServices;
+using Mbrit.Vegas.Simulator;
 
 namespace Mbrit.Vegas.Utility
 {
@@ -43,8 +44,8 @@ namespace Mbrit.Vegas.Utility
                             new WalkFoo().DoMagic();
                         else if (name == "walkn")
                             new WalkFoo().DoMagicN();
-                        else if (name == "walk2")
-                            new WalkSweep().DoMagic();
+                        //else if (name == "walk2")
+                        //    new WalkSweep().DoMagic();
                         else if (name == "craps")
                             new CrapsFoo().DoMagic();
                     });

@@ -1,30 +1,33 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'models/run_state.dart';
+import 'models/setup_run_state.dart';
 import 'models/location.dart';
 import 'models/hand_result.dart';
 import 'models/investment_state.dart';
+import 'models/outcomes.dart';
+import 'models/walk_game_setup_dto.dart';
+import 'models/walk_game_projection_dto.dart';
+import 'services/walk_game_service.dart';
+import 'utils/mode_mapper.dart';
 import 'widgets/unit_size_selector.dart';
 import 'widgets/play_mode_selector.dart';
 import 'widgets/investment_display.dart';
 import 'widgets/hail_mary_selector.dart';
 import 'widgets/configurable_table.dart';
-import 'models/outcomes.dart';
+import 'models/run_state.dart';
+import 'run_page.dart';
 
-class RunPage extends StatefulWidget {
-  final RunState? runState;
-  const RunPage({super.key, this.runState});
+class SetupRunPage extends StatefulWidget {
+  const SetupRunPage({super.key});
 
   @override
-  State<RunPage> createState() => _RunPageState();
+  State<SetupRunPage> createState() => _SetupRunPageState();
 }
 
-class _RunPageState extends State<RunPage> {
-  late RunState _runState;
+class _SetupRunPageState extends State<SetupRunPage> {
+  late SetupRunState _runState;
   late TextEditingController _nameController;
   bool _isRunSetupExpanded = true;
-  
-  // Unit size state
-  int _selectedUnitSize = 100;
   
   // Play mode state
   PlayMode _selectedPlayMode = PlayMode.balanced;
@@ -37,21 +40,90 @@ class _RunPageState extends State<RunPage> {
   
   // Currency symbol state
   String _currencySymbol = '\$';
+  
+  // API state
+  bool _isLoading = false;
+  bool _isDebouncedLoading = false;
+  WalkGameProjectionDto? _projection;
+  final WalkGameService _walkGameService = WalkGameService();
+  
+  // Debounce timers
+  Timer? _unitSizeDebounceTimer;
+  Timer? _hailMaryDebounceTimer;
+  Timer? _refreshDebounceTimer;
 
   @override
   void initState() {
     super.initState();
-    _runState = widget.runState ?? RunState.defaultRun();
+    _runState = SetupRunState.defaultRun();
     _nameController = TextEditingController(text: _runState.name);
-    _selectedUnitSize = _runState.unitSize;
+
     _selectedPlayMode = _runState.playMode;
     _currencySymbol = _runState.currencySymbol;
+    
+    // Fetch initial projection from server
+    _fetchWalkGameProjection();
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _walkGameService.dispose();
+    _unitSizeDebounceTimer?.cancel();
+    _hailMaryDebounceTimer?.cancel();
+    _refreshDebounceTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _fetchWalkGameProjection() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final setupDto = WalkGameSetupDto(
+        unit: _runState.unitSize,
+        mode: ModeMapper.playModeToWalkGameMode(_selectedPlayMode),
+        hailMaryCount: _selectedHailMary,
+      );
+      final projection = await _walkGameService.setupWalkGame(setupDto);
+
+      setState(() {
+        _projection = projection;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      print('Error fetching projection: $e');
+    }
+  }
+
+  Future<void> _fetchWalkGameProjectionDebounced() async {
+    setState(() => _isDebouncedLoading = true);
+
+    try {
+      final setupDto = WalkGameSetupDto(
+        unit: _runState.unitSize,
+        mode: ModeMapper.playModeToWalkGameMode(_selectedPlayMode),
+        hailMaryCount: _selectedHailMary,
+      );
+      final projection = await _walkGameService.setupWalkGame(setupDto);
+
+      setState(() {
+        _projection = projection;
+        _isDebouncedLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isDebouncedLoading = false);
+      print('Error fetching projection: $e');
+    }
+  }
+
+  WalkOutcomesBucketDto? getCurrentOutcomes() {
+    if (_projection == null) return null;
+    
+    return _projection!.outcomes.firstWhere(
+      (item) => item.mode == ModeMapper.playModeToWalkGameMode(_selectedPlayMode),
+      orElse: () => _projection!.outcomes.first,
+    ).outcomes;
   }
 
   @override
@@ -142,7 +214,7 @@ class _RunPageState extends State<RunPage> {
                   ),
                   const SizedBox(width: 12),
                   const Text(
-                    'Start a New Run',
+                    'Setup Walk',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -168,11 +240,10 @@ class _RunPageState extends State<RunPage> {
                 children: [
                   // Unit size
                   UnitSizeSelector(
-                    initialIndex: 10, // Default to $100
+                    initialIndex: 9, // Default to $50
                     onChanged: (value) {
                       setState(() {
-                        _selectedUnitSize = value;
-                        _runState = RunState(
+                        _runState = SetupRunState(
                           name: _runState.name,
                           startTime: _runState.startTime,
                           location: _runState.location,
@@ -185,6 +256,12 @@ class _RunPageState extends State<RunPage> {
                           currencySymbol: _runState.currencySymbol,
                         );
                       });
+                      
+                      // Cancel previous timer and start a new one
+                      _unitSizeDebounceTimer?.cancel();
+                      _unitSizeDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+                        _fetchWalkGameProjectionDebounced();
+                      });
                     },
                   ),
                   
@@ -192,23 +269,9 @@ class _RunPageState extends State<RunPage> {
                   
                   // Investments
                   InvestmentDisplay(
-                    unitSize: _selectedUnitSize,
-                    maxInvestment: _selectedUnitSize * 12, // Simple multiplication
+                    unitSize: _runState.unitSize,
+                    maxInvestment: _runState.maxInvestment,
                     currencySymbol: _currencySymbol,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Play mode
-                  PlayModeSelector(
-                    unitSize: _selectedUnitSize,
-                    currencySymbol: _currencySymbol,
-                    initialMode: PlayMode.balanced,
-                    onChanged: (mode) {
-                      setState(() {
-                        _selectedPlayMode = mode;
-                      });
-                    },
                   ),
                   
                   const SizedBox(height: 16),
@@ -220,19 +283,62 @@ class _RunPageState extends State<RunPage> {
                       setState(() {
                         _selectedHailMary = value;
                       });
+                      
+                      // Cancel previous timer and start a new one
+                      _hailMaryDebounceTimer?.cancel();
+                      _hailMaryDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+                        _fetchWalkGameProjectionDebounced();
+                      });
+                    },
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Play mode
+                  PlayModeSelector(
+                    unitSize: _runState.unitSize,
+                    currencySymbol: _currencySymbol,
+                    initialMode: PlayMode.balanced,
+                    onChanged: (mode) {
+                      setState(() {
+                        _selectedPlayMode = mode;
+                      });
                     },
                   ),
                   const SizedBox(height: 24),
-                  // Simulate & Test section header
-                  const Text(
-                    'Simulate & Test',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
+                  // Simulate & Test section header with refresh button
+                  Row(
+                    children: [
+                      const Text(
+                        'Simulate & Test',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: (_isLoading || _isDebouncedLoading) ? null : () {
+                          // Cancel previous timer and start a new one
+                          _refreshDebounceTimer?.cancel();
+                          _refreshDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+                            _fetchWalkGameProjectionDebounced();
+                          });
+                        },
+                        icon: Icon(
+                          Icons.refresh,
+                          color: (_isLoading || _isDebouncedLoading) ? Colors.grey[600] : Colors.grey[400],
+                          size: 20,
+                        ),
+                        tooltip: 'Refresh projections',
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
+                  // Average Profit display
+                  _buildAverageProfitDisplay(),
+                  const SizedBox(height: 16),
                   // Simulate & Test table (classic grid)
                   _buildSimulateTestTable(),
                   const SizedBox(height: 24),
@@ -361,7 +467,42 @@ class _RunPageState extends State<RunPage> {
     final spike0p5 = _runState.spike0p5;
     final spike1 = _runState.spike1;
     final spike3 = _runState.spike3;
-    final outcomes = Outcomes.defaultOutcomes;
+    
+    // Use server data if available
+    final outcomes = getCurrentOutcomes();
+    
+    // Show loading indicator if no data yet (only for immediate loading, not debounced)
+    if (_isLoading || outcomes == null) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D3748),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.grey[700]!),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[400]!),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Loading projections...',
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
     // Helper to format percentage (always positive)
     String fmtPct(double pct) {
       final val = (pct * 100).toStringAsFixed(2);
@@ -416,7 +557,7 @@ class _RunPageState extends State<RunPage> {
     
     String getMoreThan100PercentBlurb() {
       if (playMode == PlayMode.goForBroke) 
-        return 'A chance to more than double your investment to $currency$spike3 profit';
+        return 'A chance to more profit between $currency$spike1 and $currency$spike3';
       else
         return '$currency$spike1 to $currency$spike3';
     }
@@ -495,6 +636,47 @@ class _RunPageState extends State<RunPage> {
     );
   }
 
+  Widget _buildAverageProfitDisplay() {
+    final currency = _currencySymbol;
+    final outcomes = getCurrentOutcomes();
+    
+    // Don't show anything if loading or no data yet (only for immediate loading, not debounced)
+    if (_isLoading || outcomes == null) {
+      return const SizedBox.shrink();
+    }
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D3748),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[600]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.trending_up, color: Colors.grey[400], size: 16),
+          const SizedBox(width: 8),
+          Text(
+            'Average Profit (When Won): ',
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+          ),
+          Text(
+            '$currency${outcomes.averageProfitWhenWon.toStringAsFixed(0)}',
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStartRunButton() {
     return Container(
       width: double.infinity,
@@ -519,8 +701,13 @@ class _RunPageState extends State<RunPage> {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            // TODO: Implement start run functionality
-            print('Starting run...');
+            final runState = RunState.fromSetup(_runState);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RunPage(runState: runState),
+              ),
+            );
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24),

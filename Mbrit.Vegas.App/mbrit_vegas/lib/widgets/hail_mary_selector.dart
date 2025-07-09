@@ -32,7 +32,7 @@ class _HailMarySelectorState extends State<HailMarySelector> {
       children: [
         Row(
           children: [
-            Icon(Icons.favorite, color: Colors.grey[400], size: 16),
+            Icon(Icons.star, color: Colors.grey[400], size: 16),
             const SizedBox(width: 8),
             Text(
               widget.label,
@@ -46,7 +46,7 @@ class _HailMarySelectorState extends State<HailMarySelector> {
         ),
         const SizedBox(height: 8),
         Text(
-          'An optional bet that increases your chances of hitting your goal. This is part of your planned investment, but done at a time of your choosing',
+          'An optional 2 unit bet that increases your chances of hitting your goal. This is part of your planned investment, but done at a time of your choosing',
           style: TextStyle(
             color: Colors.grey[500],
             fontSize: 12,

@@ -2,9 +2,8 @@ import 'location.dart';
 import 'hand_result.dart';
 import 'investment_state.dart';
 import '../widgets/play_mode_selector.dart';
-import 'setup_run_state.dart';
 
-class RunState {
+class SetupRunState {
   final String name;
   final DateTime startTime;
   final Location location;
@@ -16,7 +15,7 @@ class RunState {
   final PlayMode playMode;
   final String currencySymbol;
 
-  RunState({
+  SetupRunState({
     required this.name,
     required this.startTime,
     required this.location,
@@ -29,23 +28,8 @@ class RunState {
     required this.currencySymbol,
   });
 
-  factory RunState.fromSetup(SetupRunState setup) {
-    return RunState(
-      name: setup.name,
-      startTime: setup.startTime,
-      location: setup.location,
-      numHands: setup.numHands,
-      currentHand: setup.currentHand,
-      handResults: List<HandResult>.from(setup.handResults),
-      investments: List<InvestmentState>.from(setup.investments),
-      unitSize: setup.unitSize,
-      playMode: setup.playMode,
-      currencySymbol: setup.currencySymbol,
-    );
-  }
-
   // Default constructor with Las Vegas Strip
-  RunState.defaultRun()
+  SetupRunState.defaultRun()
       : name = 'New Run',
         startTime = DateTime.now(),
         location = Location.lasVegasStrip,
@@ -61,7 +45,10 @@ class RunState {
     return '${startTime.month}/${startTime.day}/${startTime.year} ${startTime.hour}:${startTime.minute.toString().padLeft(2, '0')}';
   }
 
+  // Read-only property for MaxPutIns
   int get maxPutIns => 12;
+
+  // Calculated properties for investment amounts
   int get maxInvestment => unitSize * maxPutIns;
   int get spike0p5 => (unitSize * maxPutIns) ~/ 2;
   int get spike1 => unitSize * maxPutIns;
