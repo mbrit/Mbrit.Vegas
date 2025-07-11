@@ -48,6 +48,8 @@ namespace Mbrit.Vegas.Utility
                         //    new WalkSweep().DoMagic();
                         else if (name == "craps")
                             new CrapsFoo().DoMagic();
+                        else if (name == "all")
+                            new AllFoo().DoMagic();
                     });
                 }
             }

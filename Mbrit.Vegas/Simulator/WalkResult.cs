@@ -10,6 +10,7 @@ namespace Mbrit.Vegas.Simulator
     {
         internal int Bankroll { get; }
         internal int TotalWagered { get; }
+        internal decimal ExpectedValuePerHundredCurrency { get; }
         internal IWinLoseDrawRound Round { get; }
         //internal IEnumerable<Chain> WinChains { get; }
         //internal IEnumerable<Chain> LossChains { get; }
@@ -21,11 +22,14 @@ namespace Mbrit.Vegas.Simulator
         internal WalkStopReason StopReason { get; }
         internal WalkSpikeType SpikeType { get; }
 
-        internal WalkResult(WalkState state, IWinLoseDrawRound round, IEnumerable<WinLoseDrawType> vectors, WalkOutcome outcome, WalkSpikeType spikeType)
+        internal WalkResult(WalkState state, IWinLoseDrawRound round, IEnumerable<WinLoseDrawType> vectors, WalkOutcome outcome, WalkSpikeType spikeType, 
+            bool didSeeMajorMust, bool didSeeMinorBust, bool didSeeSpike0p5, bool didSeeSpike1)
         {
             this.Bankroll = state.Profit;
             this.TotalWagered = state.TotalWagered;
             this.StopReason = state.StopReason;
+
+            this.ExpectedValuePerHundredCurrency = (this.Bankroll / (decimal)state.TotalWagered) * 100M;
 
             this.Round = round;
 

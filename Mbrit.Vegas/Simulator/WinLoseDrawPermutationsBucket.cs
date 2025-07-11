@@ -9,51 +9,34 @@ namespace Mbrit.Vegas.Simulator
         private int Permutations { get; }
         private int HandsPerRound { get; }
         public decimal HouseEdge { get; }
-        private List<Round<char>> Vectors { get; }
-        private List<WinLoseDrawPermutationWrapper> Wrappers { get; }
+        private List<Round<WinLoseDrawType>> Rounds { get; }
 
-        internal WinLoseDrawPermutationsBucket(int permutations, int handsPerRound, decimal houseEdge, IEnumerable<Round<char>> vectors)
+        internal WinLoseDrawPermutationsBucket(int permutations, int handsPerRound, decimal houseEdge, IEnumerable<Round<WinLoseDrawType>> rounds)
         {
             this.Permutations = permutations;
             this.HandsPerRound = handsPerRound;
             this.HouseEdge = houseEdge;
-            this.Vectors = new List<Round<char>>(vectors);
-
-            var wrappers = new List<WinLoseDrawPermutationWrapper>();
-            
-            var index = 0;
-            foreach (var vector in vectors)
-            {
-                wrappers.Add(new WinLoseDrawPermutationWrapper(index, vector));
-                index++;
-            }
-
-            this.Wrappers = wrappers;
+            this.Rounds = new List<Round<WinLoseDrawType>>(rounds);
         }
 
-        private class WinLoseDrawPermutationWrapper : IWinLoseDrawRound
+        public int Count => this.Rounds.Count;
+
+        public IWinLoseDrawRound this[int index] => new RoundWrapper(index, this.Rounds[index]);
+
+        private class RoundWrapper : IWinLoseDrawRound
         {
             public int Index { get; }
-            private Round<char> Vector { get; }
+            private Round<WinLoseDrawType> Round { get; }
 
-            public WinLoseDrawPermutationWrapper(int index, Round<char> vector)
+            public RoundWrapper(int index, Round<WinLoseDrawType> round)
             {
-                this.Vector = vector;
                 this.Index = index;
+                this.Round = round;
             }
 
-            public WinLoseDrawType GetResult(int hand)
-            {
-                var c = this.Vector.GetResult(hand);
-                if (c == '1')
-                    return WinLoseDrawType.Win;
-                else
-                    return WinLoseDrawType.Lose;
-            }
+            public WinLoseDrawType GetResult(int hand) => this.Round.GetResult(hand);
+
+            public string GetKey() => this.Round.GetKey();
         }
-
-        public int Count => this.Vectors.Count();
-
-        public IWinLoseDrawRound this[int index] => this.Wrappers[index];
     }
 }

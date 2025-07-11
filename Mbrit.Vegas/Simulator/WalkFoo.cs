@@ -16,6 +16,7 @@ using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Net.NetworkInformation;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
@@ -65,7 +66,9 @@ namespace Mbrit.Vegas.Simulator
 
             var unitSize = 100;
 
-            var runs = this.DoMagic(rounds, 4, (index, rounds) =>
+            var player = new AutomaticWalkGamePlayer();
+
+            var runs = this.DoMagic(rounds, 4, player, (index, rounds) =>
             {
                 if (index == 0)
                     return WalkGameDefaults.GetSetup(WalkGameMode.ReachSpike1, rounds, unitSize, hailMaryCount);
@@ -75,26 +78,6 @@ namespace Mbrit.Vegas.Simulator
                     return WalkGameDefaults.GetSetup(WalkGameMode.StretchToSpike1, rounds, unitSize, hailMaryCount);
                 else if (index == 3)
                     return WalkGameDefaults.GetSetup(WalkGameMode.Unrestricted, rounds, unitSize, hailMaryCount);
-                //else if (index == 2)
-                //{
-                //    return new WalkGameSetup(setup.Rounds, null, () =>
-                //    {
-                //        var args = setup.GetArgs();
-                //        args.SetStretchToSpike1();
-                //        args.HailMaryMode = WalkHailMary.Single;
-                //        return args;
-                //    });
-                //}
-                //else if (index == 3)
-                //{
-                //    return new WalkGameSetup(setup.Rounds, null, () =>
-                //    {
-                //        var args = setup.GetArgs();
-                //        args.SetStretchToSpike1();
-                //        args.HailMaryMode = WalkHailMary.Half;
-                //        return args;
-                //    });
-                //}
                 else
                     throw new NotSupportedException($"Cannot handle '{index}'.");
             });
@@ -280,7 +263,7 @@ namespace Mbrit.Vegas.Simulator
             return count.ToString();
         }
 
-        public IEnumerable<WalkRun> DoMagic(IWinLoseDrawRoundsBucket rounds, int numVariants, Func<int, IWinLoseDrawRoundsBucket, WalkGameSetup> getSetup)
+        public IEnumerable<WalkRun> DoMagic(IWinLoseDrawRoundsBucket rounds, int numVariants, IWalkGamePlayer player, Func<int, IWinLoseDrawRoundsBucket, WalkGameSetup> getSetup)
         {
             var numRounds = rounds.Count;
             this.LogInfo(() => $"Running '{numRounds}' simulation(s)...");
@@ -300,7 +283,7 @@ namespace Mbrit.Vegas.Simulator
 
                 Preamble(setup);
 
-                var run = this.DoRun(setup);
+                var run = this.DoRun(setup, player);
                 runs.Add(run);
             }
 
@@ -311,7 +294,7 @@ namespace Mbrit.Vegas.Simulator
             return runs;
         }
 
-        private WalkRun DoRun(IWalkGameSetup setup, Action<WalkRunArgs> configureArgs = null, Func<WalkArgs> getArgs = null)
+        private WalkRun DoRun(IWalkGameSetup setup, IWalkGamePlayer player, Action<WalkRunArgs> configureArgs = null, Func<WalkArgs> getArgs = null)
         {
             var results = new List<WalkResult>();
 
@@ -337,7 +320,7 @@ namespace Mbrit.Vegas.Simulator
                 if(configureArgs != null)
                     configureArgs(runArgs);
 
-                var result = this.DoWalk(rounds[index], args, setup, runArgs);
+                var result = this.DoWalk(rounds[index], args, player, setup, runArgs);
                 results.Add(result);
 
                 if (DateTime.UtcNow >= logAt)
@@ -832,7 +815,7 @@ namespace Mbrit.Vegas.Simulator
         }
 
         //public WalkResult Walk(int unit, int maxInvestment, int takeProfit, decimal sideSplit, int numHands, Random rand, bool trace = true)
-        public WalkResult DoWalk(IWinLoseDrawRound round, WalkArgs args, IWalkGameSetup setup, WalkRunArgs runArgs = null)
+        public WalkResult DoWalk(IWinLoseDrawRound round, WalkArgs args, IWalkGamePlayer player, IWalkGameSetup setup, WalkRunArgs runArgs = null)
         {
             runArgs ??= new WalkRunArgs();
 
@@ -896,14 +879,18 @@ namespace Mbrit.Vegas.Simulator
             var doStopInvesting = false;
             var stopInvesting = -1;
 
+            player.StartPlaying(round, args, state);
+
             var hand = 0;
             while (true)
             {
-                //Casino casino = null;
-                //if (hand < casinos.Count)
-                //    casino = casinos[hand];
-                //else
-                //    casino = casinos.Last();
+                if (!(player.CanPlayHand(hand)))
+                {
+                    if (trace)
+                        Console.WriteLine("Player can't play hand -- stopping...");
+
+                    break;
+                }
 
                 if (trace)
                 {
@@ -911,36 +898,11 @@ namespace Mbrit.Vegas.Simulator
                     Console.WriteLine($"#{vectors.Count + 1}: --> {state.Bankroll}, {state.Invested}, {state.Banked}");
                 }
 
-                //GameType? game = null;
-                //while (true)
-                //{
-                //    game = games.PickRandom(rand);
-                //    if (game != lastGame)
-                //        break;
-                //}
+                // get the player decision...
+                var decision = player.GetDecision(hand, round, args, state);
 
+                // what are we playing? we don't need this really...
                 var game = GameType.Baccarat;
-
-                // are we using evaluations?
-                /*
-                if (args.UseEvaluations)
-                {
-                    var remaining = args.MaxHands - hand;
-                    if(remaining <= 18)
-                    {
-                        var evaluation = this.Evaluate(args, state, remaining, setup, trace);
-                        if(evaluation == EvaluationResult.KeepPlaying)
-                        {
-                            // no-op...
-                        }
-                        else if(evaluation == EvaluationResult.Drop)
-                        {
-                            state.StopReason = WalkStopReason.EvaluatedDrop;
-                            break;
-                        }
-                    }
-                }
-                */
 
                 // do we have money?
                 if (state.Bankroll < state.CurrentUnit)
@@ -992,7 +954,9 @@ namespace Mbrit.Vegas.Simulator
                                     throw new NotSupportedException($"Cannot handle '{args.HailMaryMode}'.");
 
                                 for (var index = 0; index < until; index++)
+                                {
                                     state.PutIn();
+                                }
 
                                 state.HailMarysRemaining--;
                             }
@@ -1377,10 +1341,12 @@ namespace Mbrit.Vegas.Simulator
                 Console.WriteLine("Final (ignoring what we didn't invest) [state] --> " + state.Profit);
             }
 
-            var result = new WalkResult(state, round, vectors, outcome, spikeType);
+            var result = new WalkResult(state, round, vectors, outcome, spikeType, false, false, false, false);
 
             if (runArgs.Finished != null)
                 runArgs.Finished(state, final);
+
+            player.StopPlaying(round, args, state, result);
 
             return result;
         }
@@ -1431,7 +1397,7 @@ namespace Mbrit.Vegas.Simulator
             if (trace)
                 Console.WriteLine($"Evaluating game with '{remainingHands}' hand(s)...");
 
-            var rounds = WinLoseDrawRoundsBucket.GetAllWinLosePermutations(remainingHands, MaxEvaluationSampleSize, this.Random, false);
+            var rounds = WinLoseDrawRoundsBucket.GetAllWinLosePermutations(remainingHands, this.Random);
 
             var evalSetup = new WalkGameSetup(rounds, state.CurrentUnit);
             evalSetup.HandsPerRound = remainingHands;
@@ -1439,7 +1405,10 @@ namespace Mbrit.Vegas.Simulator
             var evalArgs = new WalkArgs(evalSetup);
             evalArgs.StopAtWinMode = WalkGameMode.ReachSpike1;
 
-            var run = this.DoRun(evalSetup, (runArgs) =>
+            // evaluation always uses an automatic player...
+            var player = new AutomaticWalkGamePlayer();
+
+            var run = this.DoRun(evalSetup, player, (runArgs) =>
             {
                 runArgs.CreateState = (theArgs) =>
                 {

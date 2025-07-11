@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mbrit.Vegas.Simulator
 {
-    internal class WalkState : IWalkAdjuster
+    public class WalkState : IWalkAdjuster
     {
         // ***************** remember to update clone method *****************
         private WalkArgs Args { get; }
@@ -149,5 +149,9 @@ namespace Mbrit.Vegas.Simulator
         internal int MaxLossChain => this.LossChains.Max();
 
         internal int MaxWinChain => this.WinChains.Max();
+
+        internal decimal EvPer100Currency => (this.Profit / (decimal)this.TotalWagered) * 100M;
+
+        internal WalkPointOutcome GetPointOutcome() => new WalkPointOutcome(this.Profit, this.TotalWagered, this.EvPer100Currency);
     }
 }

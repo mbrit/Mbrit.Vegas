@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace Mbrit.Vegas.Simulator
 {
-    public interface IWinLoseDrawRoundsBucket
+    public static class RoundExtender
     {
-        int Count { get; }
-        decimal HouseEdge { get; }
-        IWinLoseDrawRound this[int index] { get; }
     }
 }

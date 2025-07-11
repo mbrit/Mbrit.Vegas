@@ -23,7 +23,7 @@ namespace Mbrit.Vegas.Simulator
             // this method intentionally returns way more values than needed, because this is
             // how it's "burning" cards and plays...
 
-            this.LogInfo(() => "Generating rounds...");
+            this.LogInfo(() => $"Generating '{numRounds}' rounds...");
 
             var allVectors = new List<Round<T>>();
 
@@ -39,7 +39,7 @@ namespace Mbrit.Vegas.Simulator
                     vectors.Add(result);
                 }
 
-                allVectors.Add(new Round<T>(vectors));
+                allVectors.Add(new Round<T>(round, vectors));
             }
 
             allVectors.Wash(rand);

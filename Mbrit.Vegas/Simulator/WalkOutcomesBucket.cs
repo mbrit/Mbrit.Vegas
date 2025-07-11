@@ -36,6 +36,7 @@ namespace Mbrit.Vegas.Simulator
         public int AverageWagered { get; }
         public int AverageHandsPlayed { get; }
         public decimal ExpectedValuePerHundredCurrency { get; }
+        //public bool 
 
         public int Spike0p5Count { get; }
         public int Spike1Count { get; }
@@ -116,6 +117,7 @@ namespace Mbrit.Vegas.Simulator
                 if (negatives.Any())
                     this.AverageNegativeBankroll = (int)Math.Floor(negatives.Average());
 
+                /*
                 var outcomeCounts = new Dictionary<int, int>();
                 foreach(var bankroll in bankrolls)
                 {
@@ -126,7 +128,21 @@ namespace Mbrit.Vegas.Simulator
 
                 var total = outcomeCounts.Values.Sum();
                 var baseEv = outcomeCounts.Sum(kvp => (kvp.Key * (decimal)kvp.Value) / total);
-                this.ExpectedValuePerHundredCurrency = (baseEv / (decimal)this.AverageWagered) * 100M; //  (decimal)this.Args.InitialUnit;
+                this.ExpectedValuePerHundredCurrency = (baseEv / (decimal)this.AverageWagered) * 100M; 
+                */
+
+                // chat gpt wrote this...
+                var totalProfit = 0M;
+                foreach (var bankroll in bankrolls)
+                {
+                    var profit = bankroll;// - this.StartingBankroll;
+                    totalProfit += profit;
+                }
+
+                var averageProfit = totalProfit / (int)bankrolls.Count();
+                this.ExpectedValuePerHundredCurrency = (averageProfit / (decimal)this.AverageWagered) * 100M;
+
+                //this.NumPositiveEv = results.Where(v => v.ExpectedValuePerHundredCurrency > 0).Count();
             }
         }
 

@@ -27,6 +27,5 @@ namespace Mbrit.Vegas.Web.Api.Model
             loader = loader ?? new DtoLoader();
             return items.Select(v => v.ToDto(loader));
         }
-
     }
 }

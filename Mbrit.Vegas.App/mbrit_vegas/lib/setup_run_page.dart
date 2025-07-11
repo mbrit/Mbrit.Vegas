@@ -285,7 +285,6 @@ class _SetupRunPageState extends State<SetupRunPage> {
               },
             ),
             const SizedBox(height: 24),
-            _buildAverageProfitDisplay(),
             // Simulate & Test section header
             Row(
               children: [
@@ -306,6 +305,9 @@ class _SetupRunPageState extends State<SetupRunPage> {
               ],
             ),
             const SizedBox(height: 12),
+            // Average profit display inside Simulate & Test section
+            _buildAverageProfitDisplay(),
+            const SizedBox(height: 16),
             // Simulate & Test table (classic grid)
             _buildSimulateTestTable(),
             const SizedBox(height: 24),

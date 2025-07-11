@@ -10,5 +10,6 @@ namespace Mbrit.Vegas.Simulator
     {
         int Index { get; }
         WinLoseDrawType GetResult(int hand);
+        string GetKey();
     }
 }

@@ -10,6 +10,7 @@ namespace Mbrit.Vegas.Simulator
     {
         public const int HandsPerRound = 25;
         public const decimal HouseEdge = 0.015M;
+        //public const decimal HouseEdge = 0.005M;
 
         public static WalkGameSetup GetSetup(WalkGameMode mode, IWinLoseDrawRoundsBucket rounds, int unitSize, int hailMaryCount)
         {

@@ -1,6 +1,7 @@
 ﻿using BootFX.Common;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Security.Principal;
@@ -13,9 +14,28 @@ namespace Mbrit.Vegas.Simulator
     {
         private List<WinLoseDrawRoundWrapper> Wrappers { get; set; }
 
+        private static BfxLookup<int, int, decimal, IWinLoseDrawRoundsBucket> Prebaked { get; set; }
+
+        private const int NumPrebakedBuckets = 250;
+
         private WinLoseDrawRoundsBucket(int numRounds, int handsPerRound, decimal houseEdge, Func<int, WinLoseDrawType> callback, Random rand)
             : base(numRounds, handsPerRound, houseEdge, callback, rand)
         {
+        }
+
+        static WinLoseDrawRoundsBucket()
+        {
+            var prebaked = new BfxLookup<int, int, decimal, IWinLoseDrawRoundsBucket>()
+            {
+                ExpirationPeriod = TimeSpan.FromHours(72)
+            };
+            prebaked.CreateItemValue += (sender, e) =>
+            {
+                var rand = new Random(VegasRuntime.GetToken().GetHashCode());
+                e.NewValue = GetWinLoseBucket(e.Key1, e.Key2, e.Key3, rand);
+            };
+
+            Prebaked = prebaked;
         }
 
         protected override void Initialize(IEnumerable<Round<WinLoseDrawType>> vectors)
@@ -37,15 +57,19 @@ namespace Mbrit.Vegas.Simulator
         private class WinLoseDrawRoundWrapper : IWinLoseDrawRound
         {
             public int Index { get; }
-            private Round<WinLoseDrawType> Vector { get; }
+            private Round<WinLoseDrawType> Round { get; }
 
-            public WinLoseDrawRoundWrapper(int index, Round<WinLoseDrawType> vector)
+            public WinLoseDrawRoundWrapper(int index, Round<WinLoseDrawType> round)
             {
                 this.Index = index;
-                this.Vector = vector;
+                this.Round = round;
             }
 
-            public WinLoseDrawType GetResult(int hand) => this.Vector.GetResult(hand);
+            public int Count => throw new NotImplementedException("This operation has not been implemented.");
+
+            public WinLoseDrawType GetResult(int hand) => this.Round.GetResult(hand);
+
+            public string GetKey() => this.Round.GetKey();
         }
 
         public IWinLoseDrawRound this[int index] => this.Wrappers[index];
@@ -61,13 +85,10 @@ namespace Mbrit.Vegas.Simulator
             }, rand);
         }
 
-        internal static IWinLoseDrawRoundsBucket GetAllWinLosePermutations(int handsPerRound, int maxPermutationSampleSize = 0, Random rand = null, bool doWash = true)
+        public static IWinLoseDrawRoundsBucket GetAllWinLosePermutations(int handsPerRound, Random rand)
         {
-            if (maxPermutationSampleSize > 0 && rand == null)
-                throw new ArgumentNullException("rand");
-
             var strategy = new PermutationStrategy(handsPerRound);
-            var vectors = strategy.GetVectors(maxPermutationSampleSize, rand);
+            var vectors = strategy.GetVectors(rand);
 
             return new WinLoseDrawPermutationsBucket(strategy.Permutations, handsPerRound, 0, vectors);
         }
@@ -75,9 +96,10 @@ namespace Mbrit.Vegas.Simulator
         internal static IWinLoseDrawRoundsBucket ReproduceWinLoseBucket(WalkGameSetup setup, Random rand) => 
             GetWinLoseBucket(setup.Rounds.Count, setup.HandsPerRound, setup.HouseEdge, rand);
 
-        internal static IWinLoseDrawRoundsBucket GetWinLoseBucket(int numRounds, object numHands, object houseEdge, Random random)
+        public static IWinLoseDrawRoundsBucket GetPrebakedWinLoseBucket(int numRounds, int numHands, decimal houseEdge, Random rand)
         {
-            throw new NotImplementedException();
+            var index = rand.Next(0, NumPrebakedBuckets - 1);
+            return Prebaked[numHands, numHands, houseEdge];
         }
     }
 }

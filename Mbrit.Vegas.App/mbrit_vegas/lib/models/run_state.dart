@@ -46,16 +46,16 @@ class RunState {
 
   // Default constructor with Las Vegas Strip
   RunState.defaultRun()
-      : name = 'New Run',
-        startTime = DateTime.now(),
-        location = Location.lasVegasStrip,
-        numHands = 25,
-        currentHand = 0,
-        handResults = List.generate(25, (_) => HandResult.pending),
-        investments = List.generate(12, (_) => InvestmentState.available),
-        unitSize = 50,
-        playMode = PlayMode.balanced,
-        currencySymbol = '\$';
+    : name = 'Evening Walk at Flamingo, 7th July 2025',
+      startTime = DateTime.now(),
+      location = Location.lasVegasStrip,
+      numHands = 25,
+      currentHand = 0,
+      handResults = List.generate(25, (_) => HandResult.pending),
+      investments = List.generate(12, (_) => InvestmentState.available),
+      unitSize = 50,
+      playMode = PlayMode.balanced,
+      currencySymbol = '\$';
 
   static String generateDefaultName(Location location, DateTime dateTime) {
     final hour = dateTime.hour;
@@ -70,10 +70,21 @@ class RunState {
       period = 'Late Night';
     }
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
-    final dateStr = '${dateTime.day}/${months[dateTime.month - 1]}/${dateTime.year}';
+    final dateStr =
+        '${dateTime.day}/${months[dateTime.month - 1]}/${dateTime.year}';
     return '$period walk in ${location.name} on $dateStr';
   }
 
@@ -86,4 +97,4 @@ class RunState {
   int get spike0p5 => (unitSize * maxPutIns) ~/ 2;
   int get spike1 => unitSize * maxPutIns;
   int get spike3 => unitSize * maxPutIns * 3;
-} 
+}

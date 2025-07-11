@@ -30,16 +30,16 @@ class SetupRunState {
 
   // Default constructor with Las Vegas Strip
   SetupRunState.defaultRun()
-      : name = 'New Run',
-        startTime = DateTime.now(),
-        location = Location.lasVegasStrip,
-        numHands = 25,
-        currentHand = 0,
-        handResults = List.generate(25, (_) => HandResult.pending),
-        investments = List.generate(12, (_) => InvestmentState.available),
-        unitSize = 50,
-        playMode = PlayMode.balanced,
-        currencySymbol = '\$';
+    : name = 'Evening Walk at Flamingo, 7th July 2025',
+      startTime = DateTime.now(),
+      location = Location.lasVegasStrip,
+      numHands = 25,
+      currentHand = 0,
+      handResults = List.generate(25, (_) => HandResult.pending),
+      investments = List.generate(12, (_) => InvestmentState.available),
+      unitSize = 50,
+      playMode = PlayMode.balanced,
+      currencySymbol = '\$';
 
   String get formattedStartTime {
     return '${startTime.month}/${startTime.day}/${startTime.year} ${startTime.hour}:${startTime.minute.toString().padLeft(2, '0')}';
@@ -53,4 +53,4 @@ class SetupRunState {
   int get spike0p5 => (unitSize * maxPutIns) ~/ 2;
   int get spike1 => unitSize * maxPutIns;
   int get spike3 => unitSize * maxPutIns * 3;
-} 
+}

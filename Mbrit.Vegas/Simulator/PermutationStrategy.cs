@@ -1,7 +1,10 @@
 ﻿
+using BootFX.Common.Management;
+using System.Security.Principal;
+
 namespace Mbrit.Vegas.Simulator
 {
-    internal class PermutationStrategy
+    internal class PermutationStrategy : Loggable
     {
         private int HandsPerRound { get; }
         internal int Permutations { get; }
@@ -12,59 +15,47 @@ namespace Mbrit.Vegas.Simulator
             this.Permutations = (int)Math.Pow(2, handsPerRound);
         }
 
-        internal IEnumerable<Round<char>> GetVectors(int maxPermutationSampleSize, Random rand)
+        internal IEnumerable<Round<WinLoseDrawType>> GetVectors(Random rand)
         {
-            if (maxPermutationSampleSize > this.Permutations)
-                maxPermutationSampleSize = 0;
+            var results = new List<Round<WinLoseDrawType>>();
 
-            var per = 0;
-            if (maxPermutationSampleSize > 0)
-            {
-                per = (int)((decimal)this.Permutations / (decimal)maxPermutationSampleSize);
-                if (per == 0)
-                    per = 1;
-            }
+            var logAt = DateTime.UtcNow.AddSeconds(2);
+            var didLog = false;
 
-            var results = new List<Round<char>>();
             for(var index = 0; index < this.Permutations; index++)
             {
-                var toAdd = false;
-                if(per > 0)
+                var asBinary = index.ToString("b0");
+
+                if (asBinary.Length < this.HandsPerRound)
                 {
-                    var select = rand.Next(0, per - 1);
-                    toAdd = select == 0;
+                    var prefix = new string('0', this.HandsPerRound - asBinary.Length);
+                    asBinary = prefix + asBinary;
                 }
-                else
-                    toAdd = true;
 
-                if (toAdd)
+                var vectors = new List<WinLoseDrawType>();
+                foreach(var c in asBinary)
                 {
-                    var asBinary = index.ToString("b0");
+                    if (c == '1')
+                        vectors.Add(WinLoseDrawType.Win);
+                    else if(c == '0')
+                        vectors.Add(WinLoseDrawType.Lose);
+                    else
+                        throw new NotSupportedException($"Cannot handle '{c}'.");
 
-                    if (asBinary.Length < this.HandsPerRound)
-                    {
-                        var prefix = new string('0', this.HandsPerRound - asBinary.Length);
-                        asBinary = prefix + asBinary;
-                    }
-
-                    results.Add(new Round<char>(asBinary.ToCharArray()));
                 }
-            }
 
-            if (maxPermutationSampleSize > 0)
-            {
-                // if this is a real problem, fix it then...
-                //while(results.Count < maxPermutationSampleSize)
-                //{
-                //    throw new NotImplementedException("This operation has not been implemented.");
-                //}
-
-                while (results.Count > maxPermutationSampleSize)
+                results.Add(new Round<WinLoseDrawType>(index, vectors));
+            
+                if(DateTime.UtcNow >= logAt)
                 {
-                    var index = rand.Next(0, results.Count - 1);
-                    results.RemoveAt(index);
+                    this.LogInfo(() => $"Created '{index + 1:n0}' permutations of '{this.Permutations:n0}'...");
+                    logAt = DateTime.UtcNow.AddSeconds(2);
+                    didLog= true;
                 }
             }
+
+            if(didLog)
+                this.LogInfo(() => "Finished generating permutaions.");
 
             return results;
         }

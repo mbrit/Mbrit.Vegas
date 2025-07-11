@@ -37,10 +37,7 @@ class _HomePageState extends State<HomePage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF1E3A8A),
-              Color(0xFF0F1419),
-            ],
+            colors: [Color(0xFF1E3A8A), Color(0xFF0F1419)],
             stops: [0.0, 0.3],
           ),
         ),
@@ -52,10 +49,7 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF2D3748),
-                        Color(0xFF1A202C),
-                      ],
+                      colors: [Color(0xFF2D3748), Color(0xFF1A202C)],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
@@ -83,10 +77,18 @@ class _HomePageState extends State<HomePage> {
                               ),
                               elevation: 4,
                             ),
-                            icon: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 28),
+                            icon: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
                             label: const Text(
                               'Setup a New Walk',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -101,4 +103,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-} 
+}

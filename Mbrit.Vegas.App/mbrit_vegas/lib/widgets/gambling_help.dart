@@ -16,15 +16,33 @@ class GamblingHelp extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: const [
           Text(
-            'This app is intended for educational and entertainment purposes only. No real money is used or won. All outcomes are based on simulations, estimates, and heuristics and will differ from real-world play. Gambling involves risk and can be addictive. If you or someone you know is struggling, please contact a responsible gambling support service in your area. No real money gaming or prizes offered. 18+ only.',
+            'This app is intended for educational and entertainment purposes only. No real money is used or won or prizes offered. All outcomes are based on simulations, estimates, and heuristics and will differ from real-world play. Gambling involves risk and can be addictive. If you or someone you know is struggling, please contact a responsible gambling support service in your area. 18+ only.',
             style: TextStyle(fontSize: 14, color: Color(0xFFEEEEEE)),
           ),
           SizedBox(height: 12),
-          Text('US: Call 1-800-GAMBLER', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFCCCCCC))),
-          Text('UK: BeGambleAware.org', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFCCCCCC))),
-          Text('Elsewhere: Search online for "gambling help"', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFCCCCCC))),
+          Text(
+            'US: Call 1-800-GAMBLER',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFCCCCCC),
+            ),
+          ),
+          Text(
+            'UK: BeGambleAware.org',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFCCCCCC),
+            ),
+          ),
+          Text(
+            'Elsewhere: Search online for "gambling help"',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFFCCCCCC),
+            ),
+          ),
         ],
       ),
     );
   }
-} 
+}
