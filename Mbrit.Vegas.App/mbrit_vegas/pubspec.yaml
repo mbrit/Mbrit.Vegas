@@ -44,6 +44,9 @@ dependencies:
   # Markdown rendering
   flutter_markdown: ^0.6.18
 
+  # Path provider for local file storage
+  path_provider: ^2.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
