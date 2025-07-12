@@ -13,7 +13,7 @@ class NullResponse {
 
 class WalkGameService {
   static const String _baseUrl =
-      'http://192.168.1.248:61655'; // Replace with your actual API URL
+      'https://app-api.thevegaswalk.com'; // Using HTTP for development
 
   final http.Client _httpClient;
 
@@ -41,7 +41,18 @@ class WalkGameService {
         );
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      print('Network error details: $e');
+      if (e.toString().contains('SocketException')) {
+        throw Exception(
+          'DNS resolution failed. Please check your internet connection and try again.',
+        );
+      } else if (e.toString().contains('HandshakeException')) {
+        throw Exception(
+          'SSL certificate error. Please check the server configuration.',
+        );
+      } else {
+        throw Exception('Network error: $e');
+      }
     }
   }
 
@@ -61,7 +72,18 @@ class WalkGameService {
         );
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      print('Network error details: $e');
+      if (e.toString().contains('SocketException')) {
+        throw Exception(
+          'DNS resolution failed. Please check your internet connection and try again.',
+        );
+      } else if (e.toString().contains('HandshakeException')) {
+        throw Exception(
+          'SSL certificate error. Please check the server configuration.',
+        );
+      } else {
+        throw Exception('Network error: $e');
+      }
     }
   }
 
@@ -88,7 +110,18 @@ class WalkGameService {
         );
       }
     } catch (e) {
-      throw Exception('Network error: $e');
+      print('Network error details: $e');
+      if (e.toString().contains('SocketException')) {
+        throw Exception(
+          'DNS resolution failed. Please check your internet connection and try again.',
+        );
+      } else if (e.toString().contains('HandshakeException')) {
+        throw Exception(
+          'SSL certificate error. Please check the server configuration.',
+        );
+      } else {
+        throw Exception('Network error: $e');
+      }
     }
   }
 

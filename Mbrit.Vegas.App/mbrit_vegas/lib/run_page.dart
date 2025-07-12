@@ -181,24 +181,10 @@ class _RunPageState extends State<RunPage> {
                 ),
               ),
             ),
-          const SizedBox(height: 16),
           // Show win/loss buttons if needsAnswer is true, otherwise show action buttons
+          _buildWinLossCircles(),
+          const SizedBox(height: 16),
           if (hand.needsAnswer) ...[
-            // Dotted separator line
-            Container(
-              width: double.infinity,
-              height: 1,
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: Colors.grey[600]!,
-                    width: 1,
-                    style: BorderStyle.solid,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
             // What happened? label
             Container(
               width: double.infinity,
@@ -382,7 +368,7 @@ class _RunPageState extends State<RunPage> {
                 }
               },
               child: Text(
-                'Abandon this run',
+                'Abandon this walk',
                 style: TextStyle(
                   color: Colors.grey[400],
                   fontWeight: FontWeight.w500,
@@ -754,12 +740,6 @@ class _RunPageState extends State<RunPage> {
     }
     return Scaffold(
       backgroundColor: const Color(0xFF0F1419),
-      appBar: AppBar(
-        title: const Text('Vegas Walk'),
-        backgroundColor: const Color(0xFF1E3A8A),
-
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -769,529 +749,554 @@ class _RunPageState extends State<RunPage> {
             stops: [0.0, 0.3],
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: RefreshIndicator(
-            onRefresh: () async {
-              if (_walkGameState?.token != null) {
-                final token = _walkGameState!.token;
-                final result = await WalkGameService().getState(token: token);
-                print(
-                  '=== RAW RESPONSE (REFRESH): ${jsonEncode(result.toJson())} ===',
-                );
-                setState(() {
-                  _walkGameState = result;
-                });
-              } else {
-                await _startGameOnServer();
-              }
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                children: [
-                  // Cover image/title container
-                  Container(
-                    height: 180,
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      image: const DecorationImage(
-                        image: AssetImage(
-                          'assets/casino-lasvegas-strip-flamingo.png',
-                        ),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    alignment: Alignment.bottomLeft,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 16.0,
-                        horizontal: 20.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.45),
-                        borderRadius: const BorderRadius.only(
-                          bottomLeft: Radius.circular(10),
-                          bottomRight: Radius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        _runName,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                    ),
-                  ),
-                  // All content below the cover image/title container has been removed
-                  // Progress Section
-                  Container(
-                    padding: const EdgeInsets.all(16.0),
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2D3748),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[600]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.trending_up, color: Colors.white),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Progress',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              title: const Text('Vegas Walk'),
+              backgroundColor: const Color(0xFF1E3A8A),
+              iconTheme: const IconThemeData(color: Colors.white),
+              floating: false,
+              pinned: false,
+              expandedHeight: 0,
+              collapsedHeight: kToolbarHeight,
+            ),
+            SliverToBoxAdapter(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  if (_walkGameState?.token != null) {
+                    final token = _walkGameState!.token;
+                    final result = await WalkGameService().getState(
+                      token: token,
+                    );
+                    print(
+                      '=== RAW RESPONSE (REFRESH): ${jsonEncode(result.toJson())} ===',
+                    );
+                    setState(() {
+                      _walkGameState = result;
+                    });
+                  } else {
+                    await _startGameOnServer();
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // Cover image/title container
+                      Container(
+                        height: 180,
+                        margin: const EdgeInsets.only(bottom: 16.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          image: const DecorationImage(
+                            image: AssetImage(
+                              'assets/casino-lasvegas-strip-flamingo.png',
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Current Hand',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${_getCurrentHandIndex() + 1}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    'Total Hands',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Text(
-                                    '${_runState.numHands}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        LinearProgressIndicator(
-                          value:
-                              (_getCurrentHandIndex() + 1) / _runState.numHands,
-                          backgroundColor: Colors.grey[700],
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF10B981),
+                            fit: BoxFit.cover,
                           ),
                         ),
-                        // Piles section
-                        const SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Stacks',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 12,
+                        alignment: Alignment.bottomLeft,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16.0,
+                            horizontal: 20.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.45),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(10),
+                              bottomRight: Radius.circular(10),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Table(
-                          border: TableBorder.all(color: Colors.grey, width: 1),
-                          defaultVerticalAlignment:
-                              TableCellVerticalAlignment.middle,
-                          children: [
-                            TableRow(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Text(
-                                    'Investables',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${piles?.investableUnits ?? '-'} units',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${_runState.currencySymbol}${piles?.investable ?? '-'}',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TableRow(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Text(
-                                    'In play',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${piles?.inPlayUnits ?? '-'} units',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${_runState.currencySymbol}${piles?.inPlay ?? '-'}',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TableRow(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Text(
-                                    'Banked',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${piles?.bankedUnits ?? '-'} units',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${_runState.currencySymbol}${piles?.banked ?? '-'}',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            TableRow(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Text(
-                                    'Cash in hand',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${piles?.cashInHandUnits ?? '-'} units',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8.0,
-                                  ),
-                                  child: Align(
-                                    alignment: Alignment.centerRight,
-                                    child: Text(
-                                      '${_runState.currencySymbol}${piles?.cashInHand ?? '-'}',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        // Profit block
-                        const SizedBox(height: 24),
-                        Align(
-                          alignment: Alignment.centerLeft,
                           child: Text(
-                            'Profit',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        Center(
-                          child: Text(
-                            '${piles?.profitUnits ?? 0} units (${_runState.currencySymbol}${profit})',
-                            style: TextStyle(
-                              color: profitColor,
-                              fontSize: 24,
+                            _runName,
+                            style: const TextStyle(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
+                              color: Colors.white,
                             ),
-                            textAlign: TextAlign.center,
+                            textAlign: TextAlign.left,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        LinearProgressIndicator(
-                          value: profitProgress,
-                          backgroundColor: Colors.grey[700],
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            profitColor,
-                          ),
-                          minHeight: 4,
-                          semanticsLabel: 'Profit',
+                      ),
+                      // Progress Section
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        margin: const EdgeInsets.only(bottom: 16.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D3748),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[600]!),
                         ),
-                        const SizedBox(height: 16),
-                        // Profit targets table
-                        Table(
-                          border: TableBorder.all(color: Colors.grey, width: 1),
-                          columnWidths: const {
-                            0: FlexColumnWidth(1),
-                            1: FlexColumnWidth(1),
-                          },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            TableRow(
+                            Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Text(
-                                    '50% Profit',
-                                    style: TextStyle(
-                                      color: Colors.grey[300],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Text(
-                                    '100% Profit',
-                                    style: TextStyle(
-                                      color: Colors.grey[300],
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
+                                Icon(Icons.trending_up, color: Colors.white),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Progress',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
                                   ),
                                 ),
                               ],
                             ),
-                            TableRow(
+                            const SizedBox(height: 12),
+                            Row(
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        '${_walkGameState?.spike0p5Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike0p5 ?? 0})',
+                                        'Current Hand',
                                         style: TextStyle(
-                                          color:
-                                              profit >=
-                                                  (_walkGameState?.spike0p5 ??
-                                                      0)
-                                              ? Colors.green
-                                              : Colors.white,
+                                          color: Colors.grey[400],
+                                          fontSize: 12,
                                         ),
                                       ),
-                                      if (profit >=
-                                          (_walkGameState?.spike0p5 ?? 0))
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 4,
-                                          ),
-                                          child: Icon(
-                                            Icons.check_circle,
-                                            color: Colors.green,
-                                            size: 16,
-                                          ),
+                                      Text(
+                                        '${_getCurrentHandIndex() + 1}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
                                         ),
+                                      ),
                                     ],
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        '${_walkGameState?.spike1Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike1 ?? 0})',
+                                        'Total Hands',
                                         style: TextStyle(
-                                          color:
-                                              profit >=
-                                                  (_walkGameState?.spike1 ?? 0)
-                                              ? Colors.green
-                                              : Colors.white,
+                                          color: Colors.grey[400],
+                                          fontSize: 12,
                                         ),
                                       ),
-                                      if (profit >=
-                                          (_walkGameState?.spike1 ?? 0))
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            left: 4,
-                                          ),
-                                          child: Icon(
-                                            Icons.check_circle,
-                                            color: Colors.green,
-                                            size: 16,
-                                          ),
+                                      Text(
+                                        '${_runState.numHands}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
                                         ),
+                                      ),
                                     ],
                                   ),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Probability Space Container
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    padding: const EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2D3748),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[600]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: const [
-                            Icon(Icons.bubble_chart, color: Colors.white),
-                            SizedBox(width: 8),
-                            Text(
-                              'Probability space',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                            const SizedBox(height: 16),
+                            LinearProgressIndicator(
+                              value:
+                                  (_getCurrentHandIndex() + 1) /
+                                  _runState.numHands,
+                              backgroundColor: Colors.grey[700],
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFF10B981),
                               ),
+                            ),
+                            // Piles section
+                            const SizedBox(height: 24),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Stacks',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Table(
+                              border: TableBorder.all(
+                                color: Colors.grey,
+                                width: 1,
+                              ),
+                              defaultVerticalAlignment:
+                                  TableCellVerticalAlignment.middle,
+                              children: [
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Text(
+                                        'Investables',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${piles?.investableUnits ?? '-'} units',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${_runState.currencySymbol}${piles?.investable ?? '-'}',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Text(
+                                        'In play',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${piles?.inPlayUnits ?? '-'} units',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${_runState.currencySymbol}${piles?.inPlay ?? '-'}',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Text(
+                                        'Banked',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${piles?.bankedUnits ?? '-'} units',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${_runState.currencySymbol}${piles?.banked ?? '-'}',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Text(
+                                        'Cash in hand',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${piles?.cashInHandUnits ?? '-'} units',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8.0,
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          '${_runState.currencySymbol}${piles?.cashInHand ?? '-'}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            // Profit block
+                            const SizedBox(height: 24),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Profit',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            Center(
+                              child: Text(
+                                '${piles?.profitUnits ?? 0} units (${_runState.currencySymbol}${profit})',
+                                style: TextStyle(
+                                  color: profitColor,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            LinearProgressIndicator(
+                              value: profitProgress,
+                              backgroundColor: Colors.grey[700],
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                profitColor,
+                              ),
+                              minHeight: 4,
+                              semanticsLabel: 'Profit',
+                            ),
+                            const SizedBox(height: 16),
+                            // Profit targets table
+                            Table(
+                              border: TableBorder.all(
+                                color: Colors.grey,
+                                width: 1,
+                              ),
+                              columnWidths: const {
+                                0: FlexColumnWidth(1),
+                                1: FlexColumnWidth(1),
+                              },
+                              children: [
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Text(
+                                        '50% Profit',
+                                        style: TextStyle(
+                                          color: Colors.grey[300],
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Text(
+                                        '100% Profit',
+                                        style: TextStyle(
+                                          color: Colors.grey[300],
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TableRow(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${_walkGameState?.spike0p5Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike0p5 ?? 0})',
+                                            style: TextStyle(
+                                              color:
+                                                  profit >=
+                                                      (_walkGameState
+                                                              ?.spike0p5 ??
+                                                          0)
+                                                  ? Colors.green
+                                                  : Colors.white,
+                                            ),
+                                          ),
+                                          if (profit >=
+                                              (_walkGameState?.spike0p5 ?? 0))
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 4,
+                                              ),
+                                              child: Icon(
+                                                Icons.check_circle,
+                                                color: Colors.green,
+                                                size: 16,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '${_walkGameState?.spike1Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike1 ?? 0})',
+                                            style: TextStyle(
+                                              color:
+                                                  profit >=
+                                                      (_walkGameState?.spike1 ??
+                                                          0)
+                                                  ? Colors.green
+                                                  : Colors.white,
+                                            ),
+                                          ),
+                                          if (profit >=
+                                              (_walkGameState?.spike1 ?? 0))
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 4,
+                                              ),
+                                              child: Icon(
+                                                Icons.check_circle,
+                                                color: Colors.green,
+                                                size: 16,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        SizedBox(height: 12),
-                        const SizedBox(height: 8),
-                        _buildWinLossCircles(),
-                        // Show when probability space will be available
-                        if (_walkGameState?.hasProbabilitySpace == false &&
-                            _walkGameState?.probabilitySpaceAvailableAt != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 12),
-                            child: Text(
-                              'Probability space analysis available at hand ${_walkGameState!.probabilitySpaceAvailableAt}',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 14,
-                              ),
-                              textAlign: TextAlign.center,
+                      ),
+                      // Probability Space Container
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 16.0),
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2D3748),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[600]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: const [
+                                Icon(Icons.bubble_chart, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Probability space',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        const SizedBox(height: 16),
-                      ],
-                    ),
+                            SizedBox(height: 12),
+                            const SizedBox(height: 8),
+                            // Show when probability space will be available
+                            if (_walkGameState?.hasProbabilitySpace == false &&
+                                _walkGameState?.probabilitySpaceAvailableAt !=
+                                    null)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Text(
+                                  'Probability space analysis available at hand ${_walkGameState!.probabilitySpaceAvailableAt}',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 14,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                      // Hands Section
+                      if (_walkGameState?.hands != null)
+                        ..._walkGameState!.hands.reversed.map((hand) {
+                          if (hand.isDraft) {
+                            return _buildDraftHandCard(hand);
+                          } else {
+                            return _buildFinalHandCard(hand);
+                          }
+                        }).toList(),
+                    ],
                   ),
-                  // Hands Section
-                  if (_walkGameState?.hands != null)
-                    ..._walkGameState!.hands.reversed.map((hand) {
-                      if (hand.isDraft) {
-                        return _buildDraftHandCard(hand);
-                      } else {
-                        return _buildFinalHandCard(hand);
-                      }
-                    }),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
-      // No bottomNavigationBar here
     );
   }
 }

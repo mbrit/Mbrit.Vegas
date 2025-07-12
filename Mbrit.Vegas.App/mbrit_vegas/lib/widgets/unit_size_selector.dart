@@ -8,7 +8,30 @@ class UnitSizeSelector extends StatefulWidget {
 
   const UnitSizeSelector({
     super.key,
-    this.unitSizes = const [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 75, 100, 125, 150, 175, 200, 250, 300, 350, 400, 450, 500],
+    this.unitSizes = const [
+      5,
+      10,
+      15,
+      20,
+      25,
+      30,
+      35,
+      40,
+      45,
+      50,
+      75,
+      100,
+      125,
+      150,
+      175,
+      200,
+      250,
+      300,
+      350,
+      400,
+      450,
+      500,
+    ],
     this.initialIndex = 4, // Default to $25
     this.onChanged,
     this.label = 'Unit Size',
@@ -73,18 +96,23 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
                   size: 28,
                 ),
               ),
-              
+
               // Center display
               Expanded(
                 child: Center(
                   child: GestureDetector(
                     onTap: () => _showUnitSizeDialog(context),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey[700]!.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey[600]!.withOpacity(0.5)),
+                        border: Border.all(
+                          color: Colors.grey[600]!.withOpacity(0.5),
+                        ),
                       ),
                       child: Text(
                         '\$${widget.unitSizes[_currentIndex]}',
@@ -98,7 +126,7 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
                   ),
                 ),
               ),
-              
+
               // Right arrow button
               IconButton(
                 onPressed: _currentIndex < widget.unitSizes.length - 1
@@ -111,7 +139,9 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
                     : null,
                 icon: Icon(
                   Icons.chevron_right,
-                  color: _currentIndex < widget.unitSizes.length - 1 ? Colors.white : Colors.grey[600],
+                  color: _currentIndex < widget.unitSizes.length - 1
+                      ? Colors.white
+                      : Colors.grey[600],
                   size: 28,
                 ),
               ),
@@ -153,7 +183,7 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
                 crossAxisCount: 4,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 2.5,
+                childAspectRatio: 1.67,
               ),
               itemCount: widget.unitSizes.length,
               itemBuilder: (context, index) {
@@ -168,12 +198,12 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isSelected 
+                      color: isSelected
                           ? const Color(0xFFF59E0B).withOpacity(0.2)
                           : Colors.grey[700]!.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isSelected 
+                        color: isSelected
                             ? const Color(0xFFF59E0B)
                             : Colors.grey[600]!.withOpacity(0.5),
                         width: isSelected ? 2 : 1,
@@ -183,11 +213,13 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
                       child: Text(
                         '\$${widget.unitSizes[index]}',
                         style: TextStyle(
-                          color: isSelected 
+                          color: isSelected
                               ? const Color(0xFFF59E0B)
                               : Colors.white,
                           fontSize: 16,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -201,10 +233,7 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
               onPressed: () => Navigator.of(context).pop(),
               child: Text(
                 'Cancel',
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.grey[400], fontSize: 16),
               ),
             ),
           ],
@@ -212,4 +241,4 @@ class _UnitSizeSelectorState extends State<UnitSizeSelector> {
       },
     );
   }
-} 
+}

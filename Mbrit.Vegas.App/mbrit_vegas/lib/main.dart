@@ -9,7 +9,12 @@ class AnalyticsPage extends StatelessWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Analytics (coming soon)', style: TextStyle(color: Colors.white)));
+    return Center(
+      child: Text(
+        'Analytics (coming soon)',
+        style: TextStyle(color: Colors.white),
+      ),
+    );
   }
 }
 
@@ -17,7 +22,12 @@ class ProfilePage extends StatelessWidget {
   const ProfilePage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Profile (coming soon)', style: TextStyle(color: Colors.white)));
+    return Center(
+      child: Text(
+        'Profile (coming soon)',
+        style: TextStyle(color: Colors.white),
+      ),
+    );
   }
 }
 
@@ -73,7 +83,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Vegas Betting Assistant',
+      title: 'The Vegas Walk Method',
       theme: ThemeData.dark(),
       home: const SplashPage(),
       debugShowCheckedModeBanner: false,
