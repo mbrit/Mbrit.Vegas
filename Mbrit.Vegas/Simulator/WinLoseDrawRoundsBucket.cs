@@ -99,7 +99,7 @@ namespace Mbrit.Vegas.Simulator
         public static IWinLoseDrawRoundsBucket GetPrebakedWinLoseBucket(int numRounds, int numHands, decimal houseEdge, Random rand)
         {
             var index = rand.Next(0, NumPrebakedBuckets - 1);
-            return Prebaked[numHands, numHands, houseEdge];
+            return Prebaked[numRounds, numHands, houseEdge];
         }
     }
 }

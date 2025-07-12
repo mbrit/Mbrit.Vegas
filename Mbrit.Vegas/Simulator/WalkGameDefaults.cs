@@ -8,6 +8,7 @@ namespace Mbrit.Vegas.Simulator
 {
     public static class WalkGameDefaults
     {
+        public const int Investables = 12;
         public const int HandsPerRound = 25;
         public const decimal HouseEdge = 0.015M;
         //public const decimal HouseEdge = 0.005M;

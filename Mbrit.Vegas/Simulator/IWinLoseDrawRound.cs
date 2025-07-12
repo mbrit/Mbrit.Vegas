@@ -9,6 +9,7 @@ namespace Mbrit.Vegas.Simulator
     public interface IWinLoseDrawRound
     {
         int Index { get; }
+        int Count { get; }
         WinLoseDrawType GetResult(int hand);
         string GetKey();
     }

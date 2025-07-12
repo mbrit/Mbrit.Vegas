@@ -41,9 +41,11 @@ namespace Mbrit.Vegas.Simulator
                         vectors.Add(WinLoseDrawType.Lose);
                     else
                         throw new NotSupportedException($"Cannot handle '{c}'.");
-
                 }
 
+                // we need the results in reverse orders as the binary sequence is little endian and
+                // we need big endian keys...
+                vectors.Reverse();
                 results.Add(new Round<WinLoseDrawType>(index, vectors));
             
                 if(DateTime.UtcNow >= logAt)

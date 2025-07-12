@@ -13,6 +13,18 @@ WalkGameStateDto _$WalkGameStateDtoFromJson(Map<String, dynamic> json) =>
       hands: (json['hands'] as List<dynamic>)
           .map((e) => WalkGameHandDto.fromJson(e as Map<String, dynamic>))
           .toList(),
+      probabilitySpace: json['probabilitySpace'] == null
+          ? null
+          : WalkGameProbabilitySpaceDto.fromJson(
+              json['probabilitySpace'] as Map<String, dynamic>,
+            ),
+      hasProbabilitySpace: json['hasProbabilitySpace'] as bool?,
+      probabilitySpaceAvailableAt: (json['probabilitySpaceAvailableAt'] as num?)
+          ?.toInt(),
+      spike0p5: (json['spike0p5'] as num?)?.toInt(),
+      spike0p5Units: (json['spike0p5Units'] as num?)?.toInt(),
+      spike1: (json['spike1'] as num?)?.toInt(),
+      spike1Units: (json['spike1Units'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$WalkGameStateDtoToJson(WalkGameStateDto instance) =>
@@ -20,6 +32,13 @@ Map<String, dynamic> _$WalkGameStateDtoToJson(WalkGameStateDto instance) =>
       'token': instance.token,
       'piles': instance.piles,
       'hands': instance.hands,
+      'probabilitySpace': instance.probabilitySpace,
+      'hasProbabilitySpace': instance.hasProbabilitySpace,
+      'probabilitySpaceAvailableAt': instance.probabilitySpaceAvailableAt,
+      'spike0p5': instance.spike0p5,
+      'spike0p5Units': instance.spike0p5Units,
+      'spike1': instance.spike1,
+      'spike1Units': instance.spike1Units,
     };
 
 WalkGameHandDto _$WalkGameHandDtoFromJson(Map<String, dynamic> json) =>
@@ -28,26 +47,13 @@ WalkGameHandDto _$WalkGameHandDtoFromJson(Map<String, dynamic> json) =>
       isDraft: json['isDraft'] as bool,
       casino: CasinoDto.fromJson(json['casino'] as Map<String, dynamic>),
       game: GameItemDto.fromJson(json['game'] as Map<String, dynamic>),
-      pilesBefore: WalkGamePilesDto.fromJson(
-        json['pilesBefore'] as Map<String, dynamic>,
-      ),
-      hasSeenSpike0p5: json['hasSeenSpike0p5'] as bool,
-      isOverSpike0p5: json['isOverSpike0p5'] as bool,
-      hasSeenSpike1: json['hasSeenSpike1'] as bool,
-      isOverSpike1: json['isOverSpike1'] as bool,
       actions: json['actions'] == null
           ? null
           : WalkGameActionsDto.fromJson(
               json['actions'] as Map<String, dynamic>,
             ),
       action: $enumDecodeNullable(_$WalkGameActionEnumMap, json['action']),
-      probabilitySpace: json['probabilitySpace'] == null
-          ? null
-          : WalkGameProbabilitySpaceDto.fromJson(
-              json['probabilitySpace'] as Map<String, dynamic>,
-            ),
-      probabilitySpaceAvailableAt: (json['probabilitySpaceAvailableAt'] as num)
-          .toInt(),
+      outcome: json['outcome'] as String?,
       needsAnswer: json['needsAnswer'] as bool,
     );
 
@@ -57,24 +63,17 @@ Map<String, dynamic> _$WalkGameHandDtoToJson(WalkGameHandDto instance) =>
       'isDraft': instance.isDraft,
       'casino': instance.casino,
       'game': instance.game,
-      'pilesBefore': instance.pilesBefore,
-      'hasSeenSpike0p5': instance.hasSeenSpike0p5,
-      'isOverSpike0p5': instance.isOverSpike0p5,
-      'hasSeenSpike1': instance.hasSeenSpike1,
-      'isOverSpike1': instance.isOverSpike1,
       'actions': instance.actions,
       'action': _$WalkGameActionEnumMap[instance.action],
-      'probabilitySpace': instance.probabilitySpace,
-      'probabilitySpaceAvailableAt': instance.probabilitySpaceAvailableAt,
+      'outcome': instance.outcome,
       'needsAnswer': instance.needsAnswer,
     };
 
 const _$WalkGameActionEnumMap = {
   WalkGameAction.none: 'None',
-  WalkGameAction.continue_: 'Continue',
-  WalkGameAction.bank: 'Bank',
-  WalkGameAction.cashOut: 'CashOut',
+  WalkGameAction.play: 'Play',
   WalkGameAction.hailMary: 'HailMary',
+  WalkGameAction.walk: 'Walk',
 };
 
 WalkGamePilesDto _$WalkGamePilesDtoFromJson(Map<String, dynamic> json) =>
@@ -136,21 +135,25 @@ Map<String, dynamic> _$LocationDtoToJson(LocationDto instance) =>
 
 WalkGameActionsDto _$WalkGameActionsDtoFromJson(Map<String, dynamic> json) =>
     WalkGameActionsDto(
-      canPutInAndPlay: json['canPutInAndPlay'] as bool?,
-      canPutInUnits: (json['canPutInUnits'] as num?)?.toInt(),
+      instructions: json['instructions'] as String?,
       canPlay: json['canPlay'] as bool?,
+      play: (json['play'] as num?)?.toInt(),
+      playUnits: (json['playUnits'] as num?)?.toInt(),
       canHailMary: json['canHailMary'] as bool?,
-      canHailMaryUnits: (json['canHailMaryUnits'] as num?)?.toInt(),
+      hailMary: (json['hailMary'] as num?)?.toInt(),
+      hailMaryUnits: (json['hailMaryUnits'] as num?)?.toInt(),
       canWalk: json['canWalk'] as bool?,
     );
 
 Map<String, dynamic> _$WalkGameActionsDtoToJson(WalkGameActionsDto instance) =>
     <String, dynamic>{
-      'canPutInAndPlay': instance.canPutInAndPlay,
-      'canPutInUnits': instance.canPutInUnits,
+      'instructions': instance.instructions,
       'canPlay': instance.canPlay,
+      'play': instance.play,
+      'playUnits': instance.playUnits,
       'canHailMary': instance.canHailMary,
-      'canHailMaryUnits': instance.canHailMaryUnits,
+      'hailMary': instance.hailMary,
+      'hailMaryUnits': instance.hailMaryUnits,
       'canWalk': instance.canWalk,
     };
 

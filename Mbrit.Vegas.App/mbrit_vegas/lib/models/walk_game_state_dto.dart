@@ -14,10 +14,38 @@ class WalkGameStateDto {
   @JsonKey(name: 'hands')
   final List<WalkGameHandDto> hands;
 
+  @JsonKey(name: 'probabilitySpace')
+  final WalkGameProbabilitySpaceDto? probabilitySpace;
+
+  @JsonKey(name: 'hasProbabilitySpace')
+  final bool? hasProbabilitySpace;
+
+  @JsonKey(name: 'probabilitySpaceAvailableAt')
+  final int? probabilitySpaceAvailableAt;
+
+  @JsonKey(name: 'spike0p5')
+  final int? spike0p5;
+
+  @JsonKey(name: 'spike0p5Units')
+  final int? spike0p5Units;
+
+  @JsonKey(name: 'spike1')
+  final int? spike1;
+
+  @JsonKey(name: 'spike1Units')
+  final int? spike1Units;
+
   const WalkGameStateDto({
     required this.token,
     required this.piles,
     required this.hands,
+    this.probabilitySpace,
+    this.hasProbabilitySpace,
+    this.probabilitySpaceAvailableAt,
+    this.spike0p5,
+    this.spike0p5Units,
+    this.spike1,
+    this.spike1Units,
   });
 
   factory WalkGameStateDto.fromJson(Map<String, dynamic> json) =>
@@ -40,6 +68,7 @@ class WalkGameHandDto {
   @JsonKey(name: 'game')
   final GameItemDto game;
 
+  /*
   @JsonKey(name: 'pilesBefore')
   final WalkGamePilesDto pilesBefore;
 
@@ -54,6 +83,7 @@ class WalkGameHandDto {
 
   @JsonKey(name: 'isOverSpike1')
   final bool isOverSpike1;
+  */
 
   @JsonKey(name: 'actions')
   final WalkGameActionsDto? actions;
@@ -61,11 +91,8 @@ class WalkGameHandDto {
   @JsonKey(name: 'action')
   final WalkGameAction? action;
 
-  @JsonKey(name: 'probabilitySpace')
-  final WalkGameProbabilitySpaceDto? probabilitySpace;
-
-  @JsonKey(name: 'probabilitySpaceAvailableAt')
-  final int probabilitySpaceAvailableAt;
+  @JsonKey(name: 'outcome')
+  final String? outcome;
 
   @JsonKey(name: 'needsAnswer')
   final bool needsAnswer;
@@ -75,20 +102,20 @@ class WalkGameHandDto {
     required this.isDraft,
     required this.casino,
     required this.game,
+    /*
     required this.pilesBefore,
     required this.hasSeenSpike0p5,
     required this.isOverSpike0p5,
     required this.hasSeenSpike1,
     required this.isOverSpike1,
+    */
     this.actions,
     this.action,
-    this.probabilitySpace,
-    required this.probabilitySpaceAvailableAt,
+    this.outcome,
     required this.needsAnswer,
   });
 
   bool get hasActions => actions != null;
-  bool get hasProbabilitySpace => probabilitySpace != null;
 
   factory WalkGameHandDto.fromJson(Map<String, dynamic> json) =>
       _$WalkGameHandDtoFromJson(json);
@@ -197,30 +224,38 @@ class LocationDto {
 
 @JsonSerializable()
 class WalkGameActionsDto {
-  @JsonKey(name: 'canPutInAndPlay')
-  final bool? canPutInAndPlay;
-
-  @JsonKey(name: 'canPutInUnits')
-  final int? canPutInUnits;
+  @JsonKey(name: 'instructions')
+  final String? instructions;
 
   @JsonKey(name: 'canPlay')
   final bool? canPlay;
 
+  @JsonKey(name: 'play')
+  final int? play;
+
+  @JsonKey(name: 'playUnits')
+  final int? playUnits;
+
   @JsonKey(name: 'canHailMary')
   final bool? canHailMary;
 
-  @JsonKey(name: 'canHailMaryUnits')
-  final int? canHailMaryUnits;
+  @JsonKey(name: 'hailMary')
+  final int? hailMary;
+
+  @JsonKey(name: 'hailMaryUnits')
+  final int? hailMaryUnits;
 
   @JsonKey(name: 'canWalk')
   final bool? canWalk;
 
   const WalkGameActionsDto({
-    this.canPutInAndPlay,
-    this.canPutInUnits,
+    this.instructions,
     this.canPlay,
+    this.play,
+    this.playUnits,
     this.canHailMary,
-    this.canHailMaryUnits,
+    this.hailMary,
+    this.hailMaryUnits,
     this.canWalk,
   });
 
@@ -233,14 +268,19 @@ class WalkGameActionsDto {
 enum WalkGameAction {
   @JsonValue('None')
   none,
-  @JsonValue('Continue')
-  continue_,
-  @JsonValue('Bank')
-  bank,
-  @JsonValue('CashOut')
-  cashOut,
+  @JsonValue('Play')
+  play,
   @JsonValue('HailMary')
   hailMary,
+  @JsonValue('Walk')
+  walk,
+}
+
+enum WinLoseDrawType {
+  @JsonValue('Lose')
+  lose,
+  @JsonValue('Win')
+  win,
 }
 
 @JsonSerializable()

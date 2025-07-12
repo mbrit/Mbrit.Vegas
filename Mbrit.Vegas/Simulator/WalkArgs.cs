@@ -30,8 +30,8 @@ namespace Mbrit.Vegas.Simulator
 
         internal int MinorBust { get; }
         //internal int MinorWin { get; }
-        internal int Spike0p5Win { get; private set; }      // set this with caution...
-        internal int Spike1Win { get; }
+        public int Spike0p5Win { get; private set; }      // set this with caution...
+        public int Spike1Win { get; }
         internal int Spike1p5Win { get; }
         internal int Spike2Win { get; } 
         internal int Spike3Win { get; }

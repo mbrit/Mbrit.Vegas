@@ -9,9 +9,8 @@ namespace Mbrit.Vegas.Simulator
     public enum WalkGameAction
     {
         None = 0,
-        PutInAndPlay = 1,
-        Play = 2,
-        HailMary = 3,
-        Walk = 4
+        Play = 1,
+        HailMary = 2,
+        Walk = 3
     }
 }

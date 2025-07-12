@@ -8,8 +8,8 @@ namespace Mbrit.Vegas.Simulator
 {
     public enum WinLoseDrawType
     {
-        Win = 0,
-        Lose = 1,
+        Lose = 0,
+        Win = 1,
         Draw = 2,
     }
 }

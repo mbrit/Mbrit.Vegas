@@ -67,11 +67,11 @@ namespace Mbrit.Vegas.Simulator
             {
                 this.Total = results.Count();
 
-                this.MajorBustCount = results.Count(v => v.Outcome == WalkOutcome.MajorBust);
-                this.MinorBustCount = results.Count(v => v.Outcome == WalkOutcome.MinorBust);
+                this.MajorBustCount = results.Count(v => v.Outcome == WalkGameOutcome.MajorBust);
+                this.MinorBustCount = results.Count(v => v.Outcome == WalkGameOutcome.MinorBust);
                 this.BustCount = results.Count(v => v.DidBust);
                 this.NotBustCount = results.Count(v => !(v.DidBust));
-                this.EvensCount = results.Count(v => v.Outcome == WalkOutcome.Evens);
+                this.EvensCount = results.Count(v => v.Outcome == WalkGameOutcome.Evens);
                 //this.MinorCount = results.Count(v => v.Outcome == WalkOutcome.Minor);
 
                 this.MajorBustPercentage = this.GetPercentage(this.MajorBustCount, numRounds);
@@ -139,8 +139,11 @@ namespace Mbrit.Vegas.Simulator
                     totalProfit += profit;
                 }
 
-                var averageProfit = totalProfit / (int)bankrolls.Count();
-                this.ExpectedValuePerHundredCurrency = (averageProfit / (decimal)this.AverageWagered) * 100M;
+                if (this.AverageWagered != 0)
+                {
+                    var averageProfit = totalProfit / (int)bankrolls.Count();
+                    this.ExpectedValuePerHundredCurrency = (averageProfit / (decimal)this.AverageWagered) * 100M;
+                }
 
                 //this.NumPositiveEv = results.Where(v => v.ExpectedValuePerHundredCurrency > 0).Count();
             }

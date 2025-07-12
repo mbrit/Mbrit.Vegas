@@ -9,14 +9,14 @@ namespace Mbrit.Vegas.Simulator
     public class WalkState : IWalkAdjuster
     {
         // ***************** remember to update clone method *****************
-        private WalkArgs Args { get; }
+        internal WalkArgs Args { get; }
         internal int InitialUnit { get; }
         internal int CurrentUnit { get; private set; }
         internal int Invested { get; private set; }
         internal int NumInvestments { get; private set; }
         internal bool IsAborted { get; private set; }
-        internal int Bankroll { get; set; }
-        internal int Banked { get; set; }
+        public int Bankroll { get; set; }
+        public int Banked { get; set; }
         internal int TotalWagered { get; set; }
         internal int LastInvestment { get; private set; }
         internal int TopUp4BetCount { get; set; }
@@ -57,15 +57,15 @@ namespace Mbrit.Vegas.Simulator
 
         internal int TakeProfit => (int)((decimal)this.CurrentUnit * this.Args.TakeProfitMultiplier);
 
-        internal int Investable => this.Investables.Sum();
+        public int Investable => this.Investables.Sum();
 
-        internal int Profit => (this.Bankroll + this.Banked) - this.Invested;
+        public int Profit => (this.Bankroll + this.Banked) - this.Invested;
 
         internal int InvestedUnits => this.CashToCurrentUnits(this.Invested);
 
         internal int BankrollUnits => this.CashToInitialUnits(this.Bankroll);
 
-        internal int PutIn()
+        public int PutIn()
         {
             if (!(this.HasInvestables))
                 throw new InvalidOperationException("Nothing to invest.");
@@ -152,6 +152,6 @@ namespace Mbrit.Vegas.Simulator
 
         internal decimal EvPer100Currency => (this.Profit / (decimal)this.TotalWagered) * 100M;
 
-        internal WalkPointOutcome GetPointOutcome() => new WalkPointOutcome(this.Profit, this.TotalWagered, this.EvPer100Currency);
+        internal WalkPointOutcome GetPointOutcome(int hand) => new WalkPointOutcome(this.Profit, this.TotalWagered, this.EvPer100Currency, hand);
     }
 }

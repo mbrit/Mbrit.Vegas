@@ -96,7 +96,6 @@ class _SetupRunPageState extends State<SetupRunPage> {
         hailMaryCount: _selectedHailMary,
       );
       final projection = await _walkGameService.setupWalkGame(setupDto);
-
       setState(() {
         _projection = projection;
         _isLoading = false;
@@ -117,7 +116,6 @@ class _SetupRunPageState extends State<SetupRunPage> {
         hailMaryCount: _selectedHailMary,
       );
       final projection = await _walkGameService.setupWalkGame(setupDto);
-
       setState(() {
         _projection = projection;
         _isDebouncedLoading = false;
@@ -470,6 +468,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
     }
     // Helper to format percentage (always positive)
     String fmtPct(double pct) {
+      // Multiply by 100 to convert decimal to percentage
       final val = (pct * 100).toStringAsFixed(2);
       return '$val%';
     }

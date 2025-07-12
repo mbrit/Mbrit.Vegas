@@ -49,7 +49,7 @@ namespace Mbrit.Vegas.Utility
                         else if (name == "craps")
                             new CrapsFoo().DoMagic();
                         else if (name == "all")
-                            new AllFoo().DoMagic();
+                            new UniversalFoo().DoMagic();
                     });
                 }
             }

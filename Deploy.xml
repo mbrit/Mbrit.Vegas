@@ -2,6 +2,9 @@
 
   <TargetPath>c:\Program Files\Mbrit.Vegas</TargetPath>
 
+  <DeployServerUrl>https://deploy.mbritops.com/</DeployServerUrl>
+  <DeployServerApiKey>qB5zN4yT4yX0hD8lW3uY6rW5fK1yR5yF</DeployServerApiKey>
+
   <Modules>
 
     <Module>
@@ -10,13 +13,11 @@
       <SourcePath>~/Mbrit.Vegas.Web</SourcePath>
     </Module>
 
-    <!--
     <Module>
       <Name>Web-Api</Name>
       <TargetPath>~/Web-Api</TargetPath>
       <SourcePath>~/Mbrit.Vegas.Web.Api</SourcePath>
     </Module>
-    -->
 
     <Module>
       <Name>Console</Name>

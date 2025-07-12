@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 class VegasActionButton extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final IconData? icon;
   final VoidCallback onPressed;
   final Color backgroundColor;
 
   const VegasActionButton({
     Key? key,
     required this.label,
-    required this.icon,
+    this.icon,
     required this.onPressed,
     this.backgroundColor = const Color(0xFF4A5568),
   }) : super(key: key);
@@ -40,8 +40,10 @@ class VegasActionButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, color: Colors.white, size: 24),
-                const SizedBox(width: 12),
+                if (icon != null) ...[
+                  Icon(icon, color: Colors.white, size: 24),
+                  const SizedBox(width: 12),
+                ],
                 Text(
                   label,
                   style: const TextStyle(

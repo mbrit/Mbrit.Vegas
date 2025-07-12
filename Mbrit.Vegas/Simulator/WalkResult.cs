@@ -8,28 +8,43 @@ namespace Mbrit.Vegas.Simulator
 {
     public class WalkResult
     {
+        public WalkState EndState { get; }
+        public WalkArgs Args { get; }
+
         internal int Bankroll { get; }
         internal int TotalWagered { get; }
+        internal int Invested { get; }
         internal decimal ExpectedValuePerHundredCurrency { get; }
         internal IWinLoseDrawRound Round { get; }
         //internal IEnumerable<Chain> WinChains { get; }
         //internal IEnumerable<Chain> LossChains { get; }
         internal IEnumerable<WinLoseDrawType> Vectors { get; }
-        internal WalkOutcome Outcome { get; }
+        internal WalkGameOutcome Outcome { get; }
         internal decimal WinChainScore { get; }
         internal decimal LossChainScore { get; }
         internal decimal ChainScore { get; }
         internal WalkStopReason StopReason { get; }
         internal WalkSpikeType SpikeType { get; }
 
-        internal WalkResult(WalkState state, IWinLoseDrawRound round, IEnumerable<WinLoseDrawType> vectors, WalkOutcome outcome, WalkSpikeType spikeType, 
-            bool didSeeMajorMust, bool didSeeMinorBust, bool didSeeSpike0p5, bool didSeeSpike1)
+        internal WalkPointOutcome PointOutcomeMajorBust { get; }
+        internal WalkPointOutcome PointOutcomeMinorBust { get; }
+        internal WalkPointOutcome PointOutcomeSpike0p5 { get; }
+        internal WalkPointOutcome PointOutcomeSpike1 { get; }
+
+        internal WalkResult(WalkState state, WalkArgs args, IWinLoseDrawRound round, IEnumerable<WinLoseDrawType> vectors, WalkGameOutcome outcome, WalkSpikeType spikeType, 
+            WalkPointOutcome pointOutcomeMajorBust, WalkPointOutcome pointOutcomeMinorBust, WalkPointOutcome pointOutcomeSpike0p5, 
+            WalkPointOutcome pointOutcomeSpike1)
         {
+            this.EndState = state;
+            this.Args = args;
+
             this.Bankroll = state.Profit;
             this.TotalWagered = state.TotalWagered;
             this.StopReason = state.StopReason;
+            this.Invested = state.Invested;
 
-            this.ExpectedValuePerHundredCurrency = (this.Bankroll / (decimal)state.TotalWagered) * 100M;
+            if(state.TotalWagered != 0)
+                this.ExpectedValuePerHundredCurrency = (this.Bankroll / (decimal)state.TotalWagered) * 100M;
 
             this.Round = round;
 
@@ -41,6 +56,11 @@ namespace Mbrit.Vegas.Simulator
             this.ChainScore = state.ChainScore;
 
             this.SpikeType = spikeType;
+
+            this.PointOutcomeMajorBust = pointOutcomeMajorBust;
+            this.PointOutcomeMinorBust = pointOutcomeMinorBust;
+            this.PointOutcomeSpike0p5 = pointOutcomeSpike0p5;
+            this.PointOutcomeSpike1 = pointOutcomeSpike1;
         }
 
         internal WinLoseDrawType WinLose
@@ -54,9 +74,9 @@ namespace Mbrit.Vegas.Simulator
             }
         }
 
-        public bool DidBust => this.Outcome == WalkOutcome.MajorBust || this.Outcome == WalkOutcome.MinorBust;
+        public bool DidBust => this.Outcome == WalkGameOutcome.MajorBust || this.Outcome == WalkGameOutcome.MinorBust;
 
-        public bool IsSpike0p5 => this.Outcome == WalkOutcome.Spike0p5;
+        public bool IsSpike0p5 => this.Outcome == WalkGameOutcome.Spike0p5;
 
         public bool IsSpike1 => this.CheckSpike1OrBetterType(WalkSpikeType.One);
 
@@ -68,6 +88,8 @@ namespace Mbrit.Vegas.Simulator
 
         public int Index => this.Round.Index;
 
-        private bool CheckSpike1OrBetterType(WalkSpikeType type) => this.Outcome == WalkOutcome.Spike1OrBetter && this.SpikeType == type;
+        public string Key => this.Vectors.GetKey();
+
+        private bool CheckSpike1OrBetterType(WalkSpikeType type) => this.Outcome == WalkGameOutcome.Spike1OrBetter && this.SpikeType == type;
     }
 }

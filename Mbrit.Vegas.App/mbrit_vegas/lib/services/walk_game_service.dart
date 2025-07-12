@@ -4,6 +4,13 @@ import '../models/walk_game_setup_dto.dart';
 import '../models/walk_game_projection_dto.dart';
 import '../models/walk_game_state_dto.dart'; // Add this import
 
+class NullResponse {
+  const NullResponse();
+  factory NullResponse.fromJson(Map<String, dynamic> json) =>
+      const NullResponse();
+  Map<String, dynamic> toJson() => {};
+}
+
 class WalkGameService {
   static const String _baseUrl =
       'http://192.168.1.248:61655'; // Replace with your actual API URL
@@ -106,7 +113,7 @@ class WalkGameService {
     required String action, // Should match the server enum
   }) async {
     final url = '$_baseUrl/walk-game/$token/hands/$handIndex/actions/$action';
-    final response = await _httpClient.post(
+    final response = await _httpClient.get(
       Uri.parse(url),
       headers: {
         'Content-Type': 'application/json',
@@ -127,10 +134,11 @@ class WalkGameService {
   Future<WalkGameStateDto> postOutcome({
     required String token,
     required int handIndex,
-    required String outcome, // e.g. "won" or "lost"
+    required WinLoseDrawType outcome, // Use enum instead of string
   }) async {
-    final url = '$_baseUrl/walk-game/$token/hands/$handIndex/outcomes/$outcome';
-    final response = await _httpClient.post(
+    final url =
+        '$_baseUrl/walk-game/$token/hands/$handIndex/outcomes/${outcome.name}';
+    final response = await _httpClient.get(
       Uri.parse(url),
       headers: {
         'Content-Type': 'application/json',
@@ -149,7 +157,7 @@ class WalkGameService {
 
   /// Gets the current state for a token
   Future<WalkGameStateDto> getState({required String token}) async {
-    final url = '$_baseUrl/walk-game/$token/state';
+    final url = '$_baseUrl/walk-game/$token';
     final response = await _httpClient.get(
       Uri.parse(url),
       headers: {'Accept': 'application/json'},
@@ -160,6 +168,25 @@ class WalkGameService {
     } else {
       throw Exception(
         'Failed to get state: ${response.statusCode} - ${response.body}',
+      );
+    }
+  }
+
+  /// Abandon the run for a given token
+  Future<NullResponse> abandonRun({required String token}) async {
+    final url = '$_baseUrl/walk-game/$token/abandon';
+    final response = await _httpClient.get(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      return NullResponse();
+    } else {
+      throw Exception(
+        'Failed to abandon run: ${response.statusCode} - ${response.body}',
       );
     }
   }

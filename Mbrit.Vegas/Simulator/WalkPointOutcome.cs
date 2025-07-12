@@ -11,12 +11,14 @@ namespace Mbrit.Vegas.Simulator
         public decimal Profit { get; }
         public decimal TotalWagered { get; }
         public decimal EvPer100Currency { get; }
+        public int Hand { get; }
 
-        internal WalkPointOutcome(decimal profit, decimal totalWagered, decimal evPer100Currency)
+        internal WalkPointOutcome(decimal profit, decimal totalWagered, decimal evPer100Currency, int hand)
         {
             this.Profit = profit;
             this.TotalWagered = totalWagered;
             this.EvPer100Currency = evPer100Currency;
+            this.Hand = hand;
         }
     }
 }

@@ -1,0 +1,845 @@
+<Project two47:typeName="BootFX.Common.DbUtil.Project" two47:assembly="BootFX.Common.DbUtil, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml" xmlns:two47="http://BootFX.Common.com/schemas/toxml/">
+  <Settings two47:typeName="BootFX.Common.DbUtil.Settings" two47:assembly="BootFX.Common.DbUtil, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+    <NamespaceName>Mbrit.Vegas</NamespaceName>
+    <BaseType />
+    <DtoBaseType />
+    <DatabaseName />
+    <TargetVersion>V1</TargetVersion>
+    <GenerationTypeName />
+  </Settings>
+  <SqlSchema two47:typeName="BootFX.Common.Data.Schema.SqlSchema" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+    <Tables>
+      <SqlTable two47:typeName="BootFX.Common.Data.Schema.SqlTable" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+        <NativeName>Casinos</NativeName>
+        <Name>Casino</Name>
+        <Generate>True</Generate>
+        <Columns>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>CasinoId</NativeName>
+            <Name>CasinoId</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Key, Common, AutoIncrement</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>id</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Name</NativeName>
+            <Name>Name</Name>
+            <Generate>True</Generate>
+            <DbType>String</DbType>
+            <Flags>Common</Flags>
+            <Length>64</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>name</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>LocationId</NativeName>
+            <Name>LocationId</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>locationId</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>IsActive</NativeName>
+            <Name>IsActive</Name>
+            <Generate>True</Generate>
+            <DbType>Boolean</DbType>
+            <Flags>Common</Flags>
+            <Length>1</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>isActive</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Token</NativeName>
+            <Name>Token</Name>
+            <Generate>True</Generate>
+            <DbType>String</DbType>
+            <Flags>Common</Flags>
+            <Length>64</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>token</JsonName>
+          </SqlColumn>
+        </Columns>
+        <Indexes />
+        <ChildToParentLinks />
+        <Modifiers>Public</Modifiers>
+        <GenerateDto>False</GenerateDto>
+      </SqlTable>
+      <SqlTable two47:typeName="BootFX.Common.Data.Schema.SqlTable" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+        <NativeName>GameRunHands</NativeName>
+        <Name>GameRunHand</Name>
+        <Generate>True</Generate>
+        <Columns>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>GameRunHandId</NativeName>
+            <Name>GameRunHandId</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Key, Common, AutoIncrement</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>id</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>GameRunId</NativeName>
+            <Name>GameRunId</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>gameRunId</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Index</NativeName>
+            <Name>Index</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>index</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Outcome</NativeName>
+            <Name>Outcome</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName>Mbrit.Vegas.Simulator.WinLoseDrawType</EnumerationTypeName>
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>outcome</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>UnitsPlayed</NativeName>
+            <Name>UnitsPlayed</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>unitsPlayed</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>DateTimeUtc</NativeName>
+            <Name>DateTimeUtc</Name>
+            <Generate>True</Generate>
+            <DbType>DateTime</DbType>
+            <Flags>Common</Flags>
+            <Length>8</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>dateTimeUtc</JsonName>
+          </SqlColumn>
+        </Columns>
+        <Indexes />
+        <ChildToParentLinks>
+          <SqlChildToParentLink two47:typeName="BootFX.Common.Data.Schema.SqlChildToParentLink" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>FK_GameRunHands_GameRuns</NativeName>
+            <Name>GameRun</Name>
+            <Generate>True</Generate>
+            <Columns>
+              <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+                <NativeName>GameRunId</NativeName>
+                <Name>GameRunId</Name>
+                <Generate>True</Generate>
+                <DbType>Int32</DbType>
+                <Flags>Common</Flags>
+                <Length>4</Length>
+                <EnumerationTypeName />
+                <Modifiers>Public</Modifiers>
+                <GenerateDtoField>True</GenerateDtoField>
+                <JsonName>gameRunId</JsonName>
+              </SqlColumn>
+            </Columns>
+            <GenerateParentAccessMethods>False</GenerateParentAccessMethods>
+            <GenerateDtoField>False</GenerateDtoField>
+            <JsonName />
+          </SqlChildToParentLink>
+        </ChildToParentLinks>
+        <Modifiers>Public</Modifiers>
+        <GenerateDto>False</GenerateDto>
+      </SqlTable>
+      <SqlTable two47:typeName="BootFX.Common.Data.Schema.SqlTable" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+        <NativeName>GameRuns</NativeName>
+        <Name>GameRun</Name>
+        <Generate>True</Generate>
+        <Columns>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>GameRunId</NativeName>
+            <Name>GameRunId</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Key, Common, AutoIncrement</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>id</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>CreatedUtc</NativeName>
+            <Name>CreatedUtc</Name>
+            <Generate>True</Generate>
+            <DbType>DateTime</DbType>
+            <Flags>Common</Flags>
+            <Length>8</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>createdUtc</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Token</NativeName>
+            <Name>Token</Name>
+            <Generate>True</Generate>
+            <DbType>String</DbType>
+            <Flags>Common</Flags>
+            <Length>64</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>token</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Unit</NativeName>
+            <Name>Unit</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>unit</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Mode</NativeName>
+            <Name>Mode</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName>Mbrit.Vegas.Simulator.WalkGameMode</EnumerationTypeName>
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>mode</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>HailMaryCount</NativeName>
+            <Name>HailMaryCount</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>hailMaryCount</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Name</NativeName>
+            <Name>Name</Name>
+            <Generate>True</Generate>
+            <DbType>String</DbType>
+            <Flags>Common</Flags>
+            <Length>128</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>name</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Hands</NativeName>
+            <Name>Hands</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>hands</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Investables</NativeName>
+            <Name>Investables</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>investables</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>HouseEdge</NativeName>
+            <Name>HouseEdge</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>houseEdge</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>IsWaitingOnDecision</NativeName>
+            <Name>IsWaitingOnDecision</Name>
+            <Generate>True</Generate>
+            <DbType>Boolean</DbType>
+            <Flags>Common</Flags>
+            <Length>1</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>isWaitingOnDecision</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>WaitingOnDecisionUtc</NativeName>
+            <Name>WaitingOnDecisionUtc</Name>
+            <Generate>True</Generate>
+            <DbType>DateTime</DbType>
+            <Flags>Nullable, Common</Flags>
+            <Length>8</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>waitingOnDecisionUtc</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>LastPlayedUtc</NativeName>
+            <Name>LastPlayedUtc</Name>
+            <Generate>True</Generate>
+            <DbType>DateTime</DbType>
+            <Flags>Nullable, Common</Flags>
+            <Length>8</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>lastPlayedUtc</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>IsAbandoned</NativeName>
+            <Name>IsAbandoned</Name>
+            <Generate>True</Generate>
+            <DbType>Boolean</DbType>
+            <Flags>Common</Flags>
+            <Length>1</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>isAbandoned</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>AbandonedUtc</NativeName>
+            <Name>AbandonedUtc</Name>
+            <Generate>True</Generate>
+            <DbType>DateTime</DbType>
+            <Flags>Nullable, Common</Flags>
+            <Length>8</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>abandonedUtc</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>ActionUnits</NativeName>
+            <Name>ActionUnits</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>actionUnits</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Action</NativeName>
+            <Name>Action</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName>Mbrit.Vegas.Simulator.WalkGameAction</EnumerationTypeName>
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>action</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>ActionUtc</NativeName>
+            <Name>ActionUtc</Name>
+            <Generate>True</Generate>
+            <DbType>DateTime</DbType>
+            <Flags>Nullable, Common</Flags>
+            <Length>8</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>actionUtc</JsonName>
+          </SqlColumn>
+        </Columns>
+        <Indexes>
+          <SqlIndex two47:typeName="BootFX.Common.Data.Schema.SqlIndex" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>GameRuns_Token</NativeName>
+            <Name>GameRuns_Token</Name>
+            <Generate>True</Generate>
+            <Columns>
+              <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+                <NativeName>Token</NativeName>
+                <Name>Token</Name>
+                <Generate>True</Generate>
+                <DbType>String</DbType>
+                <Flags>Common</Flags>
+                <Length>64</Length>
+                <EnumerationTypeName />
+                <Modifiers>Public</Modifiers>
+                <GenerateDtoField>True</GenerateDtoField>
+                <JsonName>token</JsonName>
+              </SqlColumn>
+            </Columns>
+          </SqlIndex>
+        </Indexes>
+        <ChildToParentLinks />
+        <Modifiers>Public</Modifiers>
+        <GenerateDto>False</GenerateDto>
+      </SqlTable>
+      <SqlTable two47:typeName="BootFX.Common.Data.Schema.SqlTable" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+        <NativeName>Permutations</NativeName>
+        <Name>Permutation</Name>
+        <Generate>True</Generate>
+        <Columns>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>PermutationId</NativeName>
+            <Name>PermutationId</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Key, Common, AutoIncrement</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>id</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Key</NativeName>
+            <Name>Key</Name>
+            <Generate>True</Generate>
+            <DbType>String</DbType>
+            <Flags>Common</Flags>
+            <Length>32</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>key</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>HailMaryMap</NativeName>
+            <Name>HailMaryMap</Name>
+            <Generate>True</Generate>
+            <DbType>String</DbType>
+            <Flags>Nullable, Common</Flags>
+            <Length>32</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>hailMaryMap</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Hands</NativeName>
+            <Name>Hands</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>hands</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Investables</NativeName>
+            <Name>Investables</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>investables</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Mode</NativeName>
+            <Name>Mode</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName>Mbrit.Vegas.Simulator.WalkGameMode</EnumerationTypeName>
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>mode</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>UnitSize</NativeName>
+            <Name>UnitSize</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>unitSize</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MajorBustSeen</NativeName>
+            <Name>MajorBustSeen</Name>
+            <Generate>True</Generate>
+            <DbType>Boolean</DbType>
+            <Flags>Common</Flags>
+            <Length>1</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>majorBustSeen</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MajorBustHand</NativeName>
+            <Name>MajorBustHand</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>majorBustHand</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MajorBustProfit</NativeName>
+            <Name>MajorBustProfit</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>majorBustProfit</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MajorBustWagered</NativeName>
+            <Name>MajorBustWagered</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>majorBustWagered</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MajorBustEv</NativeName>
+            <Name>MajorBustEv</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>majorBustEv</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MinorBustSeen</NativeName>
+            <Name>MinorBustSeen</Name>
+            <Generate>True</Generate>
+            <DbType>Boolean</DbType>
+            <Flags>Common</Flags>
+            <Length>1</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>minorBustSeen</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MinorBustHand</NativeName>
+            <Name>MinorBustHand</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>minorBustHand</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MinorBustProfit</NativeName>
+            <Name>MinorBustProfit</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>minorBustProfit</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MinorBustWagered</NativeName>
+            <Name>MinorBustWagered</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>minorBustWagered</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>MinorBustEv</NativeName>
+            <Name>MinorBustEv</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>minorBustEv</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike0p5Seen</NativeName>
+            <Name>Spike0p5Seen</Name>
+            <Generate>True</Generate>
+            <DbType>Boolean</DbType>
+            <Flags>Common</Flags>
+            <Length>1</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike0p5Seen</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike0p5Hand</NativeName>
+            <Name>Spike0p5Hand</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike0p5Hand</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike0p5Profit</NativeName>
+            <Name>Spike0p5Profit</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike0p5Profit</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike0p5Wagered</NativeName>
+            <Name>Spike0p5Wagered</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike0p5Wagered</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike0p5Ev</NativeName>
+            <Name>Spike0p5Ev</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike0p5Ev</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike1Seen</NativeName>
+            <Name>Spike1Seen</Name>
+            <Generate>True</Generate>
+            <DbType>Boolean</DbType>
+            <Flags>Common</Flags>
+            <Length>1</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike1Seen</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike1Hand</NativeName>
+            <Name>Spike1Hand</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike1Hand</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike1Profit</NativeName>
+            <Name>Spike1Profit</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike1Profit</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike1Wagered</NativeName>
+            <Name>Spike1Wagered</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike1Wagered</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Spike1Ev</NativeName>
+            <Name>Spike1Ev</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>spike1Ev</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>CreatedUtc</NativeName>
+            <Name>CreatedUtc</Name>
+            <Generate>True</Generate>
+            <DbType>DateTime</DbType>
+            <Flags>Common</Flags>
+            <Length>8</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>createdUtc</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Profit</NativeName>
+            <Name>Profit</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>profit</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Invested</NativeName>
+            <Name>Invested</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>invested</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Wagered</NativeName>
+            <Name>Wagered</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>wagered</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Ev</NativeName>
+            <Name>Ev</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>ev</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Outcome</NativeName>
+            <Name>Outcome</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName>Mbrit.Vegas.Simulator.WalkGameOutcome</EnumerationTypeName>
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>outcome</JsonName>
+          </SqlColumn>
+        </Columns>
+        <Indexes />
+        <ChildToParentLinks />
+        <Modifiers>Public</Modifiers>
+        <GenerateDto>False</GenerateDto>
+      </SqlTable>
+    </Tables>
+  </SqlSchema>
+</Project>

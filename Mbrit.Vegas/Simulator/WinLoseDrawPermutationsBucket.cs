@@ -1,4 +1,5 @@
 ﻿
+using System.Collections;
 using System.Runtime.InteropServices.Marshalling;
 using System.Security.Principal;
 
@@ -33,6 +34,8 @@ namespace Mbrit.Vegas.Simulator
                 this.Index = index;
                 this.Round = round;
             }
+
+            public int Count => this.Round.Count;
 
             public WinLoseDrawType GetResult(int hand) => this.Round.GetResult(hand);
 

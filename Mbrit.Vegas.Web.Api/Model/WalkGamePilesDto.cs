@@ -1,4 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿using Mbrit.Vegas.Simulator;
+using System.Runtime.InteropServices.Marshalling;
+using System.Text.Json.Serialization;
 
 namespace Mbrit.Vegas.Web.Api.Model
 {
@@ -33,5 +35,31 @@ namespace Mbrit.Vegas.Web.Api.Model
 
         [JsonPropertyName("profitUnits")]
         public int ProfitUnits { get; set; }
+
+        internal static WalkGamePilesDto FromWalkState(WalkState state, GameRun game)
+        {
+            var dto = new WalkGamePilesDto()
+            {
+                Investable = state.Investable,
+                InPlay = state.Bankroll,
+                Banked = state.Banked,
+                Profit = state.Profit,
+            };
+
+            dto.CashInHand = dto.Investable + dto.InPlay + dto.Banked;
+
+            dto.TouchUnits(game.Unit);
+
+            return dto;
+        }
+
+        private void TouchUnits(int unit)
+        {
+            this.InvestableUnits = this.Investable / unit;
+            this.InPlayUnits = this.InPlay / unit;
+            this.BankedUnits = this.Banked / unit;
+            this.ProfitUnits = this.Profit / unit;
+            this.CashInHandUnits = this.CashInHand / unit;
+        }
     }
 }

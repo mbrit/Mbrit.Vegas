@@ -24,7 +24,7 @@ namespace Mbrit.Vegas.Simulator
 
         public string GetKey()
         {
-            var builder = new StringBuilder();
+            var wlds = new List<WinLoseDrawType>();
 
             var count = this.Count;
             for (var index = 0; index < count; index++)
@@ -34,19 +34,13 @@ namespace Mbrit.Vegas.Simulator
                 if (result is WinLoseDrawType)
                 {
                     var wld = (WinLoseDrawType)(object)result;
-
-                    if (wld == WinLoseDrawType.Win)
-                        builder.Append("w");
-                    else if (wld == WinLoseDrawType.Lose)
-                        builder.Append("l");
-                    else
-                        throw new NotSupportedException($"Cannot handle '{result}'.");
+                    wlds.Add(wld);
                 }
                 else
                     throw new NotSupportedException($"Cannot handle '{result}'.");
             }
 
-            return builder.ToString();
+            return wlds.GetKey();
         }
     }
 }
