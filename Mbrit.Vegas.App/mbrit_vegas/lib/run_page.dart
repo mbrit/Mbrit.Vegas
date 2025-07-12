@@ -23,6 +23,7 @@ class _RunPageState extends State<RunPage> {
   late String _runName;
   int _selectedTab = 0;
   WalkGameStateDto? _walkGameState;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -48,27 +49,27 @@ class _RunPageState extends State<RunPage> {
         _walkGameState = result;
       });
       print('=== SERVER RESULT: $result ===');
-      // DEBUG: Show alert with name from server
-      if (mounted && result.name != null) {
-        // ignore: use_build_context_synchronously
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Server Game Name'),
-            content: Text(result.name.toString()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
     } catch (e) {
       print('=== REFRESH ERROR: $e ===');
     }
     print('=== REFRESH DONE ===');
+  }
+
+  Future<void> _refreshGameState() async {
+    setState(() => _isRefreshing = true);
+    try {
+      if (_walkGameState?.token != null) {
+        final token = _walkGameState!.token;
+        final result = await WalkGameService().getState(token: token);
+        setState(() {
+          _walkGameState = result;
+        });
+      } else {
+        await _startGameOnServer();
+      }
+    } finally {
+      setState(() => _isRefreshing = false);
+    }
   }
 
   void _onTabTapped(int index) {
@@ -866,6 +867,25 @@ class _RunPageState extends State<RunPage> {
               pinned: false,
               expandedHeight: 0,
               collapsedHeight: kToolbarHeight,
+              actions: [
+                _isRefreshing
+                    ? Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.refresh),
+                        tooltip: 'Refresh',
+                        onPressed: _isRefreshing ? null : _refreshGameState,
+                      ),
+              ],
             ),
             SliverToBoxAdapter(
               child: RefreshIndicator(
@@ -881,23 +901,6 @@ class _RunPageState extends State<RunPage> {
                     setState(() {
                       _walkGameState = result;
                     });
-                    // DEBUG: Show alert with name from server
-                    if (mounted && result.name != null) {
-                      // ignore: use_build_context_synchronously
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Server Game Name'),
-                          content: Text(result.name.toString()),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
                   } else {
                     await _startGameOnServer();
                   }
