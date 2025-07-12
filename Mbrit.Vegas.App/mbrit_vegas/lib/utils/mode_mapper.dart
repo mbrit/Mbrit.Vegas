@@ -1,5 +1,5 @@
 import '../models/walk_game_setup_dto.dart';
-import '../widgets/play_mode_selector.dart';
+import '../models/play_mode.dart';
 
 class ModeMapper {
   /// Converts local PlayMode to server WalkGameMode
@@ -29,4 +29,4 @@ class ModeMapper {
         return PlayMode.balanced;
     }
   }
-} 
+}

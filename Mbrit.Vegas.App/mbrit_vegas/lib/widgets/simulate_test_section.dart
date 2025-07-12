@@ -27,13 +27,15 @@ class SimulateTestSection extends StatelessWidget {
       CustomTableRow(
         label: 'Big Loss',
         explanation: null,
-        currencyAmount: '${currencySymbol}${maxInvestment} to ${currencySymbol}${maxInvestment ~/ 2}',
+        currencyAmount:
+            '${currencySymbol}${maxInvestment} to ${currencySymbol}${maxInvestment ~/ 2}',
         currencyColor: const Color(0xFFEF4444), // Red for loss
       ),
       CustomTableRow(
         label: 'Small Loss',
         explanation: null,
-        currencyAmount: '${currencySymbol}${maxInvestment ~/ 2} to ${currencySymbol}0',
+        currencyAmount:
+            '${currencySymbol}${maxInvestment ~/ 2} to ${currencySymbol}0',
         currencyColor: const Color(0xFFF59E0B), // Orange for small loss
       ),
       CustomTableRow(
@@ -51,7 +53,8 @@ class SimulateTestSection extends StatelessWidget {
       CustomTableRow(
         label: '1x Up',
         explanation: null,
-        currencyAmount: '${currencySymbol}${spike0p5} to ${currencySymbol}${spike1}',
+        currencyAmount:
+            '${currencySymbol}${spike0p5} to ${currencySymbol}${spike1}',
         currencyColor: const Color(0xFF10B981), // Green for profit
       ),
       CustomTableRow(
@@ -65,10 +68,7 @@ class SimulateTestSection extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF2D3748),
-            Color(0xFF1A202C),
-          ],
+          colors: [Color(0xFF2D3748), Color(0xFF1A202C)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
@@ -134,4 +134,4 @@ class SimulateTestSection extends StatelessWidget {
       ),
     );
   }
-} 
+}

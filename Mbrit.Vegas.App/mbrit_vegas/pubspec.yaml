@@ -40,6 +40,9 @@ dependencies:
   
   # JSON serialization
   json_annotation: ^4.8.1
+  
+  # Markdown rendering
+  flutter_markdown: ^0.6.18
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +70,7 @@ flutter:
   assets:
     - assets/casino-lasvegas-strip-flamingo.png
     - assets/splash.png
+    - assets/tutorial/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

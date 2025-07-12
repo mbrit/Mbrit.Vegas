@@ -7,6 +7,7 @@ import 'models/investment_state.dart';
 import 'models/outcomes.dart';
 import 'models/walk_game_setup_dto.dart';
 import 'models/walk_game_projection_dto.dart';
+import 'models/play_mode.dart';
 import 'services/walk_game_service.dart';
 import 'utils/mode_mapper.dart';
 import 'widgets/unit_size_selector.dart';
@@ -429,6 +430,75 @@ class _SetupRunPageState extends State<SetupRunPage> {
     );
   }
 
+  Widget _buildAverageProfitDisplay() {
+    final currency = _currencySymbol;
+    final outcomes = getCurrentOutcomes();
+
+    // Don't show anything if loading or no data yet (only for immediate loading, not debounced)
+    if (_isLoading || outcomes == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D3748),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[600]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.trending_up, color: Colors.grey[400], size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Average profit (when won): ',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                '$currency${outcomes.averageProfitWhenWon.toStringAsFixed(0)}',
+                style: TextStyle(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.monetization_on, color: Colors.grey[400], size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Average coin-in: ',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14, // Match 'Average profit (when won):' label
+                ),
+              ),
+              Text(
+                '$currency${outcomes.averageCoinIn.toStringAsFixed(0)}',
+                style: TextStyle(
+                  color: const Color(0xFF059669), // Darker shade of green
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18, // Match value size
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSimulateTestTable() {
     final currency = _currencySymbol;
     final maxInvestment = _runState.maxInvestment;
@@ -530,7 +600,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
 
     String getMoreThan100PercentBlurb() {
       if (playMode == PlayMode.goForBroke)
-        return 'A chance to more profit between $currency$spike1 and $currency$spike3';
+        return 'A chance to make between $currency$spike1 and $currency$spike3  profit';
       else
         return '$currency$spike1 to $currency$spike3';
     }
@@ -650,75 +720,6 @@ class _SetupRunPageState extends State<SetupRunPage> {
             ],
           ),
       ],
-    );
-  }
-
-  Widget _buildAverageProfitDisplay() {
-    final currency = _currencySymbol;
-    final outcomes = getCurrentOutcomes();
-
-    // Don't show anything if loading or no data yet (only for immediate loading, not debounced)
-    if (_isLoading || outcomes == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D3748),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[600]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.trending_up, color: Colors.grey[400], size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'Average profit (when won): ',
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                ),
-              ),
-              Text(
-                '$currency${outcomes.averageProfitWhenWon.toStringAsFixed(0)}',
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Icons.monetization_on, color: Colors.grey[400], size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'Average coin-in: ',
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14, // Match 'Average profit (when won):' label
-                ),
-              ),
-              Text(
-                '$currency${outcomes.averageCoinIn.toStringAsFixed(0)}',
-                style: TextStyle(
-                  color: const Color(0xFF059669), // Darker shade of green
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18, // Match value size
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 

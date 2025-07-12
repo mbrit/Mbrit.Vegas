@@ -327,7 +327,7 @@ class _RunPageState extends State<RunPage> {
                   builder: (context) => AlertDialog(
                     title: const Text('Are you sure?'),
                     content: const Text(
-                      'Do you really want to abandon this run?',
+                      'Are you sure you really want to abandon this walk?',
                     ),
                     actions: [
                       TextButton(

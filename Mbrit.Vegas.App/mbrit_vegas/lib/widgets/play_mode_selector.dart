@@ -1,14 +1,5 @@
 import 'package:flutter/material.dart';
-
-enum PlayMode {
-  goForBroke('Go For Broke'),
-  make50PercentProfit('Make 50% Profit'),
-  balanced('Balanced'),
-  doubleYourMoney('Double Your Money');
-
-  const PlayMode(this.displayName);
-  final String displayName;
-}
+import '../models/play_mode.dart';
 
 class PlayModeSelector extends StatefulWidget {
   final PlayMode initialMode;
@@ -96,7 +87,9 @@ class _PlayModeSelectorState extends State<PlayModeSelector> {
                     color: const Color(0xFF2D3748),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? const Color(0xFF3B82F6) : Colors.grey[600]!,
+                      color: isSelected
+                          ? const Color(0xFF3B82F6)
+                          : Colors.grey[600]!,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -106,10 +99,14 @@ class _PlayModeSelectorState extends State<PlayModeSelector> {
                         width: 20,
                         height: 20,
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+                          color: isSelected
+                              ? const Color(0xFF3B82F6)
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: isSelected ? const Color(0xFF3B82F6) : Colors.grey[600]!,
+                            color: isSelected
+                                ? const Color(0xFF3B82F6)
+                                : Colors.grey[600]!,
                             width: 2,
                           ),
                         ),
@@ -121,30 +118,34 @@ class _PlayModeSelectorState extends State<PlayModeSelector> {
                               )
                             : null,
                       ),
-                                             const SizedBox(width: 12),
-                       Expanded(
-                         child: Row(
-                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                           children: [
-                             Text(
-                               mode.displayName,
-                               style: TextStyle(
-                                 color: isSelected ? Colors.white : Colors.grey[300],
-                                 fontSize: 16,
-                                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                               ),
-                             ),
-                             Text(
-                               _getAmountForMode(mode),
-                               style: TextStyle(
-                                 color: const Color(0xFF10B981), // Green color
-                                 fontSize: 16,
-                                 fontWeight: FontWeight.bold,
-                               ),
-                             ),
-                           ],
-                         ),
-                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              mode.displayName,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : Colors.grey[300],
+                                fontSize: 16,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                            Text(
+                              _getAmountForMode(mode),
+                              style: TextStyle(
+                                color: const Color(0xFF10B981), // Green color
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -155,4 +156,4 @@ class _PlayModeSelectorState extends State<PlayModeSelector> {
       ],
     );
   }
-} 
+}

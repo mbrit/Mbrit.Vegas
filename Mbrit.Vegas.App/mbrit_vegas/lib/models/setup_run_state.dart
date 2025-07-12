@@ -1,7 +1,7 @@
 import 'location.dart';
 import 'hand_result.dart';
 import 'investment_state.dart';
-import '../widgets/play_mode_selector.dart';
+import 'play_mode.dart';
 
 class SetupRunState {
   final String name;

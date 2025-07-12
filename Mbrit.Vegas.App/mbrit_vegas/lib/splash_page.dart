@@ -69,7 +69,7 @@ class SplashPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       const Text(
-                        'The only method that teaches you a 30% chance to DOUBLE YOUR MONEY in Vegas',
+                        'The only method that teaches a 30% chance to DOUBLE YOUR MONEY in Vegas',
                         style: TextStyle(
                           color: Colors.grey,
                           fontSize: 16,
