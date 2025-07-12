@@ -18,23 +18,27 @@ enum WalkGameMode {
 class WalkGameSetupDto {
   @JsonKey(name: 'unit')
   final int unit;
-  
+
   @JsonKey(name: 'mode')
   final WalkGameMode mode;
-  
+
   @JsonKey(name: 'hailMaryCount')
   final int hailMaryCount;
+
+  @JsonKey(name: 'timeZoneMinutes')
+  final int timeZoneMinutes;
 
   const WalkGameSetupDto({
     required this.unit,
     required this.mode,
     required this.hailMaryCount,
+    required this.timeZoneMinutes,
   });
 
-  factory WalkGameSetupDto.fromJson(Map<String, dynamic> json) => 
+  factory WalkGameSetupDto.fromJson(Map<String, dynamic> json) =>
       _$WalkGameSetupDtoFromJson(json);
-  
+
   Map<String, dynamic> toJson() => _$WalkGameSetupDtoToJson(this);
 
   String toJsonString() => jsonEncode(toJson());
-} 
+}

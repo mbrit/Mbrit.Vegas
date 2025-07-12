@@ -11,6 +11,7 @@ WalkGameSetupDto _$WalkGameSetupDtoFromJson(Map<String, dynamic> json) =>
       unit: (json['unit'] as num).toInt(),
       mode: $enumDecode(_$WalkGameModeEnumMap, json['mode']),
       hailMaryCount: (json['hailMaryCount'] as num).toInt(),
+      timeZoneMinutes: (json['timeZoneMinutes'] as num).toInt(),
     );
 
 Map<String, dynamic> _$WalkGameSetupDtoToJson(WalkGameSetupDto instance) =>
@@ -18,6 +19,7 @@ Map<String, dynamic> _$WalkGameSetupDtoToJson(WalkGameSetupDto instance) =>
       'unit': instance.unit,
       'mode': _$WalkGameModeEnumMap[instance.mode]!,
       'hailMaryCount': instance.hailMaryCount,
+      'timeZoneMinutes': instance.timeZoneMinutes,
     };
 
 const _$WalkGameModeEnumMap = {

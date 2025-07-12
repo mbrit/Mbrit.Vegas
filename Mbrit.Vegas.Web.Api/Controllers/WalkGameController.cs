@@ -68,8 +68,8 @@ namespace Mbrit.Vegas.Web.Api.Controllers
             var request = this.GetRequest<WalkGameSetupRequest>();
 
             // create a new game run...
-            var game = GameRun.CreateGameRun(request.Mode, request.Unit, request.HailMaryCount, WalkGameDefaults.Investables, WalkGameDefaults.HandsPerRound,
-                WalkGameDefaults.HouseEdge);
+            var game = GameRun.CreateGameRun(request.Mode, request.Unit, request.HailMaryCount, request.TimeZoneMinutes, 
+                WalkGameDefaults.Investables, WalkGameDefaults.HandsPerRound, WalkGameDefaults.HouseEdge);
 
             // run the game...
             //var player = new InitialManualPlayer();

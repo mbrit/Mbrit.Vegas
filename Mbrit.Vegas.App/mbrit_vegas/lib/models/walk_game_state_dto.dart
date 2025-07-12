@@ -8,6 +8,9 @@ class WalkGameStateDto {
   @JsonKey(name: 'token')
   final String token;
 
+  @JsonKey(name: 'name')
+  final String? name;
+
   @JsonKey(name: 'piles')
   final WalkGamePilesDto piles;
 
@@ -37,6 +40,7 @@ class WalkGameStateDto {
 
   const WalkGameStateDto({
     required this.token,
+    this.name,
     required this.piles,
     required this.hands,
     this.probabilitySpace,

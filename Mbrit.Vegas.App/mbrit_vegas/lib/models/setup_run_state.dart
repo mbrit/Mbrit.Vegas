@@ -30,7 +30,7 @@ class SetupRunState {
 
   // Default constructor with Las Vegas Strip
   SetupRunState.defaultRun()
-    : name = 'Evening Walk at Flamingo, 7th July 2025',
+    : name = "",
       startTime = DateTime.now(),
       location = Location.lasVegasStrip,
       numHands = 25,

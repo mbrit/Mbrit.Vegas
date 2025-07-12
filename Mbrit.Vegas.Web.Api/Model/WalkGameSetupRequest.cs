@@ -14,5 +14,8 @@ namespace Mbrit.Vegas.Web.Api.Model
 
         [JsonPropertyName("hailMaryCount")]
         public int HailMaryCount { get; set; }
+
+        [JsonPropertyName("timeZoneMinutes")]
+        public int TimeZoneMinutes { get; set; }
     }
 }

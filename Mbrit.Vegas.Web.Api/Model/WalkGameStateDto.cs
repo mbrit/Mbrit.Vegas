@@ -13,6 +13,9 @@ namespace Mbrit.Vegas.Web.Api.Model
         [JsonPropertyName("token")]
         public string Token { get; set; }
 
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
         [JsonPropertyName("piles")]
         public WalkGamePilesDto Piles { get; set; }
 
@@ -50,6 +53,7 @@ namespace Mbrit.Vegas.Web.Api.Model
             var dto = new WalkGameStateDto()
             {
                 Token = game.Token,
+                Name = game.Name,
                 ProbabilitySpaceAvailableAt = 5,
                 Spike0p5 = game.Spike0p5Win,
                 Spike1 = game.Spike1Win,

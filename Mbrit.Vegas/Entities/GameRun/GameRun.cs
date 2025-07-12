@@ -42,12 +42,24 @@ namespace Mbrit.Vegas
 
         public string Currency => "$";
 
-        public static GameRun CreateGameRun(WalkGameMode mode, int unit, int hailMaryCount, int investables, int hands, decimal houseEdge)
+        public static GameRun CreateGameRun(WalkGameMode mode, int unit, int hailMaryCount, int timeZoneMinutes, int investables, int hands, decimal houseEdge)
         {
             var now = DateTime.UtcNow;
 
+            var local = DateTimeExtender.GetLocalTime(now, timeZoneMinutes);
+
             var builder = new StringBuilder();
-            builder.Append("Evening Walk at Flamingo, ");
+
+            if (local.Hour < 4 || local.Hour >= 23)
+                builder.Append("Nighttime");
+            else if (local.Hour >= 4 && local.Hour < 12)
+                builder.Append("Morning");
+            else if (local.Hour < 6)
+                builder.Append("Afternoon");
+            else
+                builder.Append("Evening");
+
+            builder.Append(" Walk at Flamingo, ");
             builder.Append(now.ToString("d MMMM yyyy"));
 
             var item = new GameRun()
@@ -55,6 +67,7 @@ namespace Mbrit.Vegas
                 Name = builder.ToString(),
                 Mode = mode,
                 Unit = unit,
+                TimeZoneMinutes = timeZoneMinutes,
                 HailMaryCount = hailMaryCount,
                 Investables = investables,
                 Hands = hands,

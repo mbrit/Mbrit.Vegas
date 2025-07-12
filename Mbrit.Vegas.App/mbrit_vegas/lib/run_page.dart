@@ -41,12 +41,30 @@ class _RunPageState extends State<RunPage> {
         unit: _runState.unitSize,
         mode: ModeMapper.playModeToWalkGameMode(_runState.playMode),
         hailMaryCount: 0, // TODO: map from state if needed
+        timeZoneMinutes: DateTime.now().timeZoneOffset.inMinutes,
       );
       final result = await WalkGameService.startGame(setup);
       setState(() {
         _walkGameState = result;
       });
       print('=== SERVER RESULT: $result ===');
+      // DEBUG: Show alert with name from server
+      if (mounted && result.name != null) {
+        // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Server Game Name'),
+            content: Text(result.name.toString()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     } catch (e) {
       print('=== REFRESH ERROR: $e ===');
     }
@@ -63,7 +81,7 @@ class _RunPageState extends State<RunPage> {
   // Feature flag for showing the 'In play:' label
   static const bool showInPlayLabel = false;
 
-  Widget _buildDraftHandCard(hand) {
+  Widget _buildDraftHandCard(hand, profit, profitColor, profitProgress) {
     final actions = hand.actions;
     final piles = _walkGameState?.piles;
     final currency = _runState.currencySymbol;
@@ -91,7 +109,7 @@ class _RunPageState extends State<RunPage> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '${hand.index + 1}',
+                  hand.index == 12 ? '--' : '${hand.index + 1}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -100,7 +118,7 @@ class _RunPageState extends State<RunPage> {
                 ),
               ),
               const Spacer(),
-              // Change badge from 'DRAFT' to 'Current Hand'
+              // Move 'Current Hand' badge to the rightmost position, remove outcome indicator
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -110,53 +128,15 @@ class _RunPageState extends State<RunPage> {
                   color: Color(0xFF2563EB),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
+                child: Text(
                   'Current Hand',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
                 ),
               ),
-              const Spacer(),
-              // Win/Loss indicator badge
-              if (hand.outcome != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: hand.outcome.toString().toLowerCase().contains('win')
-                        ? Color(0xFF10B981)
-                        : Color(0xFFEF4444),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        hand.outcome.toString().toLowerCase().contains('win')
-                            ? Icons.check_circle
-                            : Icons.cancel,
-                        color: Colors.white,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        hand.outcome.toString().toLowerCase().contains('win')
-                            ? 'WON'
-                            : 'LOST',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 8),
@@ -183,6 +163,8 @@ class _RunPageState extends State<RunPage> {
             ),
           // Show win/loss buttons if needsAnswer is true, otherwise show action buttons
           _buildWinLossCircles(),
+          const SizedBox(height: 24),
+          _buildProfitBlock(profit, profitColor, profitProgress),
           const SizedBox(height: 16),
           if (hand.needsAnswer) ...[
             // What happened? label
@@ -312,8 +294,8 @@ class _RunPageState extends State<RunPage> {
             if (actions?.canWalk == true) ...[
               VegasActionButton(
                 label:
-                    "Walk with ${piles?.profitUnits ?? 0} ${(piles?.profitUnits ?? 0) == 1 ? 'Unit' : 'Units'} ($currency${piles?.profit ?? 0}) profit",
-                icon: Icons.emoji_events,
+                    "Walk with ${piles?.profitUnits ?? 0} ${(piles?.profitUnits ?? 0) == 1 ? 'Unit' : 'Units'} ($currency${piles?.profit ?? 0}) Profit",
+                icon: Icons.directions_walk,
                 backgroundColor: const Color(0xFFFF9800),
                 onPressed: () async {
                   if (_walkGameState?.token == null) return;
@@ -444,7 +426,7 @@ class _RunPageState extends State<RunPage> {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  '${hand.index + 1}',
+                  hand.index == 12 ? '--' : '${hand.index + 1}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -613,7 +595,7 @@ class _RunPageState extends State<RunPage> {
             if (actions?.canWalk == true) ...[
               VegasActionButton(
                 label: "Walk with $currency${piles?.profit ?? 0}",
-                icon: Icons.emoji_events,
+                icon: Icons.directions_walk,
                 backgroundColor: const Color(0xFFFF9800),
                 onPressed: () {},
               ),
@@ -722,6 +704,130 @@ class _RunPageState extends State<RunPage> {
     );
   }
 
+  Widget _buildProfitBlock(
+    int profit,
+    Color profitColor,
+    double profitProgress,
+  ) {
+    final piles = _walkGameState?.piles;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('Profit', style: TextStyle(color: Colors.white)),
+        ),
+        Center(
+          child: Text(
+            '${piles?.profitUnits ?? 0} units (${_runState.currencySymbol}${profit})',
+            style: TextStyle(
+              color: profitColor,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        const SizedBox(height: 16),
+        LinearProgressIndicator(
+          value: profitProgress,
+          backgroundColor: Colors.grey[700],
+          valueColor: AlwaysStoppedAnimation<Color>(profitColor),
+          minHeight: 4,
+          semanticsLabel: 'Profit',
+        ),
+        const SizedBox(height: 16),
+        // Profit targets table
+        Table(
+          border: TableBorder.all(color: Colors.grey, width: 1),
+          columnWidths: const {0: FlexColumnWidth(1), 1: FlexColumnWidth(1)},
+          children: [
+            TableRow(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(
+                    '50% Profit Target',
+                    style: TextStyle(
+                      color: Colors.grey[300],
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(
+                    '100% Profit Target',
+                    style: TextStyle(
+                      color: Colors.grey[300],
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+            TableRow(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${_walkGameState?.spike0p5Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike0p5 ?? 0})',
+                        style: TextStyle(
+                          color: profit >= (_walkGameState?.spike0p5 ?? 0)
+                              ? Colors.green
+                              : Colors.white,
+                        ),
+                      ),
+                      if (profit >= (_walkGameState?.spike0p5 ?? 0))
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 16,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${_walkGameState?.spike1Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike1 ?? 0})',
+                        style: TextStyle(
+                          color: profit >= (_walkGameState?.spike1 ?? 0)
+                              ? Colors.green
+                              : Colors.white,
+                        ),
+                      ),
+                      if (profit >= (_walkGameState?.spike1 ?? 0))
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.check_circle,
+                            color: Colors.green,
+                            size: 16,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final piles = _walkGameState?.piles;
@@ -775,6 +881,23 @@ class _RunPageState extends State<RunPage> {
                     setState(() {
                       _walkGameState = result;
                     });
+                    // DEBUG: Show alert with name from server
+                    if (mounted && result.name != null) {
+                      // ignore: use_build_context_synchronously
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Server Game Name'),
+                          content: Text(result.name.toString()),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                   } else {
                     await _startGameOnServer();
                   }
@@ -811,7 +934,7 @@ class _RunPageState extends State<RunPage> {
                             ),
                           ),
                           child: Text(
-                            _runName,
+                            _walkGameState?.name ?? _runState.name,
                             style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -1088,147 +1211,6 @@ class _RunPageState extends State<RunPage> {
                               ],
                             ),
                             // Profit block
-                            const SizedBox(height: 24),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Profit',
-                                style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ),
-                            Center(
-                              child: Text(
-                                '${piles?.profitUnits ?? 0} units (${_runState.currencySymbol}${profit})',
-                                style: TextStyle(
-                                  color: profitColor,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            LinearProgressIndicator(
-                              value: profitProgress,
-                              backgroundColor: Colors.grey[700],
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                profitColor,
-                              ),
-                              minHeight: 4,
-                              semanticsLabel: 'Profit',
-                            ),
-                            const SizedBox(height: 16),
-                            // Profit targets table
-                            Table(
-                              border: TableBorder.all(
-                                color: Colors.grey,
-                                width: 1,
-                              ),
-                              columnWidths: const {
-                                0: FlexColumnWidth(1),
-                                1: FlexColumnWidth(1),
-                              },
-                              children: [
-                                TableRow(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Text(
-                                        '50% Profit',
-                                        style: TextStyle(
-                                          color: Colors.grey[300],
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Text(
-                                        '100% Profit',
-                                        style: TextStyle(
-                                          color: Colors.grey[300],
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                TableRow(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '${_walkGameState?.spike0p5Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike0p5 ?? 0})',
-                                            style: TextStyle(
-                                              color:
-                                                  profit >=
-                                                      (_walkGameState
-                                                              ?.spike0p5 ??
-                                                          0)
-                                                  ? Colors.green
-                                                  : Colors.white,
-                                            ),
-                                          ),
-                                          if (profit >=
-                                              (_walkGameState?.spike0p5 ?? 0))
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 4,
-                                              ),
-                                              child: Icon(
-                                                Icons.check_circle,
-                                                color: Colors.green,
-                                                size: 16,
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(4.0),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            '${_walkGameState?.spike1Units ?? 0} units (${_runState.currencySymbol}${_walkGameState?.spike1 ?? 0})',
-                                            style: TextStyle(
-                                              color:
-                                                  profit >=
-                                                      (_walkGameState?.spike1 ??
-                                                          0)
-                                                  ? Colors.green
-                                                  : Colors.white,
-                                            ),
-                                          ),
-                                          if (profit >=
-                                              (_walkGameState?.spike1 ?? 0))
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                left: 4,
-                                              ),
-                                              child: Icon(
-                                                Icons.check_circle,
-                                                color: Colors.green,
-                                                size: 16,
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ),
@@ -1284,7 +1266,12 @@ class _RunPageState extends State<RunPage> {
                       if (_walkGameState?.hands != null)
                         ..._walkGameState!.hands.reversed.map((hand) {
                           if (hand.isDraft) {
-                            return _buildDraftHandCard(hand);
+                            return _buildDraftHandCard(
+                              hand,
+                              profit,
+                              profitColor,
+                              profitProgress,
+                            );
                           } else {
                             return _buildFinalHandCard(hand);
                           }

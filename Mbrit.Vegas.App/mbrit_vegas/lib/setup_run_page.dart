@@ -94,6 +94,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
         unit: _runState.unitSize,
         mode: ModeMapper.playModeToWalkGameMode(_selectedPlayMode),
         hailMaryCount: _selectedHailMary,
+        timeZoneMinutes: DateTime.now().timeZoneOffset.inMinutes,
       );
       final projection = await _walkGameService.setupWalkGame(setupDto);
       setState(() {
@@ -114,6 +115,7 @@ class _SetupRunPageState extends State<SetupRunPage> {
         unit: _runState.unitSize,
         mode: ModeMapper.playModeToWalkGameMode(_selectedPlayMode),
         hailMaryCount: _selectedHailMary,
+        timeZoneMinutes: DateTime.now().timeZoneOffset.inMinutes,
       );
       final projection = await _walkGameService.setupWalkGame(setupDto);
       setState(() {

@@ -386,6 +386,26 @@ namespace Mbrit.Vegas
         }
         
         /// <summary>
+        /// Gets or sets the value for 'TimeZoneMinutes'.
+        /// </summary>
+        /// <remarks>
+        /// This property maps to the 'TimeZoneMinutes' column.
+        /// </remarks>
+        [EntityField("TimeZoneMinutes", System.Data.DbType.Int32, BootFX.Common.Entities.EntityFieldFlags.Common)]
+        [DatabaseDefault(BootFX.Common.Data.Schema.SqlDatabaseDefaultType.Primitive, 0)]
+        public int TimeZoneMinutes
+        {
+            get
+            {
+                return ((int)(this["TimeZoneMinutes"]));
+            }
+            set
+            {
+                this["TimeZoneMinutes"] = value;
+            }
+        }
+        
+        /// <summary>
         /// Creates a SqlFilter for an instance of 'GameRun'.
         /// </summary>
         public static BootFX.Common.Data.SqlFilter CreateFilterBase()
@@ -1138,6 +1158,47 @@ namespace Mbrit.Vegas
         }
         
         /// <summary>
+        /// Gets entities where TimeZoneMinutes is equal to the given value.
+        /// </summary>
+        /// <bootfx>
+        /// CreateEntityFilterEqualToMethod - GameRun
+        /// </bootfx>
+        /// <remarks>
+        /// Created for column <c>TimeZoneMinutes</c>
+        /// </remarks>
+        public static GameRunCollection GetByTimeZoneMinutes(int timeZoneMinutes)
+        {
+            return Mbrit.Vegas.GameRun.GetByTimeZoneMinutes(timeZoneMinutes, BootFX.Common.Data.SqlOperator.EqualTo);
+        }
+        
+        /// <summary>
+        /// Gets entities where TimeZoneMinutes matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>TimeZoneMinutes</c>
+        /// </remarks>
+        public static GameRunCollection GetByTimeZoneMinutes(int timeZoneMinutes, BootFX.Common.Data.SqlOperator timeZoneMinutesOperator)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(GameRun));
+            filter.Constraints.Add("TimeZoneMinutes", timeZoneMinutesOperator, timeZoneMinutes);
+            return ((GameRunCollection)(filter.ExecuteEntityCollection()));
+        }
+        
+        /// <summary>
+        /// Gets entities where TimeZoneMinutes matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>TimeZoneMinutes</c>
+        /// </remarks>
+        public static GameRunCollection GetByTimeZoneMinutes(int timeZoneMinutes, BootFX.Common.Data.SqlOperator timeZoneMinutesOperator, BootFX.Common.OnNotFound onNotFound)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(GameRun));
+            filter.Constraints.Add("TimeZoneMinutes", timeZoneMinutesOperator, timeZoneMinutes);
+            GameRunCollection results = ((GameRunCollection)(filter.ExecuteEntityCollection()));
+            return results;
+        }
+        
+        /// <summary>
         /// Get all of the child 'GameRunHand' entities.
         /// </summary>
         /// <remarks>
@@ -1193,13 +1254,15 @@ CREATE TABLE [GameRuns] (
 	[AbandonedUtc] datetime NULL, 
 	[ActionUnits] int NOT NULL, 
 	[Action] int NOT NULL, 
-	[ActionUtc] datetime NULL
+	[ActionUtc] datetime NULL, 
+	[TimeZoneMinutes] int NOT NULL
 	);
 ALTER TABLE [GameRuns] ADD CONSTRAINT [PK_GameRuns] PRIMARY KEY ([GameRunId]);
 ALTER TABLE [GameRuns]  ADD  DEFAULT (0) FOR [IsWaitingOnDecision]
 ALTER TABLE [GameRuns]  ADD  DEFAULT (0) FOR [IsAbandoned]
 ALTER TABLE [GameRuns]  ADD  DEFAULT (0) FOR [ActionUnits]
 ALTER TABLE [GameRuns]  ADD  DEFAULT (0) FOR [Action]
+ALTER TABLE [GameRuns]  ADD  DEFAULT (0) FOR [TimeZoneMinutes]
 CREATE UNIQUE INDEX [GameRuns_Token] ON [GameRuns] (
 	[Token]
 	) WITH (FILLFACTOR=90)
@@ -1223,13 +1286,15 @@ CREATE TABLE "GameRuns" (
 	"AbandonedUtc" timestamp NULL, 
 	"ActionUnits" int NOT NULL, 
 	"Action" int NOT NULL, 
-	"ActionUtc" timestamp NULL
+	"ActionUtc" timestamp NULL, 
+	"TimeZoneMinutes" int NOT NULL
 	);
 ALTER TABLE "GameRuns" ADD CONSTRAINT "PK_GameRuns" PRIMARY KEY ("GameRunId");
 ALTER TABLE "GameRuns" ALTER COLUMN "IsWaitingOnDecision" SET DEFAULT (False);
 ALTER TABLE "GameRuns" ALTER COLUMN "IsAbandoned" SET DEFAULT (False);
 ALTER TABLE "GameRuns" ALTER COLUMN "ActionUnits" SET DEFAULT (0);
 ALTER TABLE "GameRuns" ALTER COLUMN "Action" SET DEFAULT (0);
+ALTER TABLE "GameRuns" ALTER COLUMN "TimeZoneMinutes" SET DEFAULT (0);
 CREATE UNIQUE INDEX "GameRuns_Token" ON "GameRuns" (
 	"Token"
 	) WITH (FILLFACTOR=90)
@@ -1253,13 +1318,15 @@ CREATE TABLE `GameRuns` (
 	`AbandonedUtc` datetime NULL, 
 	`ActionUnits` int NOT NULL, 
 	`Action` int NOT NULL, 
-	`ActionUtc` datetime NULL
+	`ActionUtc` datetime NULL, 
+	`TimeZoneMinutes` int NOT NULL
 	, PRIMARY KEY (`GameRunId`));
 
 ALTER TABLE `GameRuns` MODIFY COLUMN `IsWaitingOnDecision` bit  DEFAULT 0
 ALTER TABLE `GameRuns` MODIFY COLUMN `IsAbandoned` bit  DEFAULT 0
 ALTER TABLE `GameRuns` MODIFY COLUMN `ActionUnits` int  DEFAULT 0
 ALTER TABLE `GameRuns` MODIFY COLUMN `Action` int  DEFAULT 0
+ALTER TABLE `GameRuns` MODIFY COLUMN `TimeZoneMinutes` int  DEFAULT 0
 CREATE UNIQUE INDEX `GameRuns_Token` ON `GameRuns` (
 	`Token`
 	)

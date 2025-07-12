@@ -9,6 +9,7 @@ part of 'walk_game_state_dto.dart';
 WalkGameStateDto _$WalkGameStateDtoFromJson(Map<String, dynamic> json) =>
     WalkGameStateDto(
       token: json['token'] as String,
+      name: json['name'] as String?,
       piles: WalkGamePilesDto.fromJson(json['piles'] as Map<String, dynamic>),
       hands: (json['hands'] as List<dynamic>)
           .map((e) => WalkGameHandDto.fromJson(e as Map<String, dynamic>))
@@ -30,6 +31,7 @@ WalkGameStateDto _$WalkGameStateDtoFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$WalkGameStateDtoToJson(WalkGameStateDto instance) =>
     <String, dynamic>{
       'token': instance.token,
+      'name': instance.name,
       'piles': instance.piles,
       'hands': instance.hands,
       'probabilitySpace': instance.probabilitySpace,
