@@ -40,6 +40,9 @@ dependencies:
   
   # JSON serialization
   json_annotation: ^4.8.1
+  
+  # Path provider for local file storage
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:

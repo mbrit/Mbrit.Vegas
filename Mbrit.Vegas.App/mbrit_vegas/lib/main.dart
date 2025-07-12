@@ -4,6 +4,7 @@ import 'home_page.dart';
 import 'learn_page.dart';
 import 'setup_run_page.dart';
 import 'widgets/vegas_bottom_nav_bar.dart';
+import 'utils/string_helper.dart';
 
 class AnalyticsPage extends StatelessWidget {
   const AnalyticsPage({Key? key}) : super(key: key);
@@ -73,7 +74,9 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await StringHelper.initialize();
   runApp(const MyApp());
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'setup_run_page.dart';
+import 'utils/string_helper.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -22,10 +23,10 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: const Color(0xFF0F1419),
       appBar: AppBar(
         title: Row(
-          children: const [
-            Icon(Icons.home, color: Colors.white, size: 24),
-            SizedBox(width: 8),
-            Text('Home'),
+          children: [
+            const Icon(Icons.home, color: Colors.white, size: 24),
+            const SizedBox(width: 8),
+            Text(StringHelper.get('home/title')),
           ],
         ),
         backgroundColor: const Color(0xFF1E3A8A),
@@ -82,9 +83,9 @@ class _HomePageState extends State<HomePage> {
                               color: Colors.white,
                               size: 28,
                             ),
-                            label: const Text(
-                              'Setup a New Walk',
-                              style: TextStyle(
+                            label: Text(
+                              StringHelper.get('home/setup-walk-button'),
+                              style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,

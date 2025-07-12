@@ -13,7 +13,8 @@ class NullResponse {
 
 class WalkGameService {
   static const String _baseUrl =
-      'https://app-api.thevegaswalk.com'; // Using HTTP for development
+      //'https://app-api.thevegaswalk.com'; 
+      'http://192.168.1.248:60655'; 
 
   final http.Client _httpClient;
 
