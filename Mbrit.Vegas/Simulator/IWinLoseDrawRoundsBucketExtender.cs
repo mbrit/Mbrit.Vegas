@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BootFX.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,6 +34,8 @@ namespace Mbrit.Vegas.Simulator
                         throw new NotSupportedException($"Cannot handle '{index}'.");
                 }
             }
+
+            public IEnumerable<IWinLoseDrawRound> ToEnumerable() => this.Round.WrapInEnumerable();
         }
     }
 }

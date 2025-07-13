@@ -1,19 +1,10 @@
-# Ready to Begin
+# Accumulation
 
-You now have the foundation to start using The Vegas Walk Method!
+In reality, **streaks are what gambling is**. 
 
-## Next Steps:
-1. **Practice** with the app's simulation mode
-2. **Study** the betting patterns
-3. **Plan** your first real session
-4. **Execute** with discipline
+We just need to weaponise them in our favour.
 
-## Remember:
-- Start with small amounts
-- Stay within your limits
-- Keep learning and adapting
-- Enjoy the process
+By making **small accumulation bets**, we can snipe wins from "**short-tail variance**" early game.
 
-**Good luck, and may the odds be ever in your favor!**
+...before the house edge has a chance to exert itself and grind us down.
 
-*This tutorial is for educational purposes. Please gamble responsibly.* 

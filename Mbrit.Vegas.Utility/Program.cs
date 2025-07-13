@@ -50,6 +50,8 @@ namespace Mbrit.Vegas.Utility
                             new CrapsFoo().DoMagic();
                         else if (name == "all")
                             new UniversalFoo().DoMagic();
+                        else if (name == "score")
+                            new ScoreFoo().DoMagic();
                     });
                 }
             }

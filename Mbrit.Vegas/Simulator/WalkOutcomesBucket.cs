@@ -172,5 +172,28 @@ namespace Mbrit.Vegas.Simulator
 
             table.Render();
         }
+
+        public static decimal GetRoundScore(IWinLoseDrawRound round, decimal houseEdge)
+        {
+            var winWeight = (double)(1M - (houseEdge / 2M)); // e.g. 0.985
+            var lossWeight = (double)(1M + (houseEdge / 2M)); // e.g. 1.015
+
+            double logScore = 0;
+            int steps = round.Count;
+            for (var index = 0; index < steps; index++)
+            {
+                var vector = round.GetResult(index);
+
+                if (vector == WinLoseDrawType.Win)
+                    logScore += Math.Log(winWeight);
+                else
+                    logScore += Math.Log(lossWeight);
+            }
+
+            var avgLogScore = logScore / steps;
+            var finalScore = Math.Exp(avgLogScore);
+
+            return (decimal)finalScore;
+        }
     }
 }

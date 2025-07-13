@@ -11,5 +11,7 @@ namespace Mbrit.Vegas.Simulator
         int Count { get; }
         decimal HouseEdge { get; }
         IWinLoseDrawRound this[int index] { get; }
+
+        IEnumerable<IWinLoseDrawRound> ToEnumerable();
     }
 }

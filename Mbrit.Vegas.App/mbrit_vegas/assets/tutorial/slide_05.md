@@ -1,21 +1,12 @@
-# Real-World Application
+# Streaks
 
-## Before You Start:
-- Practice with the app's simulation mode
-- Understand your personal risk tolerance
-- Set realistic expectations
-- Plan your casino visit carefully
+Variance is how we get streaks of wins or losses. 
 
-## At the Casino:
-- Choose the right games and tables
-- Stay focused and disciplined
-- Keep track of your progress
-- Know when to take breaks
+As humans, we tend to think of streaks as very unlikely. 
 
-## Success Tips:
-- Start small and build confidence
-- Learn from each session
-- Stay patient with the process
-- Celebrate small wins
+But if you toss a coin 10 times, you'll see four heads or four tails **often**.
 
-Ready to put it all together? 
+**Streaks are much more likely than we think they are**.
+
+We know this happens in gambling -- we've seen the dealer hit 20-21 against our 18-19 three times
+in a row plenty of times.

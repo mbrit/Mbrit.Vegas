@@ -23,7 +23,11 @@ namespace Mbrit.Vegas
     [Entity(typeof(PermutationCollection), "Permutations")]
     public class Permutation : PermutationBase
     {
-        
+        // by convention, database decimals are always decimal(18,5) -- this preserves precision, without
+        // anyone having to remember that that one field out of thousands of decimals field across
+        // hundreds of projects has differnet precisions...
+        private const decimal ScoreAdjust = 10000M;     
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -55,6 +59,8 @@ namespace Mbrit.Vegas
                 Key = key,
                 Mode = selector.Mode,
                 Hands = selector.Hands,
+                HouseEdge = selector.HouseEdge,
+                Score = WalkOutcomesBucket.GetRoundScore(result.Round, selector.HouseEdge) * ScoreAdjust,       // deal with 18,5 decimals...
                 Investables = selector.Investables,
                 UnitSize = selector.UnitSize,
                 Profit = result.Bankroll,
@@ -152,8 +158,10 @@ namespace Mbrit.Vegas
             builder.AppendFieldAndValue(v => v.UnitSize, selector.UnitSize);
             builder.Append(" and ");
             builder.AppendFieldAndValue(v => v.Investables, selector.Investables);
+            builder.Append(" and ");
+            builder.AppendFieldAndValue(v => v.HouseEdge, selector.HouseEdge);
 
-            if(selector.HailMaryMode == WalkHailMary.None)
+            if (selector.HailMaryMode == WalkHailMary.None)
             {
                 builder.Append(" and ");
                 builder.AppendField(v => v.HailMaryMap);

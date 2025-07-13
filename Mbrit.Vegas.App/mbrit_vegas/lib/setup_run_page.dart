@@ -19,6 +19,8 @@ import 'models/run_state.dart';
 import 'run_page.dart';
 import 'widgets/gambling_help.dart';
 import 'main.dart';
+import 'tutorial_page.dart';
+import 'learn_page.dart';
 
 class SetupRunPage extends StatefulWidget {
   final bool fromSplash;
@@ -62,6 +64,64 @@ class _SetupRunPageState extends State<SetupRunPage> {
     setState(() {
       _selectedTab = index;
     });
+  }
+
+  void _showHelpPopup() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2D3748),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text(
+            'Help',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TutorialPage()),
+                );
+              },
+              child: const Text(
+                'View The Tutorial',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LearnPage()),
+                );
+              },
+              child: const Text(
+                'Go To Learning Area',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -156,6 +216,19 @@ class _SetupRunPageState extends State<SetupRunPage> {
         backgroundColor: const Color(0xFF1E3A8A),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          TextButton(
+            onPressed: _showHelpPopup,
+            child: const Text(
+              'Help',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(

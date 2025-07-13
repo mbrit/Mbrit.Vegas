@@ -65,7 +65,7 @@ namespace Mbrit.Vegas.Simulator
                 this.Round = round;
             }
 
-            public int Count => throw new NotImplementedException("This operation has not been implemented.");
+            public int Count => this.Round.Count;
 
             public WinLoseDrawType GetResult(int hand) => this.Round.GetResult(hand);
 
@@ -100,6 +100,14 @@ namespace Mbrit.Vegas.Simulator
         {
             var index = rand.Next(0, NumPrebakedBuckets - 1);
             return Prebaked[numRounds, numHands, houseEdge];
+        }
+
+        public IEnumerable<IWinLoseDrawRound> ToEnumerable()
+        {
+            var results = new List<IWinLoseDrawRound>();
+            for (var index = 0; index < this.Count; index++)
+                results.Add(this[index]);
+            return results;
         }
     }
 }

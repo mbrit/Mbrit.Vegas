@@ -2,35 +2,12 @@ import 'package:flutter/material.dart';
 import 'splash_page.dart';
 import 'home_page.dart';
 import 'learn_page.dart';
+import 'profile_page.dart';
+import 'analytics_page.dart';
 import 'setup_run_page.dart';
 import 'widgets/vegas_bottom_nav_bar.dart';
 import 'utils/string_helper.dart';
-
-class AnalyticsPage extends StatelessWidget {
-  const AnalyticsPage({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Analytics (coming soon)',
-        style: TextStyle(color: Colors.white),
-      ),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Profile (coming soon)',
-        style: TextStyle(color: Colors.white),
-      ),
-    );
-  }
-}
+// Removed: import 'utils/string_helper_test.dart';
 
 /// MainScaffold manages the tab bar and page switching. Set initialTab to choose the starting tab (0=Home, 1=Analytics, 2=Learn, 3=Profile).
 class MainScaffold extends StatefulWidget {

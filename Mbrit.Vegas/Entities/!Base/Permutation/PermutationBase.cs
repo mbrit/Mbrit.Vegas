@@ -666,6 +666,46 @@ namespace Mbrit.Vegas
         }
         
         /// <summary>
+        /// Gets or sets the value for 'Score'.
+        /// </summary>
+        /// <remarks>
+        /// This property maps to the 'Score' column.
+        /// </remarks>
+        [EntityField("Score", System.Data.DbType.Decimal, BootFX.Common.Entities.EntityFieldFlags.Common)]
+        [DatabaseDefault(BootFX.Common.Data.Schema.SqlDatabaseDefaultType.Primitive, 0)]
+        public decimal Score
+        {
+            get
+            {
+                return ((decimal)(this["Score"]));
+            }
+            set
+            {
+                this["Score"] = value;
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the value for 'HouseEdge'.
+        /// </summary>
+        /// <remarks>
+        /// This property maps to the 'HouseEdge' column.
+        /// </remarks>
+        [EntityField("HouseEdge", System.Data.DbType.Decimal, BootFX.Common.Entities.EntityFieldFlags.Common)]
+        [DatabaseDefault(BootFX.Common.Data.Schema.SqlDatabaseDefaultType.Primitive, 0)]
+        public decimal HouseEdge
+        {
+            get
+            {
+                return ((decimal)(this["HouseEdge"]));
+            }
+            set
+            {
+                this["HouseEdge"] = value;
+            }
+        }
+        
+        /// <summary>
         /// Creates a SqlFilter for an instance of 'Permutation'.
         /// </summary>
         public static BootFX.Common.Data.SqlFilter CreateFilterBase()
@@ -2044,6 +2084,88 @@ namespace Mbrit.Vegas
             PermutationCollection results = ((PermutationCollection)(filter.ExecuteEntityCollection()));
             return results;
         }
+        
+        /// <summary>
+        /// Gets entities where Score is equal to the given value.
+        /// </summary>
+        /// <bootfx>
+        /// CreateEntityFilterEqualToMethod - Permutation
+        /// </bootfx>
+        /// <remarks>
+        /// Created for column <c>Score</c>
+        /// </remarks>
+        public static PermutationCollection GetByScore(decimal score)
+        {
+            return Mbrit.Vegas.Permutation.GetByScore(score, BootFX.Common.Data.SqlOperator.EqualTo);
+        }
+        
+        /// <summary>
+        /// Gets entities where Score matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>Score</c>
+        /// </remarks>
+        public static PermutationCollection GetByScore(decimal score, BootFX.Common.Data.SqlOperator scoreOperator)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(Permutation));
+            filter.Constraints.Add("Score", scoreOperator, score);
+            return ((PermutationCollection)(filter.ExecuteEntityCollection()));
+        }
+        
+        /// <summary>
+        /// Gets entities where Score matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>Score</c>
+        /// </remarks>
+        public static PermutationCollection GetByScore(decimal score, BootFX.Common.Data.SqlOperator scoreOperator, BootFX.Common.OnNotFound onNotFound)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(Permutation));
+            filter.Constraints.Add("Score", scoreOperator, score);
+            PermutationCollection results = ((PermutationCollection)(filter.ExecuteEntityCollection()));
+            return results;
+        }
+        
+        /// <summary>
+        /// Gets entities where HouseEdge is equal to the given value.
+        /// </summary>
+        /// <bootfx>
+        /// CreateEntityFilterEqualToMethod - Permutation
+        /// </bootfx>
+        /// <remarks>
+        /// Created for column <c>HouseEdge</c>
+        /// </remarks>
+        public static PermutationCollection GetByHouseEdge(decimal houseEdge)
+        {
+            return Mbrit.Vegas.Permutation.GetByHouseEdge(houseEdge, BootFX.Common.Data.SqlOperator.EqualTo);
+        }
+        
+        /// <summary>
+        /// Gets entities where HouseEdge matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>HouseEdge</c>
+        /// </remarks>
+        public static PermutationCollection GetByHouseEdge(decimal houseEdge, BootFX.Common.Data.SqlOperator houseEdgeOperator)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(Permutation));
+            filter.Constraints.Add("HouseEdge", houseEdgeOperator, houseEdge);
+            return ((PermutationCollection)(filter.ExecuteEntityCollection()));
+        }
+        
+        /// <summary>
+        /// Gets entities where HouseEdge matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>HouseEdge</c>
+        /// </remarks>
+        public static PermutationCollection GetByHouseEdge(decimal houseEdge, BootFX.Common.Data.SqlOperator houseEdgeOperator, BootFX.Common.OnNotFound onNotFound)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(Permutation));
+            filter.Constraints.Add("HouseEdge", houseEdgeOperator, houseEdge);
+            PermutationCollection results = ((PermutationCollection)(filter.ExecuteEntityCollection()));
+            return results;
+        }
     }
 }
 
@@ -2083,9 +2205,13 @@ CREATE TABLE [Permutations] (
 	[Invested] decimal(18, 5) NOT NULL, 
 	[Wagered] decimal(18, 5) NOT NULL, 
 	[Ev] decimal(18, 5) NOT NULL, 
-	[Outcome] int NOT NULL
+	[Outcome] int NOT NULL, 
+	[Score] decimal(18, 5) NOT NULL, 
+	[HouseEdge] decimal(18, 5) NOT NULL
 	);
 ALTER TABLE [Permutations] ADD CONSTRAINT [PK_Permutations] PRIMARY KEY ([PermutationId]);
+ALTER TABLE [Permutations]  ADD  DEFAULT (0) FOR [Score]
+ALTER TABLE [Permutations]  ADD  DEFAULT (0) FOR [HouseEdge]
 
 ***** PostgresDialect *****
 CREATE TABLE "Permutations" (
@@ -2121,9 +2247,13 @@ CREATE TABLE "Permutations" (
 	"Invested" decimal(18, 5) NOT NULL, 
 	"Wagered" decimal(18, 5) NOT NULL, 
 	"Ev" decimal(18, 5) NOT NULL, 
-	"Outcome" int NOT NULL
+	"Outcome" int NOT NULL, 
+	"Score" decimal(18, 5) NOT NULL, 
+	"HouseEdge" decimal(18, 5) NOT NULL
 	);
 ALTER TABLE "Permutations" ADD CONSTRAINT "PK_Permutations" PRIMARY KEY ("PermutationId");
+ALTER TABLE "Permutations" ALTER COLUMN "Score" SET DEFAULT (0);
+ALTER TABLE "Permutations" ALTER COLUMN "HouseEdge" SET DEFAULT (0);
 
 ***** MySqlDialect *****
 CREATE TABLE `Permutations` (
@@ -2159,8 +2289,12 @@ CREATE TABLE `Permutations` (
 	`Invested` decimal(18, 5) NOT NULL, 
 	`Wagered` decimal(18, 5) NOT NULL, 
 	`Ev` decimal(18, 5) NOT NULL, 
-	`Outcome` int NOT NULL
+	`Outcome` int NOT NULL, 
+	`Score` decimal(18, 5) NOT NULL, 
+	`HouseEdge` decimal(18, 5) NOT NULL
 	, PRIMARY KEY (`PermutationId`));
 
+ALTER TABLE `Permutations` MODIFY COLUMN `Score` decimal(18, 5)  DEFAULT 0
+ALTER TABLE `Permutations` MODIFY COLUMN `HouseEdge` decimal(18, 5)  DEFAULT 0
 
 */

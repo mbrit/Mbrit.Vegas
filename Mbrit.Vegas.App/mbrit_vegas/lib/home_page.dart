@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             const Icon(Icons.home, color: Colors.white, size: 24),
             const SizedBox(width: 8),
-            Text(StringHelper.get('home/title')),
+            Text("The Vegas Walk Method"),
           ],
         ),
         backgroundColor: const Color(0xFF1E3A8A),
@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
                               size: 28,
                             ),
                             label: Text(
-                              StringHelper.get('home/setup-walk-button'),
+                              "Start a New Walk",
                               style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,

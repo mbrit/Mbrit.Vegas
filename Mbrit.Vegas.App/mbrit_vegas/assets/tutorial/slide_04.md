@@ -1,15 +1,10 @@
-# Risk Management
+# Variance
 
-## The Golden Rules:
-1. **Never bet more than you can afford to lose**
-2. **Set strict limits before you start**
-3. **Walk away when you hit your targets**
-4. **Don't let emotions drive decisions**
+The most important concept we'll learn today is **variance**. 
 
-## Bankroll Protection:
-- Use only disposable income
-- Never borrow to gamble
-- Keep your main bankroll separate
-- Track all wins and losses
+The important thing is that **variance overwhlems the house edge**...
 
-Remember: This method improves your odds, but gambling always involves risk. 
+...but **only in the first few hands of play**.
+
+By betting bigger, earlier, together with playing a very limited number of hands, you can 
+take profit **before the house edge exerts itself**.

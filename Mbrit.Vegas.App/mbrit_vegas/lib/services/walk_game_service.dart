@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/walk_game_setup_dto.dart';
 import '../models/walk_game_projection_dto.dart';
 import '../models/walk_game_state_dto.dart'; // Add this import
+import '../utils/app_config.dart';
 
 class NullResponse {
   const NullResponse();
@@ -12,10 +13,6 @@ class NullResponse {
 }
 
 class WalkGameService {
-  static const String _baseUrl =
-      //'https://app-api.thevegaswalk.com'; 
-      'http://192.168.1.248:60655'; 
-
   final http.Client _httpClient;
 
   WalkGameService({http.Client? httpClient})
@@ -25,7 +22,7 @@ class WalkGameService {
   Future<WalkGameProjectionDto> setupWalkGame(WalkGameSetupDto setupDto) async {
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/walk-game/projection'),
+        Uri.parse(AppConfig.walkGameProjectionEndpoint),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -61,7 +58,7 @@ class WalkGameService {
   Future<Map<String, dynamic>> getWalkGameResults(String gameId) async {
     try {
       final response = await _httpClient.get(
-        Uri.parse('$_baseUrl/walk-game/results/$gameId'),
+        Uri.parse('${AppConfig.walkGameResultsEndpoint}/$gameId'),
         headers: {'Accept': 'application/json'},
       );
 
@@ -94,7 +91,7 @@ class WalkGameService {
   ) async {
     try {
       final response = await _httpClient.post(
-        Uri.parse('$_baseUrl/walk-game/simulate'),
+        Uri.parse(AppConfig.walkGameSimulateEndpoint),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -128,7 +125,7 @@ class WalkGameService {
 
   static Future<WalkGameStateDto> startGame(WalkGameSetupDto setup) async {
     final response = await http.post(
-      Uri.parse('$_baseUrl/walk-game/start'),
+      Uri.parse(AppConfig.walkGameStartEndpoint),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(setup.toJson()),
     );
@@ -146,7 +143,8 @@ class WalkGameService {
     required int handIndex,
     required String action, // Should match the server enum
   }) async {
-    final url = '$_baseUrl/walk-game/$token/hands/$handIndex/actions/$action';
+    final url =
+        '${AppConfig.walkGameAbandonEndpoint}/$token/hands/$handIndex/actions/$action';
     final response = await _httpClient.get(
       Uri.parse(url),
       headers: {
@@ -171,7 +169,7 @@ class WalkGameService {
     required WinLoseDrawType outcome, // Use enum instead of string
   }) async {
     final url =
-        '$_baseUrl/walk-game/$token/hands/$handIndex/outcomes/${outcome.name}';
+        '${AppConfig.walkGameAbandonEndpoint}/$token/hands/$handIndex/outcomes/${outcome.name}';
     final response = await _httpClient.get(
       Uri.parse(url),
       headers: {
@@ -191,7 +189,7 @@ class WalkGameService {
 
   /// Gets the current state for a token
   Future<WalkGameStateDto> getState({required String token}) async {
-    final url = '$_baseUrl/walk-game/$token';
+    final url = '${AppConfig.walkGameAbandonEndpoint}/$token';
     final response = await _httpClient.get(
       Uri.parse(url),
       headers: {'Accept': 'application/json'},
@@ -208,7 +206,7 @@ class WalkGameService {
 
   /// Abandon the run for a given token
   Future<NullResponse> abandonRun({required String token}) async {
-    final url = '$_baseUrl/walk-game/$token/abandon';
+    final url = '${AppConfig.walkGameAbandonEndpoint}/$token/abandon';
     final response = await _httpClient.get(
       Uri.parse(url),
       headers: {

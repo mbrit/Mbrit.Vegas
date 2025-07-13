@@ -1,16 +1,13 @@
-# The Core Strategy
+# House edge and psychology
 
-## Step 1: Choose Your Unit Size
-Start with a comfortable unit size - typically 1-2% of your total bankroll.
+The **house edge** is inevitable. 
 
-## Step 2: Follow the Progression
-- Begin with your unit size
-- Increase bets according to the pattern
-- Never exceed your predetermined limits
+The casinos use **psychological techniques** to make you think that "you're due, if you just 
+keep sitting and playing".
 
-## Step 3: Know When to Walk
-- Set clear win/loss limits
-- Don't chase losses
-- Take profits when you're ahead
+But the house edge can be defeated by **variance** -- there is a short window in any
+game where you can win. 
 
-This systematic approach is what gives you the 30% advantage. 
+And the psychology can be defeated by **movement**.
+
+**Master both, and doubling your money becomes much more possible.**

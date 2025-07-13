@@ -17,18 +17,17 @@ namespace Mbrit.Vegas.Utility
             this.LogInfo(() => "Building permutations...");
             var rounds = WinLoseDrawRoundsBucket.GetAllWinLosePermutations(WalkGameDefaults.HandsPerRound, rand);
 
-            const decimal houseEdge = 0M;       // at this point, we're a fair game...
-
             const int investables = 12;
             const int hands = 25;
             const int unitSize = 100;
+            const decimal houseEdge = WalkGameDefaults.HouseEdge;
 
             const WalkGameMode mode = WalkGameMode.Unrestricted;
 
             const int hailMaryCount = 0;
 
             // load the ones already there...
-            var selector = new AdHocPermutationSelector(mode, investables, hands, unitSize);
+            var selector = new AdHocPermutationSelector(mode, investables, hands, unitSize, houseEdge);
             var existing = new HashSet<string>(Permutation.GetKeys(selector));
 
             // walk...

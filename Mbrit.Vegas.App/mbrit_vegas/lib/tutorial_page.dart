@@ -3,9 +3,13 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'main.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mbrit_vegas/setup_run_page.dart';
 
 class TutorialPage extends StatefulWidget {
-  const TutorialPage({Key? key}) : super(key: key);
+  final bool fromStartWalk;
+  const TutorialPage({Key? key, this.fromStartWalk = false}) : super(key: key);
 
   @override
   State<TutorialPage> createState() => _TutorialPageState();
@@ -27,7 +31,7 @@ class _TutorialPageState extends State<TutorialPage> {
   Future<void> _loadTutorialSlides() async {
     final List<TutorialSlide> slides = [];
 
-    for (int i = 1; i <= 6; i++) {
+    for (int i = 1; i <= 17; i++) {
       final slideNumber = i.toString().padLeft(2, '0');
       final markdownContent = await _loadMarkdownFile(
         'assets/tutorial/slide_$slideNumber.md',
@@ -80,9 +84,7 @@ class _TutorialPageState extends State<TutorialPage> {
   }
 
   double _getVideoTimestamp(int slideIndex) {
-    // Video timestamps for each slide
-    final timestamps = [0.0, 10.0, 25.0, 45.0, 70.0, 95.0];
-    return timestamps[slideIndex - 1];
+    return 0.0;
   }
 
   @override
@@ -128,18 +130,74 @@ class _TutorialPageState extends State<TutorialPage> {
             ),
           ),
           IconButton(
-            onPressed: _currentSlideIndex < _slides.length - 1
-                ? () => _goToSlide(_currentSlideIndex + 1)
-                : null,
-            icon: Icon(
-              Icons.arrow_forward_ios,
-              color: _currentSlideIndex < _slides.length - 1
-                  ? Colors.white
-                  : Colors.grey[600],
-            ),
+            onPressed: () async {
+              if (_currentSlideIndex < _slides.length - 1) {
+                _goToSlide(_currentSlideIndex + 1);
+              } else {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('hasSeenTutorial', true);
+                if (widget.fromStartWalk) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const SetupRunPage(fromSplash: true),
+                    ),
+                    (route) => false,
+                  );
+                } else {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const MainScaffold(initialTab: 0),
+                    ),
+                    (route) => false,
+                  );
+                }
+              }
+            },
+            icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              final shouldSkip = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Skip Tutorial?'),
+                  content: const Text(
+                    'The Vegas Walk Method is complicated, and most people find the tutorial helps them understand it. Are you sure you want to skip it?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Skip'),
+                    ),
+                  ],
+                ),
+              );
+              if (shouldSkip == true) {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('hasSeenTutorial', true);
+                if (widget.fromStartWalk) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const SetupRunPage(fromSplash: true),
+                    ),
+                    (route) => false,
+                  );
+                } else {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const MainScaffold(initialTab: 0),
+                    ),
+                    (route) => false,
+                  );
+                }
+              }
+            },
             child: const Text(
               'Skip',
               style: TextStyle(
@@ -243,6 +301,7 @@ class _TutorialPageState extends State<TutorialPage> {
                               fontSize: 20,
                               height: 1.0,
                             ),
+                            pPadding: const EdgeInsets.only(bottom: 14),
                             strong: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,

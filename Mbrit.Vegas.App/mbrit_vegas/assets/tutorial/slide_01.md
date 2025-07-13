@@ -1,10 +1,12 @@
-People lose money in casinos because...
+# Why do casinos always win?
 
-1) They grind for 40-50 minutes games where the house edge makes them bleed every hand
+People **lose money** in casinos because...
 
-2) They don't set stop loss limits and take profit points
+They **grind** for 40-50 minutes where the house edge makes them bleed every hand
 
-3) They give the casino back all the money they made
+They don't set **stop loss limits** and **take profit** points
 
-The 3rd one is the worse one. How many times have you been up and thought "one more hand" 
+They **give back all the money they made** to the casino
+
+_The third is the most dangerous_. How many times have you been up and thought "one more hand" 
 and left the casino at breakeven or down?

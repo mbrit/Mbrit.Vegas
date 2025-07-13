@@ -1,4 +1,5 @@
-﻿using Mbrit.Vegas.Simulator;
+﻿using BootFX.Common;
+using Mbrit.Vegas.Simulator;
 using System.Runtime.InteropServices;
 
 namespace Mbrit.Vegas.Web.Api.Controllers
@@ -56,5 +57,7 @@ namespace Mbrit.Vegas.Web.Api.Controllers
         }
 
         public IWalkGamePlayer GetPlayer() => new ManualPlayer(this[0], this.Mode);
+
+        public IEnumerable<IWinLoseDrawRound> ToEnumerable() => this[0].WrapInEnumerable();
     }
 }

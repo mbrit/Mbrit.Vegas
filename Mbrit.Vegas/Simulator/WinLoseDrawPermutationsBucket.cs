@@ -1,6 +1,7 @@
 ﻿
 using System.Collections;
 using System.Runtime.InteropServices.Marshalling;
+using System.Security.Cryptography;
 using System.Security.Principal;
 
 namespace Mbrit.Vegas.Simulator
@@ -40,6 +41,14 @@ namespace Mbrit.Vegas.Simulator
             public WinLoseDrawType GetResult(int hand) => this.Round.GetResult(hand);
 
             public string GetKey() => this.Round.GetKey();
+        }
+
+        public IEnumerable<IWinLoseDrawRound> ToEnumerable()
+        {
+            var results = new List<IWinLoseDrawRound>();
+            for(var index = 0; index < this.Count; index++)
+                results.Add(this[index]);
+            return results;
         }
     }
 }

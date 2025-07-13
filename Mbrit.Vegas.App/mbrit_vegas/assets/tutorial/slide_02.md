@@ -1,11 +1,9 @@
-# Understanding the Basics
+# Doubling _should_ be easy
 
-The Vegas Walk Method is based on **mathematical probability** and **strategic betting patterns**.
+Doubling your money in a casino should be easy.
 
-## Key Concepts:
-- **Unit Size**: Your base betting amount
-- **Progression**: How your bets increase
-- **Exit Strategy**: When to walk away
-- **Bankroll Management**: Protecting your money
+But it's not. Slots will give you 2x your investment 5% of the time, taking you to near ruin 70% of the time.
 
-The method works by exploiting specific betting patterns that occur in casino games. 
+Table games are slow and grindy -- it's nearly impossible to grind your way to a 2x win.
+
+**What if there was a way to use the casinos own games against the casino to double your money?**

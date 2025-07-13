@@ -867,6 +867,12 @@ class _RunPageState extends State<RunPage> {
               pinned: false,
               expandedHeight: 0,
               collapsedHeight: kToolbarHeight,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+              ),
               actions: [
                 _isRefreshing
                     ? Padding(

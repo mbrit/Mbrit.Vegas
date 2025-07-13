@@ -27,6 +27,8 @@ namespace Mbrit.Vegas
 
         public static string GetToken() => EncryptionHelper.GetToken();
 
+        public static Random GetRng() => new Random(GetToken().GetHashCode());
+
         public static Version ProductVersion => typeof(VegasRuntime).Assembly.GetName().Version;
     }
 }

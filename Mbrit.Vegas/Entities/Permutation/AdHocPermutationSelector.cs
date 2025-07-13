@@ -13,13 +13,15 @@ namespace Mbrit.Vegas
         public int Investables { get; }
         public int Hands { get; }
         public int UnitSize { get; }
+        public decimal HouseEdge { get; }
 
-        public AdHocPermutationSelector(WalkGameMode mode, int investables, int hands, int unitSize)
+        public AdHocPermutationSelector(WalkGameMode mode, int investables, int hands, int unitSize, decimal houseEdge)
         {
             this.Mode = mode;
             this.Investables = investables;
             this.Hands = hands;
             this.UnitSize = unitSize;
+            this.HouseEdge = houseEdge;
         }
 
         public WalkHailMary HailMaryMode => WalkHailMary.None;
