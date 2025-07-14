@@ -15,17 +15,63 @@ class TutorialPage extends StatefulWidget {
   State<TutorialPage> createState() => _TutorialPageState();
 }
 
-class _TutorialPageState extends State<TutorialPage> {
+class _TutorialPageState extends State<TutorialPage>
+    with TickerProviderStateMixin {
   int _currentSlideIndex = 0;
   double _videoProgress = 0.0;
   bool _isVideoPlaying = false;
   List<TutorialSlide> _slides = [];
   bool _isLoading = true;
+  bool _showScrollAnimation = true;
+  late AnimationController _scrollAnimationController;
+  late Animation<Offset> _scrollAnimation;
+  final ScrollController _contentScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _loadTutorialSlides();
+
+    // Initialize scroll animation
+    _scrollAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scrollAnimation =
+        Tween<Offset>(
+          begin: const Offset(0, 0),
+          end: const Offset(0, -0.6),
+        ).animate(
+          CurvedAnimation(
+            parent: _scrollAnimationController,
+            curve: Curves.easeInOut,
+          ),
+        );
+
+    // Start the animation after a short delay
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _scrollAnimationController.repeat(reverse: true);
+      }
+    });
+
+    // Hide the animation after 5 seconds
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _showScrollAnimation = false;
+        });
+        _scrollAnimationController.stop();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollAnimationController.dispose();
+    _contentScrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTutorialSlides() async {
@@ -120,42 +166,6 @@ class _TutorialPageState extends State<TutorialPage> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
-          IconButton(
-            onPressed: _currentSlideIndex > 0
-                ? () => _goToSlide(_currentSlideIndex - 1)
-                : null,
-            icon: Icon(
-              Icons.arrow_back_ios,
-              color: _currentSlideIndex > 0 ? Colors.white : Colors.grey[600],
-            ),
-          ),
-          IconButton(
-            onPressed: () async {
-              if (_currentSlideIndex < _slides.length - 1) {
-                _goToSlide(_currentSlideIndex + 1);
-              } else {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setBool('hasSeenTutorial', true);
-                if (widget.fromStartWalk) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const SetupRunPage(fromSplash: true),
-                    ),
-                    (route) => false,
-                  );
-                } else {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const MainScaffold(initialTab: 0),
-                    ),
-                    (route) => false,
-                  );
-                }
-              }
-            },
-            icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
-          ),
           TextButton(
             onPressed: () async {
               final shouldSkip = await showDialog<bool>(
@@ -213,37 +223,41 @@ class _TutorialPageState extends State<TutorialPage> {
         children: [
           // Video placeholder section
           Container(
-            height: 250,
             margin: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF4A5568),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[600]!, width: 1),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.play_circle_outline,
-                    size: 64,
-                    color: Colors.grey[400],
+            child: AspectRatio(
+              aspectRatio: 16 / 9, // Standard video aspect ratio
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4A5568),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[600]!, width: 1),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.play_circle_outline,
+                        size: 64,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Video Tutorial',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[300],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Video content coming soon',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Video Tutorial',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[300],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Video content coming soon',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -251,7 +265,7 @@ class _TutorialPageState extends State<TutorialPage> {
           // Slideshow section
           Expanded(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               decoration: BoxDecoration(
                 color: const Color(0xFF2D3748),
                 borderRadius: BorderRadius.circular(12),
@@ -283,30 +297,81 @@ class _TutorialPageState extends State<TutorialPage> {
                       },
                       child: Container(
                         padding: const EdgeInsets.all(16),
-                        child: Markdown(
-                          data: _slides[_currentSlideIndex].content,
-                          styleSheet: MarkdownStyleSheet(
-                            h1: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            h2: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            p: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 20,
-                              height: 1.0,
-                            ),
-                            pPadding: const EdgeInsets.only(bottom: 14),
-                            strong: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            listBullet: const TextStyle(color: Colors.grey),
+                        child: GestureDetector(
+                          onTap: () {
+                            if (_showScrollAnimation) {
+                              setState(() {
+                                _showScrollAnimation = false;
+                              });
+                              _scrollAnimationController.stop();
+                            }
+                          },
+                          child: Stack(
+                            children: [
+                              SingleChildScrollView(
+                                controller: _contentScrollController,
+                                child: Markdown(
+                                  data: _slides[_currentSlideIndex].content,
+                                  styleSheet: MarkdownStyleSheet(
+                                    h1: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    h2: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    p: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 20,
+                                      height: 1.0,
+                                    ),
+                                    pPadding: const EdgeInsets.only(bottom: 14),
+                                    strong: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    listBullet: const TextStyle(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Scroll animation overlay
+                              if (_showScrollAnimation)
+                                Positioned(
+                                  bottom: 20,
+                                  right: 20,
+                                  child: SlideTransition(
+                                    position: _scrollAnimation,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF10B981,
+                                        ).withOpacity(0.9),
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.3,
+                                            ),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.pan_tool,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                       ),
@@ -316,26 +381,70 @@ class _TutorialPageState extends State<TutorialPage> {
                   // Progress dots
                   Container(
                     padding: const EdgeInsets.all(16),
-                    child: Column(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // Previous/Next buttons
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            _slides.length,
-                            (index) => Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 4),
-                              width: 8,
-                              height: 8,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: index == _currentSlideIndex
-                                    ? const Color(0xFF10B981)
+                          children: [
+                            IconButton(
+                              onPressed: _currentSlideIndex > 0
+                                  ? () => _goToSlide(_currentSlideIndex - 1)
+                                  : null,
+                              icon: Icon(
+                                Icons.arrow_back_ios,
+                                color: _currentSlideIndex > 0
+                                    ? Colors.white
                                     : Colors.grey[600],
+                                size: 20,
                               ),
                             ),
+                            IconButton(
+                              onPressed: () async {
+                                if (_currentSlideIndex < _slides.length - 1) {
+                                  _goToSlide(_currentSlideIndex + 1);
+                                } else {
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  await prefs.setBool('hasSeenTutorial', true);
+                                  if (widget.fromStartWalk) {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SetupRunPage(
+                                              fromSplash: true,
+                                            ),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  } else {
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            const MainScaffold(initialTab: 0),
+                                      ),
+                                      (route) => false,
+                                    );
+                                  }
+                                }
+                              },
+                              icon: Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // Slide counter (n/count)
+                        Text(
+                          '${_currentSlideIndex + 1}/${_slides.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
@@ -354,6 +463,15 @@ class _TutorialPageState extends State<TutorialPage> {
       _videoProgress =
           _slides[index].videoTimestamp / 100.0; // Assuming 100 second video
     });
+
+    // Reset scroll position to top
+    if (_contentScrollController.hasClients) {
+      _contentScrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 }
 

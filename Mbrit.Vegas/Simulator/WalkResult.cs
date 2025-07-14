@@ -31,9 +31,11 @@ namespace Mbrit.Vegas.Simulator
         internal WalkPointOutcome PointOutcomeSpike0p5 { get; }
         internal WalkPointOutcome PointOutcomeSpike1 { get; }
 
+        internal Dictionary<int, WalkPointOutcome> PointOutcomes { get; }
+
         internal WalkResult(WalkState state, WalkArgs args, IWinLoseDrawRound round, IEnumerable<WinLoseDrawType> vectors, WalkGameOutcome outcome, WalkSpikeType spikeType, 
             WalkPointOutcome pointOutcomeMajorBust, WalkPointOutcome pointOutcomeMinorBust, WalkPointOutcome pointOutcomeSpike0p5, 
-            WalkPointOutcome pointOutcomeSpike1)
+            WalkPointOutcome pointOutcomeSpike1, Dictionary<int, WalkPointOutcome> pointOutcomes)
         {
             this.EndState = state;
             this.Args = args;
@@ -61,6 +63,8 @@ namespace Mbrit.Vegas.Simulator
             this.PointOutcomeMinorBust = pointOutcomeMinorBust;
             this.PointOutcomeSpike0p5 = pointOutcomeSpike0p5;
             this.PointOutcomeSpike1 = pointOutcomeSpike1;
+
+            this.PointOutcomes = new Dictionary<int, WalkPointOutcome>(pointOutcomes);
         }
 
         internal WinLoseDrawType WinLose

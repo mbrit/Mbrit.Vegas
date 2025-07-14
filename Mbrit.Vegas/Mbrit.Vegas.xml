@@ -110,8 +110,8 @@
             <JsonName>gameRunId</JsonName>
           </SqlColumn>
           <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
-            <NativeName>Index</NativeName>
-            <Name>Index</Name>
+            <NativeName>Hand</NativeName>
+            <Name>Hand</Name>
             <Generate>True</Generate>
             <DbType>Int32</DbType>
             <Flags>Common</Flags>
@@ -119,7 +119,7 @@
             <EnumerationTypeName />
             <Modifiers>Public</Modifiers>
             <GenerateDtoField>True</GenerateDtoField>
-            <JsonName>index</JsonName>
+            <JsonName>hand</JsonName>
           </SqlColumn>
           <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
             <NativeName>Outcome</NativeName>
@@ -132,18 +132,6 @@
             <Modifiers>Public</Modifiers>
             <GenerateDtoField>True</GenerateDtoField>
             <JsonName>outcome</JsonName>
-          </SqlColumn>
-          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
-            <NativeName>UnitsPlayed</NativeName>
-            <Name>UnitsPlayed</Name>
-            <Generate>True</Generate>
-            <DbType>Int32</DbType>
-            <Flags>Common</Flags>
-            <Length>4</Length>
-            <EnumerationTypeName />
-            <Modifiers>Public</Modifiers>
-            <GenerateDtoField>True</GenerateDtoField>
-            <JsonName>unitsPlayed</JsonName>
           </SqlColumn>
           <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
             <NativeName>DateTimeUtc</NativeName>
@@ -406,6 +394,18 @@
             <Modifiers>Public</Modifiers>
             <GenerateDtoField>True</GenerateDtoField>
             <JsonName>actionUtc</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>TimeZoneMinutes</NativeName>
+            <Name>TimeZoneMinutes</Name>
+            <Generate>True</Generate>
+            <DbType>Int32</DbType>
+            <Flags>Common</Flags>
+            <Length>4</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>timeZoneMinutes</JsonName>
           </SqlColumn>
         </Columns>
         <Indexes>
@@ -833,6 +833,42 @@
             <Modifiers>Public</Modifiers>
             <GenerateDtoField>True</GenerateDtoField>
             <JsonName>outcome</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Score</NativeName>
+            <Name>Score</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>score</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>HouseEdge</NativeName>
+            <Name>HouseEdge</Name>
+            <Generate>True</Generate>
+            <DbType>Decimal</DbType>
+            <Flags>Common</Flags>
+            <Length>16</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>houseEdge</JsonName>
+          </SqlColumn>
+          <SqlColumn two47:typeName="BootFX.Common.Data.Schema.SqlColumn" two47:assembly="BootFX.Common, Version=7.0.11125.1832, Culture=neutral, PublicKeyToken=null" two47:strategy="IToXml">
+            <NativeName>Pattern</NativeName>
+            <Name>Pattern</Name>
+            <Generate>True</Generate>
+            <DbType>String</DbType>
+            <Flags>Common</Flags>
+            <Length>1024</Length>
+            <EnumerationTypeName />
+            <Modifiers>Public</Modifiers>
+            <GenerateDtoField>True</GenerateDtoField>
+            <JsonName>pattern</JsonName>
           </SqlColumn>
         </Columns>
         <Indexes />

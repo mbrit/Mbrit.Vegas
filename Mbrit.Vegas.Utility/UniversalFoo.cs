@@ -27,8 +27,14 @@ namespace Mbrit.Vegas.Utility
             const int hailMaryCount = 0;
 
             // load the ones already there...
+            this.LogInfo(() => "Loading existing keys...");
             var selector = new AdHocPermutationSelector(mode, investables, hands, unitSize, houseEdge);
-            var existing = new HashSet<string>(Permutation.GetKeys(selector));
+
+            var pairs = Permutation.GetKeysAndIdPairs(selector);
+
+            var existing = new HashSet<string>(pairs.Select(v => v.Key));
+
+            this.LogInfo(() => "Completing permutation set...");
 
             // walk...
             var logAt = DateTime.UtcNow.AddSeconds(2);

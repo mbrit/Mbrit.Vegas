@@ -44,6 +44,8 @@ namespace Mbrit.Vegas.Simulator
 
     public record HandAndUnitsPair(int Hand, int Units);
 
+    internal record WalkOutcomeAndSpikeType(WalkGameOutcome Outcome, WalkSpikeType SpikeType);
+
     public class WalkFoo : CliFoo
     {
         private static readonly ThreadLocal<Random> ThreadRandom = new(() => new Random(VegasRuntime.GetToken().GetHashCode()));
@@ -433,6 +435,7 @@ namespace Mbrit.Vegas.Simulator
             this.RenderRow(table, "Stop mode", runs, (index, results, args) => args.StopAtWinMode);
             this.RenderRow(table, "Limited stretch hands", runs, (index, results, args) => args.LimitedStretchHands);
             this.RenderRow(table, "Limited investments", runs, (index, results, args) => args.LimitedStretchInvestments);
+            this.RenderRow(table, "Do evaluation", runs, (index, results, args) => args.DoEvaluation);
             this.RenderRow(table, "Hail Mary", runs, (index, results, args) => args.HailMaryMode + ", " + args.HailMaryCount);
 
             sep();
@@ -872,10 +875,10 @@ namespace Mbrit.Vegas.Simulator
             if (runArgs.CreateState != null)
                 state = runArgs.CreateState(args);
 
-            if(state == null)
+            if (state == null)
                 state = new WalkState(args);
 
-            if (args.StopAtWinMode == WalkGameMode.StretchToSpike1 && !(args.DoLimitedStretchHands) && !(args.DoLimitedStretchInvestment))
+            if (args.StopAtWinMode == WalkGameMode.StretchToSpike1 && !(args.DoLimitedStretchHands) && !(args.DoLimitedStretchInvestment) && !(args.DoEvaluation))
                 throw new InvalidOperationException("Stretch mode has to have a limit.");
 
             var seenSpike0p5 = false;
@@ -897,6 +900,7 @@ namespace Mbrit.Vegas.Simulator
             player.StartPlaying(round, args, state);
 
             var hand = 0;
+            var pointOutcomes = new Dictionary<int, WalkPointOutcome>();
             while (true)
             {
                 if (!(player.CanPlayHand(hand)))
@@ -914,7 +918,7 @@ namespace Mbrit.Vegas.Simulator
                 }
 
                 player.StartPlayingHand(hand, round, args, state);
-                
+
                 // what are we playing? we don't need this really...
                 var game = GameType.Baccarat;
 
@@ -927,7 +931,7 @@ namespace Mbrit.Vegas.Simulator
                         if (trace)
                             Console.WriteLine("Nothing to invest.");
 
-                        pointOutcomeMajorBust = state.GetPointOutcome(hand);
+                        pointOutcomeMajorBust = state.GetPointOutcome(hand, args);
 
                         state.StopReason = WalkStopReason.NothingToInvest;
                         break;
@@ -1188,15 +1192,42 @@ namespace Mbrit.Vegas.Simulator
                             }
                             */
 
-                            if ((args.DoLimitedStretchHands || args.DoLimitedStretchInvestment) && this.HasReached(state, args.Spike0p5Win))
+                            if (this.HasReached(state, args.Spike0p5Win))
                             {
-                                if (args.DoLimitedStretchHands && abandonAtHand == -1)
-                                    abandonAtHand = hand + args.LimitedStretchHands;
-
-                                if (args.DoLimitedStretchInvestment && !(doStopInvesting))
+                                if ((args.DoLimitedStretchHands || args.DoLimitedStretchInvestment))
                                 {
-                                    doStopInvesting = true;
-                                    stopInvesting = args.LimitedStretchInvestments;
+                                    if (args.DoLimitedStretchHands && abandonAtHand == -1)
+                                        abandonAtHand = hand + args.LimitedStretchHands;
+
+                                    if (args.DoLimitedStretchInvestment && !(doStopInvesting))
+                                    {
+                                        doStopInvesting = true;
+                                        stopInvesting = args.LimitedStretchInvestments;
+                                    }
+                                }
+                                else if (args.DoEvaluation)
+                                {
+                                    var playbackRound = WinLoseDrawExtender.GetRoundFromVectors(vectors);
+
+                                    var eval = new WalkGameEvaluator();
+                                    var evalOutcome = state.GetPointOutcome(hand, args);
+
+                                    if (evalOutcome.Outcome != WalkGameOutcome.Spike1OrBetter)
+                                    {
+                                        var evalResults = eval.Evaluate(hand + 1, playbackRound, evalOutcome, new AdHocPermutationSelector(WalkGameMode.Unrestricted,
+                                            args.MaxPutIns, args.MaxHands, args.Unit, setup.HouseEdge));
+
+                                        if(evalResults.DeclinesToEitherLoss >= args.StretchDeclineThreshhold)
+                                        {
+                                            player.StretchFinished(WalkStretchFinishReason.DecliningOutcome);
+                                            abandonAtHand = hand;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // we need to stop playing -- this should just drop through as we're on target to stop...
+                                        player.StretchFinished(WalkStretchFinishReason.ReachedSpike1);
+                                    }
                                 }
                             }
                         }
@@ -1240,52 +1271,21 @@ namespace Mbrit.Vegas.Simulator
                         state.StopReason = WalkStopReason.DynamicInvestmentLimit;
                         break;
                     }
-
-                    /*
-                    if(args.StopAtWinMode == WalkGameMode.StretchToSpike1 && seenSpike0p5 &&
-                        args.DoAbandonAtOrUnderChainScore && state.ChainScore <= args.AbandonAtOrUnderChainScore)
-                    {
-                        logStop($"Negative chain score.");
-                        state.StopReason = WalkStopReason.NegativeChainScore;
-                        break;
-                    }
-                    */
-
-                    /*
-                    if (args.HasBadRunLimit && state.MaxLossChain > args.BadRunLimit)
-                    {
-                        logStop($"Hit bad run");
-                        state.StopReason = WalkStopReason.BadRun;
-                        break;
-                    }
-
-                    if (args.HasGoodRunLimit && state.MaxWinChain > args.GoodRunLimit)
-                    {
-                        logStop($"Hit good run");
-                        state.StopReason = WalkStopReason.GoodRun;
-                        break;
-                    }
-                    */
-
-                    /*
-                    if (args.DoStopAtMinusUnits && state.InvestedUnits >= args.StopAtMinusUnits && !(seenSpike0p5))
-                    {
-                        logStop($"Stopped because bleeding.");
-                        state.StopReason = WalkStopReason.Bleeding;
-                        break;
-                    }
-                    */
                 }
                 finally
                 {
+                    var pointOutcome = state.GetPointOutcome(hand, args);
+
+                    pointOutcomes[hand] = pointOutcome;
+
                     if (pointOutcomeMinorBust == null && state.Profit < args.MinorBust)
-                        pointOutcomeMinorBust = state.GetPointOutcome(hand);
+                        pointOutcomeMinorBust = pointOutcome;
 
                     if (pointOutcomeSpike0p5 == null && atOrAboveSpike0p5)
-                        pointOutcomeSpike0p5 = state.GetPointOutcome(hand);
+                        pointOutcomeSpike0p5 = pointOutcome;
 
                     if (pointOutcomeSpike1 == null && atOrAboveSpike1)
-                        pointOutcomeSpike1 = state.GetPointOutcome(hand);
+                        pointOutcomeSpike1 = pointOutcome;
 
                     player.StopPlayingHand(hand, round, args, state);
                 }
@@ -1308,31 +1308,6 @@ namespace Mbrit.Vegas.Simulator
             //var minor = invested * .5;
             //var spike = invested;
 
-            WalkGameOutcome outcome;
-            var spikeType = WalkSpikeType.One;
-
-            if (final < args.MinorBust)
-                outcome = WalkGameOutcome.MajorBust;
-            else if (final <= 0)
-                outcome = WalkGameOutcome.MinorBust;
-            else if (final < args.Spike0p5Win)
-                outcome = WalkGameOutcome.Evens;
-            else if (final < args.Spike1Win)
-                outcome = WalkGameOutcome.Spike0p5;
-            else
-            {
-                outcome = WalkGameOutcome.Spike1OrBetter;
-
-                if (final >= args.Spike3Win)
-                    spikeType = WalkSpikeType.ThreePlus;
-                else if (final >= args.Spike2Win)
-                    spikeType = WalkSpikeType.Two;
-                else if (final >= args.Spike1p5Win)
-                    spikeType = WalkSpikeType.OnePointFive;
-                else
-                    spikeType = WalkSpikeType.One;
-            }
-
             if (trace)
             {
                 Console.WriteLine("==================");
@@ -1342,8 +1317,10 @@ namespace Mbrit.Vegas.Simulator
                 Console.WriteLine("Final (ignoring what we didn't invest) [state] --> " + state.Profit);
             }
 
-            var result = new WalkResult(state, args, round, vectors, outcome, spikeType, pointOutcomeMajorBust, pointOutcomeMinorBust,
-                pointOutcomeSpike0p5, pointOutcomeSpike1);
+            var pair = ResolveOutcome(final, args);
+
+            var result = new WalkResult(state, args, round, vectors, pair.Outcome, pair.SpikeType, pointOutcomeMajorBust, pointOutcomeMinorBust,
+                pointOutcomeSpike0p5, pointOutcomeSpike1, pointOutcomes);
 
             if (runArgs.Finished != null)
                 runArgs.Finished(state, final);
@@ -1351,6 +1328,37 @@ namespace Mbrit.Vegas.Simulator
             player.StopPlaying(round, args, state, result);
 
             return result;
+        }
+
+        internal static WalkOutcomeAndSpikeType ResolveOutcome(int profit, WalkArgs args)
+        {
+            var spikeType = WalkSpikeType.One;
+
+            var outcome = WalkGameOutcome.MajorBust;
+
+            if (profit < args.MinorBust)
+                outcome = WalkGameOutcome.MajorBust;
+            else if (profit <= 0)
+                outcome = WalkGameOutcome.MinorBust;
+            else if (profit < args.Spike0p5Win)
+                outcome = WalkGameOutcome.Evens;
+            else if (profit < args.Spike1Win)
+                outcome = WalkGameOutcome.Spike0p5;
+            else
+            {
+                outcome = WalkGameOutcome.Spike1OrBetter;
+
+                if (profit >= args.Spike3Win)
+                    spikeType = WalkSpikeType.ThreePlus;
+                else if (profit >= args.Spike2Win)
+                    spikeType = WalkSpikeType.Two;
+                else if (profit >= args.Spike1p5Win)
+                    spikeType = WalkSpikeType.OnePointFive;
+                else
+                    spikeType = WalkSpikeType.One;
+            }
+
+            return new WalkOutcomeAndSpikeType(outcome, spikeType);
         }
 
         private bool ChooseHailMary() => this.Random.Next(0, 999) >= 500;

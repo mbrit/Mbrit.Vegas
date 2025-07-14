@@ -17,7 +17,7 @@ namespace Mbrit.Vegas.Simulator
         public EventHandler<EventArgs<int>> HandPlaying;
         public EventHandler<EventArgs<int>> HandPlayed;
 
-        internal ManualPlayer(IWinLoseDrawRound round, WalkGameMode mode)
+        public ManualPlayer(IWinLoseDrawRound round, WalkGameMode mode)
         {
             this.Rounds = round;
             this.Mode = mode;
@@ -82,6 +82,11 @@ namespace Mbrit.Vegas.Simulator
         {
             if (this.HandPlaying != null)
                 this.HandPlaying(this, e);
+        }
+
+        public void StretchFinished(WalkStretchFinishReason reason)
+        {
+            // no-op...
         }
     }
 }

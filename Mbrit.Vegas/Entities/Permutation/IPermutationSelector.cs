@@ -8,7 +8,7 @@ namespace Mbrit.Vegas
         int Hands { get; }
         int Investables { get; }
         int UnitSize { get; }
-        WalkHailMary HailMaryMode { get; }
         decimal HouseEdge { get; }
+        WalkHailMary HailMaryMode { get; }
     }
 }

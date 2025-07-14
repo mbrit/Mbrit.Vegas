@@ -1,6 +1,6 @@
 ﻿<Deploy>
 
-  <TargetPath>c:\Program Files\Mbrit.Vegas</TargetPath>
+  <TargetPath>c:\Program Files\Mbrit\Vegas</TargetPath>
 
   <DeployServerUrl>https://deploy.mbritops.com/</DeployServerUrl>
   <DeployServerApiKey>qB5zN4yT4yX0hD8lW3uY6rW5fK1yR5yF</DeployServerApiKey>

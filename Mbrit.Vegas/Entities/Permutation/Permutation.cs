@@ -14,19 +14,24 @@ namespace Mbrit.Vegas
     using BootFX.Common.Entities;
     using BootFX.Common.Entities.Attributes;
     using Mbrit.Vegas.Simulator;
+    using BootFX.Common.Management;
 
+    public record PermutationIdAndKey(int Id, string Key);
 
     /// <summary>
     /// Defines the entity type for 'Permutations'.
     /// </summary>
     [Serializable()]
     [Entity(typeof(PermutationCollection), "Permutations")]
-    public class Permutation : PermutationBase
+    public class Permutation : PermutationBase, IPermutation
     {
         // by convention, database decimals are always decimal(18,5) -- this preserves precision, without
         // anyone having to remember that that one field out of thousands of decimals field across
         // hundreds of projects has differnet precisions...
-        private const decimal ScoreAdjust = 10000M;     
+        internal const decimal ScoreAdjust = 10000M;
+
+        private const int EncodedDecimalDp = 1000;
+        private const int EncodedDecimalLength = 9;
 
         /// <summary>
         /// Constructor.
@@ -74,6 +79,49 @@ namespace Mbrit.Vegas
             item.ApplyPointOutcome(PermutationOutcomeType.MinorBust, result.PointOutcomeMinorBust);
             item.ApplyPointOutcome(PermutationOutcomeType.Spike0p5, result.PointOutcomeSpike0p5);
             item.ApplyPointOutcome(PermutationOutcomeType.Spike1, result.PointOutcomeSpike1);
+
+            var builder = new StringBuilder();
+            var hand = 0;
+            while(true)
+            {
+                if (!(result.PointOutcomes.ContainsKey(hand)))
+                    break;
+
+                if (builder.Length > 0)
+                    builder.Append("$");
+
+                var outcome = result.PointOutcomes[hand];
+
+                if (outcome.Outcome == WalkGameOutcome.MajorBust)
+                    builder.Append("MB");
+                else if (outcome.Outcome == WalkGameOutcome.MinorBust)
+                    builder.Append("NB");
+                else if (outcome.Outcome == WalkGameOutcome.Evens)
+                    builder.Append("EV");
+                else if (outcome.Outcome == WalkGameOutcome.Spike0p5)
+                    builder.Append("S0");
+                else if (outcome.Outcome == WalkGameOutcome.Spike1OrBetter)
+                    builder.Append("S1");
+                else
+                    throw new NotSupportedException($"Cannot handle '{outcome.Outcome}'.");
+
+                Action<decimal> append = (value) =>
+                {
+                    builder.Append("|");
+                    var asString = Math.Round(value, 3);
+                    builder.Append(asString);
+                };
+
+                append(outcome.Profit);
+                append(outcome.EvPer100Currency);
+                append(outcome.Investable);
+                append(outcome.Bankroll);
+                append(outcome.Banked);
+
+                hand++;
+            }
+
+            item.Pattern = builder.ToString();
 
             item.SaveChanges();
         }
@@ -143,10 +191,29 @@ namespace Mbrit.Vegas
             }
         }
 
-        public static IEnumerable<string> GetKeys(IPermutationSelector selector)
+        private static SqlFilter<Permutation> GetPermutationFilter(IPermutationSelector selector)
+        {
+            var filter = new SqlFilter<Permutation>();
+            filter.Constraints.Add(v => v.Mode, selector.Mode);
+            filter.Constraints.Add(v => v.Hands, selector.Hands);
+            filter.Constraints.Add(v => v.UnitSize, selector.UnitSize);
+            filter.Constraints.Add(v => v.Investables, selector.Investables);
+            filter.Constraints.Add(v => v.HouseEdge, selector.HouseEdge);
+
+            if (selector.HailMaryMode == WalkHailMary.None)
+                filter.Constraints.AddIsNullConstraint(v => v.HailMaryMap);
+            else
+                throw new NotSupportedException($"Cannot handle '{selector.HailMaryMode}'.");
+
+            return filter;
+        }
+
+        public static IEnumerable<PermutationIdAndKey> GetKeysAndIdPairs(IPermutationSelector selector)
         {
             var builder = new SqlBuilder<Permutation>();
             builder.Append("select ");
+            builder.AppendField(v => v.PermutationId);
+            builder.Append(", ");
             builder.AppendField(v => v.Key);
             builder.Append(" from ");
             builder.AppendTable();
@@ -170,7 +237,22 @@ namespace Mbrit.Vegas
             else
                 throw new NotSupportedException($"Cannot handle '{selector.HailMaryMode}'.");
 
-            return Database.ExecuteValuesVertical<string>(builder);
+            var table = Database.ExecuteDataTable(builder);
+
+            var results = new List<PermutationIdAndKey>();
+            foreach (DataRow row in table.Rows)
+                results.Add(new PermutationIdAndKey((int)row["permutationid"], (string)row["key"]));
+
+            return results;
         }
+
+        internal static IEnumerable<Permutation> GetByPrefix(string key, IPermutationSelector selector)
+        {
+            var filter = GetPermutationFilter(selector);
+            filter.Constraints.Add(v => v.Key, SqlOperator.StartsWith, key + "%");
+            return filter.ExecuteEnumerable();
+        }
+
+        public decimal ResolvedScore => this.Score / ScoreAdjust;
     }
 }

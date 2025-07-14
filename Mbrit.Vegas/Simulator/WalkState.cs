@@ -152,6 +152,11 @@ namespace Mbrit.Vegas.Simulator
 
         internal decimal EvPer100Currency => (this.Profit / (decimal)this.TotalWagered) * 100M;
 
-        internal WalkPointOutcome GetPointOutcome(int hand) => new WalkPointOutcome(this.Profit, this.TotalWagered, this.EvPer100Currency, hand);
+        public WalkPointOutcome GetPointOutcome(int hand, WalkArgs args)
+        {
+            var profit = this.Profit;
+            var pair = WalkFoo.ResolveOutcome(profit, args);
+            return new WalkPointOutcome(this.Profit, this.TotalWagered, this.EvPer100Currency, this.Investable, this.Bankroll, this.Banked, pair.Outcome, hand);
+        }
     }
 }

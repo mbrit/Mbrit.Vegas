@@ -41,5 +41,10 @@ namespace Mbrit.Vegas.Simulator
         {
             // no-op...
         }
+
+        public void StretchFinished(WalkStretchFinishReason reason)
+        {
+            // no-op...
+        }
     }
 }

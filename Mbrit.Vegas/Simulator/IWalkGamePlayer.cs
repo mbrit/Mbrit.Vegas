@@ -19,5 +19,7 @@ namespace Mbrit.Vegas.Simulator
         IEnumerable<PlayerMove> GetNextMoves(int hand, IWinLoseDrawRound round, WalkState state);
 
         void BankedProfit(int hand, int currencyAmount, int units);
+
+        void StretchFinished(WalkStretchFinishReason reason);
     }
 }

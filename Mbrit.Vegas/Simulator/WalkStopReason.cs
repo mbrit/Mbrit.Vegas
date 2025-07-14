@@ -16,7 +16,7 @@ namespace Mbrit.Vegas.Simulator
         HitSpike1p5 = 5,
         HitSpike2 = 6,
         HitSpike3Plus = 7,
-        DynamicHandsLimit = 8,
+        DynamicHandsLimit = 8,          // this can also be that we forced out with the evaluation...
         DynamicInvestmentLimit = 9,
         //NegativeChainScore = 10,
         BadRun = 11,

@@ -52,6 +52,8 @@ namespace Mbrit.Vegas.Utility
                             new UniversalFoo().DoMagic();
                         else if (name == "score")
                             new ScoreFoo().DoMagic();
+                        else if (name == "eval")
+                            new EvalFoo().DoMagic();
                     });
                 }
             }

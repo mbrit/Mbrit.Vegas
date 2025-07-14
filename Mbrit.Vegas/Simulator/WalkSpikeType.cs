@@ -8,9 +8,10 @@ namespace Mbrit.Vegas.Simulator
 {
     public enum WalkSpikeType
     {
-        One = 0,
-        OnePointFive = 1,
-        Two = 2,
-        ThreePlus = 3
+        None = 0,
+        One = 1,
+        OnePointFive = 2,
+        Two = 3,
+        ThreePlus = 4
     }
 }

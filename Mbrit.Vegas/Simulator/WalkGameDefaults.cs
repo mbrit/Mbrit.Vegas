@@ -10,8 +10,12 @@ namespace Mbrit.Vegas.Simulator
     {
         public const int Investables = 12;
         public const int HandsPerRound = 25;
+        public const int UnitSize = 100;
         public const decimal HouseEdge = 0.015M;
         //public const decimal HouseEdge = 0.005M;
+
+        public static IPermutationSelector GetPermutationSelector() => 
+            new AdHocPermutationSelector(WalkGameMode.Unrestricted, Investables, HandsPerRound, UnitSize, HouseEdge);
 
         public static WalkGameSetup GetSetup(WalkGameMode mode, IWinLoseDrawRoundsBucket rounds, int unitSize, int hailMaryCount)
         {

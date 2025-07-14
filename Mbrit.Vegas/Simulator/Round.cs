@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Mbrit.Vegas.Simulator
 {
-    public struct Round<T> : IEnumerable<T>
+    public class Round<T> : IEnumerable<T>
     {
         public int Index { get; }
         private List<T> Vectors { get; }

@@ -48,6 +48,8 @@ namespace Mbrit.Vegas.Simulator
 
         internal int LimitedStretchHands { get; set; } = -1;
         internal int LimitedStretchInvestments { get; set; } = -1;
+        internal bool DoEvaluation { get; set; }
+        internal decimal StretchDeclineThreshhold { get; set; } = 0.55M;
 
         //internal int StopAtMinusUnits { get; set; } = -1;
 
@@ -123,10 +125,15 @@ namespace Mbrit.Vegas.Simulator
 
         public void SetStretchToSpike1()
         {
-            // this one seems stable...
             this.StopAtWinMode = WalkGameMode.StretchToSpike1;
+
+            /*
+            // this one seems stable...
             this.LimitedStretchHands = 6;
             this.LimitedStretchInvestments = -1;
+            */
+
+            this.DoEvaluation = true;
         }
 
         internal void SetHailMary(int hailMaryCount)

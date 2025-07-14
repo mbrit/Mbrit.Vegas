@@ -20,7 +20,7 @@ namespace Mbrit.Vegas.Web.Api.Controllers
         {
             var values = new Dictionary<string, string>();
             values["splash/main-title"] = "The Vegas Walk Method";
-            values["splash/sub-title"] = "The only method that teachs a 30% chance to DOUBLE YOUR MONEY in Vegas";
+            values["splash/sub-title"] = "The only method that teaches a 30% chance to DOUBLE YOUR MONEY in Vegas";
             return values;
         }
 

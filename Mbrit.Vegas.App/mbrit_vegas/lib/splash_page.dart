@@ -16,6 +16,7 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   bool _isLoading = true;
+  final TextEditingController _inviteCodeController = TextEditingController();
 
   @override
   void initState() {
@@ -23,13 +24,129 @@ class _SplashPageState extends State<SplashPage> {
     _initializeAsync();
   }
 
+  @override
+  void dispose() {
+    _inviteCodeController.dispose();
+    super.dispose();
+  }
+
   Future<void> _initializeAsync() async {
     await StringHelper.initialize();
-    // Add any other async initialization here if needed
+
+    // Check if invitation code is already stored
+    final prefs = await SharedPreferences.getInstance();
+    final storedInviteCode = prefs.getString('inviteCode');
+
     if (mounted) {
       setState(() {
         _isLoading = false;
       });
+
+      // Show invitation dialog if no code is stored
+      if (storedInviteCode == null) {
+        _showInvitationDialog();
+      }
+    }
+  }
+
+  void _showInvitationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: const Text(
+            'THE VEGAS WALK METHOD IS CURRENTLY IN INVITATION-ONLY BETA.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              const Text(
+                'Please enter your invite code',
+                style: TextStyle(color: Colors.white, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _inviteCodeController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Enter invite code',
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  filled: true,
+                  fillColor: Colors.grey[800],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF10B981)),
+                  ),
+                ),
+                onSubmitted: (value) => _validateInviteCode(),
+              ),
+            ],
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: ElevatedButton(
+                  onPressed: _validateInviteCode,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Submit',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _validateInviteCode() async {
+    final enteredCode = _inviteCodeController.text.trim();
+    const validCode = 'ILOVEVEGAS';
+
+    if (enteredCode.toUpperCase() == validCode) {
+      // Store the invitation code
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('inviteCode', enteredCode);
+
+      if (mounted) {
+        Navigator.of(context).pop(); // Close the dialog
+      }
+    } else {
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid invite code. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

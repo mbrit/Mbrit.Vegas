@@ -27,6 +27,11 @@ namespace Mbrit.Vegas.Web.Api
                     }, (app) =>
                     {
 
+                        Task.Run(() =>
+                        {
+                            PermutationCache.InitializeDefaultCache();
+                        });
+
                     }, webArgs);
                 }
             }

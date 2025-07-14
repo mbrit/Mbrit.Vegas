@@ -1,6 +1,7 @@
 class AppConfig {
   // Server configuration - shared across all services
-  static const String baseUrl = 'http://192.168.1.248:61655';
+  //static const String baseUrl = 'http://192.168.1.248:61655';
+  static const String baseUrl = 'https://app-api.thevegaswalk.com';
 
   // API endpoints
   static String get stringsVersionEndpoint =>

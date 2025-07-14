@@ -706,6 +706,25 @@ namespace Mbrit.Vegas
         }
         
         /// <summary>
+        /// Gets or sets the value for 'Pattern'.
+        /// </summary>
+        /// <remarks>
+        /// This property maps to the 'Pattern' column.
+        /// </remarks>
+        [EntityField("Pattern", System.Data.DbType.String, BootFX.Common.Entities.EntityFieldFlags.Common, 1024)]
+        public string Pattern
+        {
+            get
+            {
+                return ((string)(this["Pattern"]));
+            }
+            set
+            {
+                this["Pattern"] = value;
+            }
+        }
+        
+        /// <summary>
         /// Creates a SqlFilter for an instance of 'Permutation'.
         /// </summary>
         public static BootFX.Common.Data.SqlFilter CreateFilterBase()
@@ -2166,6 +2185,47 @@ namespace Mbrit.Vegas
             PermutationCollection results = ((PermutationCollection)(filter.ExecuteEntityCollection()));
             return results;
         }
+        
+        /// <summary>
+        /// Gets entities where Pattern is equal to the given value.
+        /// </summary>
+        /// <bootfx>
+        /// CreateEntityFilterEqualToMethod - Permutation
+        /// </bootfx>
+        /// <remarks>
+        /// Created for column <c>Pattern</c>
+        /// </remarks>
+        public static PermutationCollection GetByPattern(string pattern)
+        {
+            return Mbrit.Vegas.Permutation.GetByPattern(pattern, BootFX.Common.Data.SqlOperator.EqualTo);
+        }
+        
+        /// <summary>
+        /// Gets entities where Pattern matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>Pattern</c>
+        /// </remarks>
+        public static PermutationCollection GetByPattern(string pattern, BootFX.Common.Data.SqlOperator patternOperator)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(Permutation));
+            filter.Constraints.Add("Pattern", patternOperator, pattern);
+            return ((PermutationCollection)(filter.ExecuteEntityCollection()));
+        }
+        
+        /// <summary>
+        /// Gets entities where Pattern matches the given specification.
+        /// </summary>
+        /// <remarks>
+        /// Created for column <c>Pattern</c>
+        /// </remarks>
+        public static PermutationCollection GetByPattern(string pattern, BootFX.Common.Data.SqlOperator patternOperator, BootFX.Common.OnNotFound onNotFound)
+        {
+            BootFX.Common.Data.SqlFilter filter = new BootFX.Common.Data.SqlFilter(typeof(Permutation));
+            filter.Constraints.Add("Pattern", patternOperator, pattern);
+            PermutationCollection results = ((PermutationCollection)(filter.ExecuteEntityCollection()));
+            return results;
+        }
     }
 }
 
@@ -2207,7 +2267,8 @@ CREATE TABLE [Permutations] (
 	[Ev] decimal(18, 5) NOT NULL, 
 	[Outcome] int NOT NULL, 
 	[Score] decimal(18, 5) NOT NULL, 
-	[HouseEdge] decimal(18, 5) NOT NULL
+	[HouseEdge] decimal(18, 5) NOT NULL, 
+	[Pattern] nvarchar(1024) NOT NULL
 	);
 ALTER TABLE [Permutations] ADD CONSTRAINT [PK_Permutations] PRIMARY KEY ([PermutationId]);
 ALTER TABLE [Permutations]  ADD  DEFAULT (0) FOR [Score]
@@ -2249,7 +2310,8 @@ CREATE TABLE "Permutations" (
 	"Ev" decimal(18, 5) NOT NULL, 
 	"Outcome" int NOT NULL, 
 	"Score" decimal(18, 5) NOT NULL, 
-	"HouseEdge" decimal(18, 5) NOT NULL
+	"HouseEdge" decimal(18, 5) NOT NULL, 
+	"Pattern" varchar(1024) collate english_ci NOT NULL
 	);
 ALTER TABLE "Permutations" ADD CONSTRAINT "PK_Permutations" PRIMARY KEY ("PermutationId");
 ALTER TABLE "Permutations" ALTER COLUMN "Score" SET DEFAULT (0);
@@ -2291,7 +2353,8 @@ CREATE TABLE `Permutations` (
 	`Ev` decimal(18, 5) NOT NULL, 
 	`Outcome` int NOT NULL, 
 	`Score` decimal(18, 5) NOT NULL, 
-	`HouseEdge` decimal(18, 5) NOT NULL
+	`HouseEdge` decimal(18, 5) NOT NULL, 
+	`Pattern` nvarchar(1024) NOT NULL
 	, PRIMARY KEY (`PermutationId`));
 
 ALTER TABLE `Permutations` MODIFY COLUMN `Score` decimal(18, 5)  DEFAULT 0
