@@ -9,8 +9,8 @@ namespace Mbrit.Vegas.Simulator
 {
     public static class WinLoseDrawExtender
     {
-        internal const string WinKey = "w";
-        internal const string LoseKey = "l";
+        public const string WinKey = "w";
+        public const string LoseKey = "l";
 
         public static string GetKey(this IEnumerable<WinLoseDrawType> wlds)
         {

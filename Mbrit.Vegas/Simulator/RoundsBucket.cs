@@ -16,7 +16,8 @@ namespace Mbrit.Vegas.Simulator
 
         protected List<Round<T>> Rounds { get; set; }
 
-        protected RoundsBucket(int numRounds, int handsPerRound, decimal houseEdge, Func<int, T> callback, Random rand)
+        protected RoundsBucket(int numRounds, int handsPerRound, decimal houseEdge, Func<int, T> callback, Random rand, 
+            RoundsBucketFlags flags = RoundsBucketFlags.Default)
         {
             this.HouseEdge = houseEdge;
 
@@ -27,12 +28,20 @@ namespace Mbrit.Vegas.Simulator
 
             var allVectors = new List<Round<T>>();
 
-            var roundTarget = rand.Next(numRounds * 4, numRounds * 8);
+            var isExact = ((int)flags & (int)RoundsBucketFlags.Exact) != 0;
+
+            var roundTarget = numRounds;
+            if(!(isExact))
+                roundTarget = rand.Next(numRounds * 4, numRounds * 8);
+
             for (var round = 0; round < roundTarget; round++)
             {
                 var vectors = new List<T>();
 
-                var handTarget = rand.Next(handsPerRound * 4, handsPerRound * 8);
+                var handTarget = handsPerRound;
+                if(!(isExact))
+                    handTarget = rand.Next(handsPerRound * 4, handsPerRound * 8);
+
                 for (var hand = 0; hand < handTarget; hand++)
                 {
                     var result = callback(hand);

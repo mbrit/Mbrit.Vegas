@@ -8,12 +8,7 @@ namespace Mbrit.Vegas.Simulator
 {
     public class AutomaticWalkGamePlayer : IWalkGamePlayer
     {
-        public void BankedProfit(int currencyAmount, int units)
-        {
-            // no-op...
-        }
-
-        public void BankedProfit(int hand, int currencyAmount, int units)
+        public virtual void BankedProfit(int hand, int currencyAmount, int units)
         {
             // no-op...
         }

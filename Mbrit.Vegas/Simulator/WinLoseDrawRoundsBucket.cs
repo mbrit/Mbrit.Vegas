@@ -19,8 +19,9 @@ namespace Mbrit.Vegas.Simulator
 
         private const int NumPrebakedBuckets = 250;
 
-        private WinLoseDrawRoundsBucket(int numRounds, int handsPerRound, decimal houseEdge, Func<int, WinLoseDrawType> callback, Random rand)
-            : base(numRounds, handsPerRound, houseEdge, callback, rand)
+        private WinLoseDrawRoundsBucket(int numRounds, int handsPerRound, decimal houseEdge, Func<int, WinLoseDrawType> callback, 
+            Random rand, RoundsBucketFlags flags = RoundsBucketFlags.Default)
+            : base(numRounds, handsPerRound, houseEdge, callback, rand, flags)
         {
         }
 
@@ -75,7 +76,8 @@ namespace Mbrit.Vegas.Simulator
 
         public IWinLoseDrawRound this[int index] => this.Wrappers[index];
 
-        public static IWinLoseDrawRoundsBucket GetWinLoseBucket(int numRounds, int handsPerRound, decimal houseEdge, Random rand)
+        public static IWinLoseDrawRoundsBucket GetWinLoseBucket(int numRounds, int handsPerRound, decimal houseEdge, Random rand, 
+            RoundsBucketFlags flags = RoundsBucketFlags.Default)
         {
             var strategy = new RandomWalkStrategy(houseEdge);
 
@@ -83,7 +85,7 @@ namespace Mbrit.Vegas.Simulator
             {
                 return strategy.GetWin(rand);
 
-            }, rand);
+            }, rand, flags);
         }
 
         public static IWinLoseDrawRoundsBucket GetAllWinLosePermutations(int handsPerRound, Random rand)
@@ -109,6 +111,21 @@ namespace Mbrit.Vegas.Simulator
             for (var index = 0; index < this.Count; index++)
                 results.Add(this[index]);
             return results;
+        }
+
+        public static IWinLoseDrawRoundsBucket Parse(string chain, decimal houseEdge, Random rand)
+        {
+            return new WinLoseDrawRoundsBucket(1, chain.Length, houseEdge, (hand) =>
+            {
+                var asString = new string(chain[hand], 1);
+                if (asString == WinLoseDrawExtender.WinKey)
+                    return WinLoseDrawType.Win;
+                else if (asString == WinLoseDrawExtender.LoseKey)
+                    return WinLoseDrawType.Lose;
+                else
+                    throw new NotSupportedException($"Cannot handle '{asString}'.");
+
+            }, rand, RoundsBucketFlags.Exact);
         }
     }
 }

@@ -16,7 +16,9 @@ class SplashPage extends StatefulWidget {
 
 class _SplashPageState extends State<SplashPage> {
   bool _isLoading = true;
-  final TextEditingController _inviteCodeController = TextEditingController();
+  bool _invitationAccepted = false;
+  final TextEditingController _invitationController = TextEditingController();
+  static const String _correctInvitationCode = 'ILOVEVEGAS';
 
   @override
   void initState() {
@@ -26,25 +28,27 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   void dispose() {
-    _inviteCodeController.dispose();
+    _invitationController.dispose();
     super.dispose();
   }
 
   Future<void> _initializeAsync() async {
     await StringHelper.initialize();
 
-    // Check if invitation code is already stored
+    // Check if invitation code has been accepted
     final prefs = await SharedPreferences.getInstance();
-    final storedInviteCode = prefs.getString('inviteCode');
+    _invitationAccepted = prefs.getBool('invitationCodeAccepted') ?? false;
 
     if (mounted) {
       setState(() {
         _isLoading = false;
       });
 
-      // Show invitation dialog if no code is stored
-      if (storedInviteCode == null) {
-        _showInvitationDialog();
+      // Show invitation popup if not accepted
+      if (!_invitationAccepted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showInvitationDialog();
+        });
       }
     }
   }
@@ -56,11 +60,14 @@ class _SplashPageState extends State<SplashPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Text(
-            'THE VEGAS WALK METHOD IS CURRENTLY IN INVITATION-ONLY BETA.',
+            'THE VEGAS WALK METHOD IS IN PRIVATE BETA',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
@@ -70,20 +77,24 @@ class _SplashPageState extends State<SplashPage> {
             children: [
               const SizedBox(height: 16),
               const Text(
-                'Please enter your invite code',
-                style: TextStyle(color: Colors.white, fontSize: 14),
+                'Enter your invitation code to access the app',
+                style: TextStyle(color: Colors.grey, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               TextField(
-                controller: _inviteCodeController,
-                style: const TextStyle(color: Colors.white),
+                controller: _invitationController,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
                 decoration: InputDecoration(
-                  hintText: 'Enter invite code',
+                  hintText: 'Enter invitation code',
                   hintStyle: TextStyle(color: Colors.grey[400]),
                   filled: true,
                   fillColor: Colors.grey[800],
                   border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: Colors.grey[600]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                     borderSide: BorderSide(color: Colors.grey[600]!),
                   ),
@@ -92,7 +103,8 @@ class _SplashPageState extends State<SplashPage> {
                     borderSide: const BorderSide(color: Color(0xFF10B981)),
                   ),
                 ),
-                onSubmitted: (value) => _validateInviteCode(),
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _validateInvitationCode(),
               ),
             ],
           ),
@@ -100,19 +112,21 @@ class _SplashPageState extends State<SplashPage> {
             SizedBox(
               width: double.infinity,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: ElevatedButton(
-                  onPressed: _validateInviteCode,
+                  onPressed: _validateInvitationCode,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Text(
                     'Submit',
                     style: TextStyle(
                       color: Colors.white,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -125,25 +139,34 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 
-  void _validateInviteCode() async {
-    final enteredCode = _inviteCodeController.text.trim();
-    const validCode = 'ILOVEVEGAS';
+  void _validateInvitationCode() async {
+    final enteredCode = _invitationController.text.trim();
 
-    if (enteredCode.toUpperCase() == validCode) {
-      // Store the invitation code
+    if (enteredCode.toUpperCase() == _correctInvitationCode) {
+      // Store acceptance
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('inviteCode', enteredCode);
+      await prefs.setBool('invitationCodeAccepted', true);
 
       if (mounted) {
-        Navigator.of(context).pop(); // Close the dialog
+        setState(() {
+          _invitationAccepted = true;
+        });
+        Navigator.of(context).pop(); // Close dialog
       }
     } else {
-      // Show error message
+      // Show error
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid invite code. Please try again.'),
-            backgroundColor: Colors.red,
+          SnackBar(
+            content: const Text(
+              'Invalid invitation code. Please try again.',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red[700],
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
@@ -151,6 +174,11 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _goToMain(BuildContext context) async {
+    if (!_invitationAccepted) {
+      _showInvitationDialog();
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final hasSeenTutorial = prefs.getBool('hasSeenTutorial') ?? false;
     if (!hasSeenTutorial) {
@@ -171,6 +199,11 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _goToLearn(BuildContext context) {
+    if (!_invitationAccepted) {
+      _showInvitationDialog();
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const TutorialPage()),

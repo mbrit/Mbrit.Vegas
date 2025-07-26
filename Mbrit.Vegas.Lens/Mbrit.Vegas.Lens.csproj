@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>disable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mbrit.Vegas\Mbrit.Vegas.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BootFX.Common">
+      <HintPath>..\..\..\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

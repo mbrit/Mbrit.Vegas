@@ -19,7 +19,7 @@ namespace Mbrit.Vegas.Simulator
         //internal IEnumerable<Chain> WinChains { get; }
         //internal IEnumerable<Chain> LossChains { get; }
         internal IEnumerable<WinLoseDrawType> Vectors { get; }
-        internal WalkGameOutcome Outcome { get; }
+        public WalkGameOutcome Outcome { get; }
         internal decimal WinChainScore { get; }
         internal decimal LossChainScore { get; }
         internal decimal ChainScore { get; }
@@ -31,7 +31,7 @@ namespace Mbrit.Vegas.Simulator
         internal WalkPointOutcome PointOutcomeSpike0p5 { get; }
         internal WalkPointOutcome PointOutcomeSpike1 { get; }
 
-        internal Dictionary<int, WalkPointOutcome> PointOutcomes { get; }
+        public Dictionary<int, WalkPointOutcome> PointOutcomes { get; }
 
         internal WalkResult(WalkState state, WalkArgs args, IWinLoseDrawRound round, IEnumerable<WinLoseDrawType> vectors, WalkGameOutcome outcome, WalkSpikeType spikeType, 
             WalkPointOutcome pointOutcomeMajorBust, WalkPointOutcome pointOutcomeMinorBust, WalkPointOutcome pointOutcomeSpike0p5, 

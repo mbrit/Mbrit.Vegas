@@ -73,7 +73,7 @@ namespace Mbrit.Vegas.Simulator
 
             var player = new AutomaticWalkGamePlayer();
 
-            var runs = this.DoMagic(rounds, 4, player, (index, rounds) =>
+            var runs = this.DoMagic(rounds, 2, player, (index, rounds) =>
             {
                 if (index == 0)
                     return WalkGameDefaults.GetSetup(WalkGameMode.ReachSpike1, rounds, unitSize, hailMaryCount);

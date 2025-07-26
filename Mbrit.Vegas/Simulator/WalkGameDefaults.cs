@@ -62,5 +62,10 @@ namespace Mbrit.Vegas.Simulator
             else
                 throw new NotSupportedException($"Cannot handle '{mode}'.");
         }
+
+        public static WalkGameSetup GetSetup(object walkGameMode, IWinLoseDrawRoundsBucket rounds, int unit, int v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -59,7 +59,8 @@ namespace Mbrit.Vegas.Simulator
             int totalRange = 1000;
 
             // Calculate how many values to remove due to house edge
-            int edgeLosses = (int)(totalRange * (houseEdgePercent / 100.0));
+            //int edgeLosses = (int)(totalRange * (houseEdgePercent / 100.0));
+            int edgeLosses = (int)(totalRange * (houseEdgePercent));
 
             // Remaining range is fair play territory
             int fairRange = totalRange - edgeLosses;

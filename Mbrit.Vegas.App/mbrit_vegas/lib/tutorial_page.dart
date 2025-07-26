@@ -22,55 +22,55 @@ class _TutorialPageState extends State<TutorialPage>
   bool _isVideoPlaying = false;
   List<TutorialSlide> _slides = [];
   bool _isLoading = true;
-  bool _showScrollAnimation = true;
-  late AnimationController _scrollAnimationController;
-  late Animation<Offset> _scrollAnimation;
-  final ScrollController _contentScrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
+  AnimationController? _dotAnimationController;
+  Animation<double>? _dotAnimation;
+  Animation<double>? _dotOpacityAnimation;
 
   @override
   void initState() {
     super.initState();
     _loadTutorialSlides();
 
-    // Initialize scroll animation
-    _scrollAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+    // Initialize dot animation
+    _dotAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1800),
       vsync: this,
     );
+    _dotAnimation = Tween<double>(begin: 0.0, end: -100.0).animate(
+      CurvedAnimation(
+        parent: _dotAnimationController!,
+        curve: Curves.easeInOut,
+      ),
+    );
 
-    _scrollAnimation =
-        Tween<Offset>(
-          begin: const Offset(0, 0),
-          end: const Offset(0, -0.6),
-        ).animate(
-          CurvedAnimation(
-            parent: _scrollAnimationController,
-            curve: Curves.easeInOut,
-          ),
-        );
+    // Create opacity animation with fade in and fade out
+    _dotOpacityAnimation = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        weight: 1.0,
+      ), // Fade in over first 15% (270ms)
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.0),
+        weight: 6.7,
+      ), // Stay visible for most of animation
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 0.0),
+        weight: 1.0,
+      ), // Fade out over last 15% (270ms)
+    ]).animate(_dotAnimationController!);
 
-    // Start the animation after a short delay
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        _scrollAnimationController.repeat(reverse: true);
-      }
-    });
-
-    // Hide the animation after 5 seconds
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        setState(() {
-          _showScrollAnimation = false;
-        });
-        _scrollAnimationController.stop();
-      }
+    // Start the animation when the page loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print('Starting dot animation');
+      _dotAnimationController?.repeat(count: 2);
     });
   }
 
   @override
   void dispose() {
-    _scrollAnimationController.dispose();
-    _contentScrollController.dispose();
+    _scrollController.dispose();
+    _dotAnimationController?.dispose();
     super.dispose();
   }
 
@@ -225,7 +225,7 @@ class _TutorialPageState extends State<TutorialPage>
           Container(
             margin: const EdgeInsets.all(16),
             child: AspectRatio(
-              aspectRatio: 16 / 9, // Standard video aspect ratio
+              aspectRatio: 16 / 9,
               child: Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFF4A5568),
@@ -265,7 +265,7 @@ class _TutorialPageState extends State<TutorialPage>
           // Slideshow section
           Expanded(
             child: Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              margin: const EdgeInsets.fromLTRB(16, 0, 16, 32),
               decoration: BoxDecoration(
                 color: const Color(0xFF2D3748),
                 borderRadius: BorderRadius.circular(12),
@@ -281,110 +281,127 @@ class _TutorialPageState extends State<TutorialPage>
                 children: [
                   // Slide content
                   Expanded(
-                    child: GestureDetector(
-                      onHorizontalDragEnd: (details) {
-                        if (details.primaryVelocity! > 0) {
-                          // Swipe right - go to previous slide
-                          if (_currentSlideIndex > 0) {
-                            _goToSlide(_currentSlideIndex - 1);
-                          }
-                        } else if (details.primaryVelocity! < 0) {
-                          // Swipe left - go to next slide
-                          if (_currentSlideIndex < _slides.length - 1) {
-                            _goToSlide(_currentSlideIndex + 1);
-                          }
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        child: GestureDetector(
-                          onTap: () {
-                            if (_showScrollAnimation) {
-                              setState(() {
-                                _showScrollAnimation = false;
-                              });
-                              _scrollAnimationController.stop();
+                    child: Stack(
+                      children: [
+                        GestureDetector(
+                          onHorizontalDragEnd: (details) {
+                            if (details.primaryVelocity! > 0) {
+                              // Swipe right - go to previous slide
+                              if (_currentSlideIndex > 0) {
+                                _goToSlide(_currentSlideIndex - 1);
+                              }
+                            } else if (details.primaryVelocity! < 0) {
+                              // Swipe left - go to next slide
+                              if (_currentSlideIndex < _slides.length - 1) {
+                                _goToSlide(_currentSlideIndex + 1);
+                              }
                             }
                           },
-                          child: Stack(
-                            children: [
-                              SingleChildScrollView(
-                                controller: _contentScrollController,
-                                child: Markdown(
-                                  data: _slides[_currentSlideIndex].content,
-                                  styleSheet: MarkdownStyleSheet(
-                                    h1: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    h2: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    p: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 20,
-                                      height: 1.0,
-                                    ),
-                                    pPadding: const EdgeInsets.only(bottom: 14),
-                                    strong: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    listBullet: const TextStyle(
-                                      color: Colors.grey,
-                                    ),
-                                  ),
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
+                            child: Markdown(
+                              controller: _scrollController,
+                              data: _slides[_currentSlideIndex].content,
+                              styleSheet: MarkdownStyleSheet(
+                                h1: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                                h2: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                p: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 20,
+                                  height: 1.0,
+                                ),
+                                pPadding: const EdgeInsets.only(bottom: 14),
+                                strong: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                listBullet: const TextStyle(color: Colors.grey),
                               ),
-                              // Scroll animation overlay
-                              if (_showScrollAnimation)
-                                Positioned(
-                                  bottom: 20,
-                                  right: 20,
-                                  child: SlideTransition(
-                                    position: _scrollAnimation,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFF10B981,
-                                        ).withOpacity(0.9),
-                                        borderRadius: BorderRadius.circular(20),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(
-                                              0.3,
-                                            ),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: const Icon(
-                                        Icons.pan_tool,
-                                        color: Colors.white,
-                                        size: 24,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
+                        // Green dot animation
+                        Positioned(
+                          right: 16,
+                          bottom: 16,
+                          child: _dotAnimation != null
+                              ? AnimatedBuilder(
+                                  animation: Listenable.merge([
+                                    _dotAnimation!,
+                                    _dotOpacityAnimation!,
+                                  ]),
+                                  builder: (context, child) {
+                                    return Opacity(
+                                      opacity:
+                                          _dotOpacityAnimation?.value ?? 1.0,
+                                      child: Transform.translate(
+                                        offset: Offset(0, _dotAnimation!.value),
+                                        child: Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue,
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(
+                                                  0.3,
+                                                ),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: const Icon(
+                                            Icons.pan_tool,
+                                            color: Colors.white,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.pan_tool,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                        ),
+                      ],
                     ),
                   ),
 
-                  // Progress dots
+                  // Navigation controls
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Previous/Next buttons
+                        // Navigation buttons on the left
                         Row(
                           children: [
                             IconButton(
@@ -436,12 +453,12 @@ class _TutorialPageState extends State<TutorialPage>
                             ),
                           ],
                         ),
-                        // Slide counter (n/count)
+                        // Page count on the right
                         Text(
-                          '${_currentSlideIndex + 1}/${_slides.length}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                          '${_currentSlideIndex + 1} / ${_slides.length}',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -463,15 +480,12 @@ class _TutorialPageState extends State<TutorialPage>
       _videoProgress =
           _slides[index].videoTimestamp / 100.0; // Assuming 100 second video
     });
-
     // Reset scroll position to top
-    if (_contentScrollController.hasClients) {
-      _contentScrollController.animateTo(
-        0,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    _scrollController.animateTo(
+      0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 }
 

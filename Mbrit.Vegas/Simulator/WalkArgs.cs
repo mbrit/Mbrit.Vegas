@@ -127,13 +127,11 @@ namespace Mbrit.Vegas.Simulator
         {
             this.StopAtWinMode = WalkGameMode.StretchToSpike1;
 
-            /*
             // this one seems stable...
             this.LimitedStretchHands = 6;
             this.LimitedStretchInvestments = -1;
-            */
 
-            this.DoEvaluation = true;
+            //this.DoEvaluation = true;
         }
 
         internal void SetHailMary(int hailMaryCount)
