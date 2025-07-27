@@ -54,5 +54,8 @@ namespace Mbrit.Vegas.Lens.Graph
                 }
             }
         }
+
+        public void DrawPoint(Pen black, float x, float y) =>
+            this.Graphics.DrawX(x, y);
     }
 }

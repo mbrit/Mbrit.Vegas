@@ -23,7 +23,11 @@ namespace Mbrit.Vegas.Lens
         private const float WalkGameHouseEdge = (float)WalkGameDefaults.HouseEdge;
 
         private const int SingleRun = 1;
-        private const int MultipleRun = 1000;
+        private const int FiveRun = 5;
+        private const int TwentyRun = 20;
+
+        //private const int MultipleRun = 1000;
+        private const int MultipleRun = 12 * 6 * 8;
 
         private static IEnumerable<float> HouseEdges = new List<float>() { 0.015f, 0.025f, 0.035f, 0.05f, 0.08f, 0.09f, 0.10f,
             0.11f, 0.12f, 0.13f, 0.14f, 0.15f, 0.16f, 0.17f, 0.18f };
@@ -47,6 +51,8 @@ namespace Mbrit.Vegas.Lens
         {
             this.ReportExceptions(() =>
             {
+                this.Text = "The Vegas Walk Method Lens v" + VegasRuntime.ProductVersion;
+
                 foreach (var mode in Enum.GetValues(typeof(Mode)))
                     this.listMode.Items.Add(mode);
                 this.listMode.SelectedIndex = 0;
@@ -62,6 +68,9 @@ namespace Mbrit.Vegas.Lens
                 const string unbiased = "Unbiased";
                 this.buttonUnbiased1.Text = unbiased + " " + SingleRun;
                 this.buttonUnbiasedN.Text = unbiased + " " + MultipleRun;
+
+                this.buttonBiased5.Text = "Biased " + FiveRun;
+                this.buttonBiased20.Text = "Biased " + TwentyRun;
 
                 this.SetBiasedExemplar();
             });
@@ -208,7 +217,7 @@ namespace Mbrit.Vegas.Lens
 
                 var generator = new GraphGenerator(this.panel1.ClientRectangle, this.Rounds, this.WalkVectors, this.WalkProfits,
                     this.WalkHouseEdge, this.Unit, illustrations, WalkGameDefaults.HandsPerRound, 14, this.checkShowBoxHands.Checked,
-                    this.checkShowWedge.Checked);
+                    this.checkShowWedge.Checked, this.checkShowTilt.Checked, this.checkShowGame.Checked);
 
                 generator.Render(e.Graphics);
             });
@@ -340,5 +349,27 @@ namespace Mbrit.Vegas.Lens
 
         private void checkShowWedge_CheckedChanged(object sender, EventArgs e) =>
             this.ReportExceptions(() => this.RefreshView());
+
+        private void checkBox1_CheckedChanged_1(object sender, EventArgs e) =>
+            this.ReportExceptions(() => this.RefreshView());
+
+        private void checkShowGame_CheckedChanged(object sender, EventArgs e) =>
+            this.ReportExceptions(() => this.RefreshView());
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            this.ReportExceptions(() =>
+            {
+                this.SetChain(this.SelectedHouseEdge, FiveRun);
+            });
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            this.ReportExceptions(() =>
+            {
+                this.SetChain(this.SelectedHouseEdge, TwentyRun);
+            });
+        }
     }
 }

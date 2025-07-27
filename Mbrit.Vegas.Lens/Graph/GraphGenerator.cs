@@ -42,6 +42,8 @@ namespace Mbrit.Vegas.Lens.Graph
         public int BoxHandsOptimal { get; }
         public bool ShowBoxHands { get; }
         public bool ShowWedge { get; }
+        public bool ShowTilt { get; }
+        public bool ShowGame { get; }
 
         private const float YAxisWidth = 40f;
         private const float RightMargin = 40f;
@@ -52,7 +54,7 @@ namespace Mbrit.Vegas.Lens.Graph
         internal GraphGenerator(Rectangle rect, IWinLoseDrawRoundsBucket rounds,
             IEnumerable<WinLoseDrawType> walkVectors, IEnumerable<float> walkProfits, float walkHouseEdge,
             float unit, IEnumerable<HouseEdgeIllustration> houseEdges, 
-            int boxHandsMax, int boxHandsOptimal, bool showBoxHands, bool showWedge)
+            int boxHandsMax, int boxHandsOptimal, bool showBoxHands, bool showWedge, bool showTilt, bool showGame)
         {
             this.LegendArea1 = new RectangleF(rect.Left + YAxisWidth, rect.Top, rect.Width - (YAxisWidth * 2) - RightMargin, LegendHeight);
 
@@ -94,6 +96,8 @@ namespace Mbrit.Vegas.Lens.Graph
             this.BoxHandsOptimal = boxHandsOptimal;
             this.ShowBoxHands = showBoxHands;
             this.ShowWedge = showWedge;
+            this.ShowGame = showGame;
+            this.ShowTilt = showTilt;
         }
 
         public float NormalGameHouseEdge => (float)this.Rounds.HouseEdge;
@@ -158,9 +162,10 @@ namespace Mbrit.Vegas.Lens.Graph
                             g.DrawString(amount.ToString(), font, Brushes.Gray, this.PlotArea.Left - TickHeight, y - 8, yAxisFormat);
                     }
 
-                    // x axis...
+                    // y axis...
                     g.DrawLine(Pens.Black, this.PlotArea.Left, this.PlotArea.Top, this.PlotArea.Left, this.PlotArea.Bottom);
 
+                    // x axis mid...
                     g.DrawLine(Pens.Black, this.PlotArea.Left, this.MidY, this.XTicks.Max(), this.MidY);
 
                     var tickIndex = 0;
@@ -194,6 +199,17 @@ namespace Mbrit.Vegas.Lens.Graph
                             g.FillPolygon(brush, wedge.ToArray());
 
                         g.DrawArrow(Color.Red, heEnd, wedgeEnd);
+                    }
+
+                    // x axis 50% profit...
+                    var spike0p5MidY = this.CalcY(6 * this.Unit);
+                    using (var profitPen = new Pen(Color.Black, 1)
+                    {
+                        DashStyle = DashStyle.Dash
+                    })
+                    {
+                        g.DrawLine(profitPen, this.PlotArea.Left, spike0p5MidY, this.XTicks.Max(), spike0p5MidY);
+                        g.DrawString("50% Profit", font, Brushes.Black, this.PlotArea.Right, spike0p5MidY - 14, yAxisFormat);
                     }
 
                     tickIndex = 0;
@@ -231,6 +247,13 @@ namespace Mbrit.Vegas.Lens.Graph
 
                         var end = this.PlotLine(slopes, houseEdge.Colour, 1, houseEdge.Dash, this.FormatPercentage(houseEdge.Amount), g);
                         heEnds.Add(end);
+                    }
+
+                    // tilt...
+                    if (this.ShowTilt)
+                    {
+                        var tilts = this.GenerateIncreasingHouseEdgeCurve(this.XTicks.Count);
+                        this.PlotLine(tilts, Color.Magenta, 3, DashStyle.Solid, g);
                     }
 
                     // plot the game...
@@ -294,7 +317,11 @@ namespace Mbrit.Vegas.Lens.Graph
                             smoothed.Add(forPoint.Average());
                         }
 
-                        this.PlotLine(smoothed, Color.Blue, 2, DashStyle.Solid, g);
+                        var useG = g;
+                        if (!(this.ShowGame))
+                            useG = new NullGraphics();
+
+                        this.PlotLine(smoothed, Color.Blue, 2, DashStyle.Solid, useG);
 
                         var angle = 0f;
                         var trend = this.GetTrendLine(smoothed, ref angle);
@@ -447,6 +474,29 @@ namespace Mbrit.Vegas.Lens.Graph
             var asList = x.Select(xi => slope * xi).ToList();
             asList.RemoveAt(asList.Count - 1);
             return asList;
+        }
+
+        private IEnumerable<float> GenerateIncreasingHouseEdgeCurve(
+            int totalTicks,
+            float baseEdgePercent = 0.06f,     // Starting house edge (e.g., 5%)            -- 6% sounds ok for someone who's played so much they need support...
+            int rampStartTick = 24,            // When to start increasing the edge
+            float edgeAcceleration = 0.004f    // How much more edge to add per tick after rampStart
+        )
+        {
+            var yValues = new List<float>();
+            float y = 0f;
+            float edge = baseEdgePercent;
+
+            for (int tick = 0; tick < totalTicks; tick++)
+            {
+                y -= edge; // loss increases
+                yValues.Add(y * this.Unit);
+
+                if (tick >= rampStartTick)
+                    edge += edgeAcceleration; // house edge increases
+            }
+
+            return yValues;
         }
     }
 }

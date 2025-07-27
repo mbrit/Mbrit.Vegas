@@ -32,5 +32,9 @@ namespace Mbrit.Vegas.Lens
         public void FillPolygon(Brush aquamarine, PointF[] pointFs)
         {
         }
+
+        public void DrawPoint(Pen black, float x, float y)
+        {
+        }
     }
 }

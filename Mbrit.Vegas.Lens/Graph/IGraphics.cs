@@ -14,5 +14,6 @@ namespace Mbrit.Vegas.Lens.Graph
         void FillEllipse(Brush brush, float v1, float v2, int size1, int size2);
         void FillPolygon(Brush aquamarine, PointF[] pointFs);
         void DrawArrow(Color color, PointF start, PointF end);
+        void DrawPoint(Pen black, float x, float y);
     }
 }
