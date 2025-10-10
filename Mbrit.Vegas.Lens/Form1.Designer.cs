@@ -48,7 +48,7 @@
             // 
             // panel1
             // 
-            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             panel1.Location = new Point(38, 83);
             panel1.Name = "panel1";
             panel1.Size = new Size(836, 498);
@@ -73,8 +73,8 @@
             buttonUnbiased1.Name = "buttonUnbiased1";
             buttonUnbiased1.Size = new Size(100, 23);
             buttonUnbiased1.TabIndex = 4;
-            buttonUnbiased1.UseVisualStyleBackColor = true;
             buttonUnbiased1.Text = "Unbiased 1";
+            buttonUnbiased1.UseVisualStyleBackColor = true;
             buttonUnbiased1.Click += button2_Click;
             // 
             // buttonBiased1
@@ -83,8 +83,8 @@
             buttonBiased1.Name = "buttonBiased1";
             buttonBiased1.Size = new Size(100, 23);
             buttonBiased1.TabIndex = 5;
-            buttonBiased1.UseVisualStyleBackColor = true;
             buttonBiased1.Text = "Biased 15";
+            buttonBiased1.UseVisualStyleBackColor = true;
             buttonBiased1.Click += button3_Click;
             // 
             // listMode
@@ -129,6 +129,7 @@
             // 
             // checkShowBoxHands
             // 
+            checkShowBoxHands.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkShowBoxHands.AutoSize = true;
             checkShowBoxHands.Location = new Point(894, 121);
             checkShowBoxHands.Name = "checkShowBoxHands";
@@ -140,9 +141,8 @@
             // 
             // checkShowWeekday
             // 
+            checkShowWeekday.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkShowWeekday.AutoSize = true;
-            checkShowWeekday.Checked = true;
-            checkShowWeekday.CheckState = CheckState.Checked;
             checkShowWeekday.Location = new Point(894, 44);
             checkShowWeekday.Name = "checkShowWeekday";
             checkShowWeekday.Size = new Size(106, 19);
@@ -153,9 +153,8 @@
             // 
             // checkShowWeekend
             // 
+            checkShowWeekend.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkShowWeekend.AutoSize = true;
-            checkShowWeekend.Checked = true;
-            checkShowWeekend.CheckState = CheckState.Checked;
             checkShowWeekend.Location = new Point(894, 63);
             checkShowWeekend.Name = "checkShowWeekend";
             checkShowWeekend.Size = new Size(107, 19);
@@ -166,6 +165,7 @@
             // 
             // checkShowWedge
             // 
+            checkShowWedge.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkShowWedge.AutoSize = true;
             checkShowWedge.Checked = true;
             checkShowWedge.CheckState = CheckState.Checked;
@@ -179,6 +179,7 @@
             // 
             // checkShowTilt
             // 
+            checkShowTilt.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkShowTilt.AutoSize = true;
             checkShowTilt.Location = new Point(894, 158);
             checkShowTilt.Name = "checkShowTilt";
@@ -190,6 +191,7 @@
             // 
             // checkShowGame
             // 
+            checkShowGame.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             checkShowGame.AutoSize = true;
             checkShowGame.Checked = true;
             checkShowGame.CheckState = CheckState.Checked;
@@ -201,7 +203,7 @@
             checkShowGame.UseVisualStyleBackColor = true;
             checkShowGame.CheckedChanged += checkShowGame_CheckedChanged;
             // 
-            // button2
+            // buttonBiased5
             // 
             buttonBiased5.Location = new Point(274, 41);
             buttonBiased5.Name = "buttonBiased5";
@@ -211,7 +213,7 @@
             buttonBiased5.UseVisualStyleBackColor = true;
             buttonBiased5.Click += button2_Click_1;
             // 
-            // button3
+            // buttonBiased20
             // 
             buttonBiased20.Location = new Point(380, 41);
             buttonBiased20.Name = "buttonBiased20";

@@ -1,3 +1,5 @@
+using BootFX.Common;
+using Mbrit.Vegas.Lens.Gdi;
 using Mbrit.Vegas.Lens.Graph;
 using Mbrit.Vegas.Simulator;
 using System.Diagnostics;
@@ -219,7 +221,15 @@ namespace Mbrit.Vegas.Lens
                     this.WalkHouseEdge, this.Unit, illustrations, WalkGameDefaults.HandsPerRound, 14, this.checkShowBoxHands.Checked,
                     this.checkShowWedge.Checked, this.checkShowTilt.Checked, this.checkShowGame.Checked);
 
-                generator.Render(e.Graphics);
+                generator.Render(() => new GdiGraphics(e.Graphics));
+
+                /*
+                var svg = new SvgGraphics(this.panel1.ClientRectangle.Width, this.panel1.ClientRectangle.Height);
+                generator.Render(() => svg);
+
+                var path = Runtime.Current.GetLocalMachineDataPath("svg--" + DateTime.UtcNow.ToString("yyyyMMdd-HHmmss"));
+                File.WriteAllText(path, svg.ToString());
+                */
             });
         }
 
@@ -227,25 +237,25 @@ namespace Mbrit.Vegas.Lens
         {
             var results = new List<HouseEdgeIllustration>();
 
-            var dash = DashStyle.Dot;
+            var dash = XDashStyle.Dot;
 
-            results.Add(new HouseEdgeIllustration(0.015f, Color.Red, dash));
-            results.Add(new HouseEdgeIllustration(0.08f, Color.Red, dash));
+            results.Add(new HouseEdgeIllustration(0.015f, XColor.Red, dash));
+            results.Add(new HouseEdgeIllustration(0.08f, XColor.Red, dash));
 
             if (this.checkShowWeekday.Checked)
             {
-                results.Add(new HouseEdgeIllustration(0.10f, Color.Orange, dash));
-                results.Add(new HouseEdgeIllustration(0.12f, Color.Orange, dash));
+                results.Add(new HouseEdgeIllustration(0.10f, XColor.Orange, dash));
+                results.Add(new HouseEdgeIllustration(0.12f, XColor.Orange, dash));
 
                 if (!(this.checkShowWeekend.Checked))
-                    results.Add(new HouseEdgeIllustration(0.14f, Color.Orange, dash));
+                    results.Add(new HouseEdgeIllustration(0.14f, XColor.Orange, dash));
             }
 
             if (this.checkShowWeekend.Checked)
             {
-                results.Add(new HouseEdgeIllustration(0.14f, Color.Magenta, dash));
-                results.Add(new HouseEdgeIllustration(0.16f, Color.Magenta, dash));
-                results.Add(new HouseEdgeIllustration(0.18f, Color.Magenta, dash));
+                results.Add(new HouseEdgeIllustration(0.14f, XColor.Magenta, dash));
+                results.Add(new HouseEdgeIllustration(0.16f, XColor.Magenta, dash));
+                results.Add(new HouseEdgeIllustration(0.18f, XColor.Magenta, dash));
             }
 
             return results;

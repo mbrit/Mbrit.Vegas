@@ -1,4 +1,4 @@
-﻿using BootFX.Common;
+﻿using Mbrit.Vegas.Lens.Gdi;
 using Mbrit.Vegas.Simulator;
 using System;
 using System.Collections;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Reflection;
@@ -16,12 +17,11 @@ using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms.VisualStyles;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Mbrit.Vegas.Lens.Graph
 {
-    internal class GraphGenerator
+    public class GraphGenerator
     {
         private RectangleF PlotArea { get; }
         private RectangleF LegendArea1 { get; }
@@ -51,7 +51,7 @@ namespace Mbrit.Vegas.Lens.Graph
         private const float TickHeight = 2.5f;
         private const int MaxInvestments = 15;
 
-        internal GraphGenerator(Rectangle rect, IWinLoseDrawRoundsBucket rounds,
+        public GraphGenerator(Rectangle rect, IWinLoseDrawRoundsBucket rounds,
             IEnumerable<WinLoseDrawType> walkVectors, IEnumerable<float> walkProfits, float walkHouseEdge,
             float unit, IEnumerable<HouseEdgeIllustration> houseEdges, 
             int boxHandsMax, int boxHandsOptimal, bool showBoxHands, bool showWedge, bool showTilt, bool showGame)
@@ -102,23 +102,13 @@ namespace Mbrit.Vegas.Lens.Graph
 
         public float NormalGameHouseEdge => (float)this.Rounds.HouseEdge;
 
-        private void MarkRectangle(RectangleF rect, Graphics g)
-        {
-            using(var pen = new Pen(Color.FromArgb(0xff, 0, 0xff)))
-            {
-                g.DrawRectangle(pen, rect);
-                g.DrawLine(pen, rect.Left, rect.Top, rect.Right, rect.Bottom);
-                g.DrawLine(pen, rect.Left, rect.Bottom, rect.Right, rect.Top);
-            }
-        }
-
         private bool HasWalkGame => this.WalkProfits.Any();
 
-        private Font GetFont() => new Font("Tahoma", 8); 
+        private XFont GetFont() => new XFont("Tahoma", 8); 
 
-        internal void Render(Graphics theG)
+        public void Render(Func<IGraphics> getGraphics)
         {
-            theG.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            //theG.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
 
             //var asList = this.Vectors.ToList();
             var walkProfitsAsList = this.WalkProfits.ToList();
@@ -126,16 +116,16 @@ namespace Mbrit.Vegas.Lens.Graph
             //this.MarkRectangle(this.LegendArea1, g);
             //this.MarkRectangle(this.PlotArea, g);
 
-            var svg = new SvgGraphics();
+            //var svg = new SvgGraphics();
 
             using (var font = this.GetFont())
             {
-                var heEnds = new List<PointF>();
-                var wedgeEnd = PointF.Empty;
-                 
-                var max = 2;
-                //if (this.ShowWedge)
-                //    max = 2;
+                var heEnds = new List<XPointF>();
+                var wedgeEnd = XPointF.Empty;
+
+                var max = 1;
+                if (this.ShowWedge)
+                    max = 2;
 
                 for (var loop = 0; loop < max; loop++)
                 {
@@ -143,15 +133,13 @@ namespace Mbrit.Vegas.Lens.Graph
                     if (loop == 0 && max != 1)
                         g = new NullGraphics();
                     else if (loop == 1 || max == 1)
-                        g = new GdiGraphics(theG);
-                    else if (loop == 2)
-                        g = svg;
+                        g = getGraphics();
                     else
                         throw new NotSupportedException($"Cannot handle '{loop}'.");
 
-                    var yAxisFormat = new StringFormat()
+                    var yAxisFormat = new XStringFormat()
                     {
-                        Alignment = StringAlignment.Far
+                        Alignment = XStringAlignment.Far
                     };
 
                     // y axis...
@@ -160,30 +148,30 @@ namespace Mbrit.Vegas.Lens.Graph
                         var amount = index * this.Unit;
 
                         var y = this.CalcY(amount);
-                        g.DrawLine(Pens.Black, this.PlotArea.Left - TickHeight, y, this.PlotArea.Left + TickHeight, y);
+                        g.DrawLine(XPens.Black, this.PlotArea.Left - TickHeight, y, this.PlotArea.Left + TickHeight, y);
 
                         if (index % 2 == 0)
-                            g.DrawString(amount.ToString(), font, Brushes.Gray, this.PlotArea.Left - TickHeight, y - 8, yAxisFormat);
+                            g.DrawString(amount.ToString(), font, XBrushes.Gray, this.PlotArea.Left - TickHeight, y - 8, yAxisFormat);
                     }
 
                     // y axis...
-                    g.DrawLine(Pens.Black, this.PlotArea.Left, this.PlotArea.Top, this.PlotArea.Left, this.PlotArea.Bottom);
+                    g.DrawLine(XPens.Black, this.PlotArea.Left, this.PlotArea.Top, this.PlotArea.Left, this.PlotArea.Bottom);
 
                     // x axis mid...
-                    g.DrawLine(Pens.Black, this.PlotArea.Left, this.MidY, this.XTicks.Max(), this.MidY);
+                    g.DrawLine(XPens.Black, this.PlotArea.Left, this.MidY, this.XTicks.Max(), this.MidY);
 
                     var tickIndex = 0;
-                    using (var gridPen = new Pen(Color.FromArgb(0xe0, 0xe0, 0xe0), 1))
+                    using (var gridPen = new XPen(XColor.FromArgb(0xe0, 0xe0, 0xe0), 1))
                     {
                         foreach (var tick in this.XTicks)
                         {
                             if (tickIndex > 0 && tickIndex % 10 == 0)
                                 g.DrawLine(gridPen, tick, this.PlotArea.Top, tick, this.PlotArea.Bottom);
 
-                            g.DrawLine(Pens.Black, tick, this.MidY - TickHeight, tick, this.MidY + TickHeight);
+                            g.DrawLine(XPens.Black, tick, this.MidY - TickHeight, tick, this.MidY + TickHeight);
 
                             if (tickIndex % 2 == 0)
-                                g.DrawString((tickIndex + 1).ToString(), font, Brushes.Gray, tick, this.MidY + TickHeight);
+                                g.DrawString((tickIndex + 1).ToString(), font, XBrushes.Gray, tick, this.MidY + TickHeight);
 
                             tickIndex++;
                         }
@@ -192,35 +180,35 @@ namespace Mbrit.Vegas.Lens.Graph
                     // wedge...
                     if (loop == 1 && this.ShowWedge)
                     {
-                        var wedge = new List<PointF>();
-                        wedge.Add(new PointF(this.PlotArea.X, this.MidY));
+                        var wedge = new List<XPointF>();
+                        wedge.Add(new XPointF(this.PlotArea.X, this.MidY));
                         wedge.Add(wedgeEnd);
 
                         var heEnd = heEnds.First();
                         wedge.Add(heEnd);
 
-                        using(var brush = new SolidBrush(Color.FromArgb(128, 0x7f, 0xff, 0xd4)))
+                        using(var brush = new XBrush(XColor.FromArgb(128, 0x7f, 0xff, 0xd4)))
                             g.FillPolygon(brush, wedge.ToArray());
 
-                        g.DrawArrow(Color.Red, heEnd, wedgeEnd);
+                        g.DrawArrow(XColor.Red, heEnd, wedgeEnd);
                     }
 
                     // x axis 50% profit...
                     var spike0p5MidY = this.CalcY(6 * this.Unit);
-                    using (var profitPen = new Pen(Color.Black, 1)
+                    using (var profitPen = new XPen(XColor.Black, 1)
                     {
-                        DashStyle = DashStyle.Dash
+                        DashStyle = XDashStyle.Dash
                     })
                     {
                         g.DrawLine(profitPen, this.PlotArea.Left, spike0p5MidY, this.XTicks.Max(), spike0p5MidY);
-                        g.DrawString("50% Profit", font, Brushes.Black, this.PlotArea.Right, spike0p5MidY - 14, yAxisFormat);
+                        g.DrawString("50% Profit", font, XBrushes.Black, this.PlotArea.Right, spike0p5MidY - 14, yAxisFormat);
                     }
 
                     tickIndex = 0;
                     foreach (var tick in this.XTicks)
                     {
                         if (tickIndex % 2 == 0)
-                            g.DrawString((tickIndex + 1).ToString(), font, Brushes.Gray, tick, this.MidY + TickHeight);
+                            g.DrawString((tickIndex + 1).ToString(), font, XBrushes.Gray, tick, this.MidY + TickHeight);
 
                         tickIndex++;
                     }
@@ -228,13 +216,13 @@ namespace Mbrit.Vegas.Lens.Graph
                     // bounding...
                     if (this.ShowBoxHands || this.HasWalkGame)
                     {
-                        var c = Color.FromArgb(0x80, 0x90, 0xa0);
+                        var c = XColor.FromArgb(0x80, 0x90, 0xa0);
 
                         this.DrawBoundingBox(this.BoxHandsOptimal, 6, c, 2, g);
-                        this.DrawBoundingBox(this.BoxHandsMax, 6, Color.Black, 2, g);
+                        this.DrawBoundingBox(this.BoxHandsMax, 6, XColor.Black, 2, g);
 
                         this.DrawBoundingBox(this.BoxHandsOptimal, 12, c, 2, g);
-                        this.DrawBoundingBox(this.BoxHandsMax, 12, Color.Black, 2, g);
+                        this.DrawBoundingBox(this.BoxHandsMax, 12, XColor.Black, 2, g);
                     }
 
                     // slope...
@@ -257,7 +245,7 @@ namespace Mbrit.Vegas.Lens.Graph
                     if (this.ShowTilt)
                     {
                         var tilts = this.GenerateIncreasingHouseEdgeCurve(this.XTicks.Count);
-                        this.PlotLine(tilts, Color.Magenta, 3, DashStyle.Solid, g);
+                        this.PlotLine(tilts, XColor.Magenta, 3, XDashStyle.Solid, g);
                     }
 
                     // plot the game...
@@ -325,11 +313,11 @@ namespace Mbrit.Vegas.Lens.Graph
                         if (!(this.ShowGame))
                             useG = new NullGraphics();
 
-                        this.PlotLine(smoothed, Color.Blue, 2, DashStyle.Solid, useG);
+                        this.PlotLine(smoothed, XColor.Blue, 2, XDashStyle.Solid, useG);
 
                         var angle = 0f;
                         var trend = this.GetTrendLine(smoothed, ref angle);
-                        wedgeEnd = this.PlotLine(trend, Color.Black, 2, DashStyle.Dash, "#" + this.Rounds.Count + " @ " + this.FormatPercentage(this.NormalGameHouseEdge), g);
+                        wedgeEnd = this.PlotLine(trend, XColor.Black, 2, XDashStyle.Dash, "#" + this.Rounds.Count + " @ " + this.FormatPercentage(this.NormalGameHouseEdge), g);
 
                         this.RenderLegend(vectors, this.LegendArea1, g);
                     }
@@ -337,7 +325,7 @@ namespace Mbrit.Vegas.Lens.Graph
                     // walk game profits...
                     if (this.HasWalkGame)
                     {
-                        this.PlotLine(this.WalkProfits, Color.Green, 2, DashStyle.Solid, "Walk Game " + this.FormatPercentage(this.WalkHouseEdge), g);
+                        this.PlotLine(this.WalkProfits, XColor.Green, 2, XDashStyle.Solid, "Walk Game " + this.FormatPercentage(this.WalkHouseEdge), g);
 
                         var legendY = this.CalcY(6 * this.Unit);
                         var legendRect = new RectangleF(this.PlotArea.Left, legendY, this.PlotArea.Width, this.MidY - legendY);
@@ -345,10 +333,11 @@ namespace Mbrit.Vegas.Lens.Graph
                     }
                 }
             }
+        }
 
-            var path = Runtime.Current.GetLocalMachineDataPath(DateTime.UtcNow.ToString("yyyyMMdd-HHmmss") + ".svg");
-            var asString = svg.ToString();
-            File.WriteAllText(path, asString);
+        private void PlotLine(IEnumerable<float> tilts, object magenta, int v, XDashStyle solid, IGraphics g)
+        {
+            throw new NotImplementedException();
         }
 
         private void RenderLegend(IEnumerable<WinLoseDrawType> vectors, RectangleF rect, IGraphics g)
@@ -365,12 +354,12 @@ namespace Mbrit.Vegas.Lens.Graph
                     var x = this.CalcX(index);
 
                     var y = rect.Top + size;
-                    Brush brush = null;
+                    XBrush brush = null;
                     if (result == WinLoseDrawType.Win)
-                        brush = Brushes.Green;
+                        brush = XBrushes.Green;
                     else if (result == WinLoseDrawType.Lose)
                     {
-                        brush = Brushes.Red;
+                        brush = XBrushes.Red;
                         y += size;
                     }
                     else
@@ -383,11 +372,11 @@ namespace Mbrit.Vegas.Lens.Graph
 
         private string FormatPercentage(float value) => (value * 100) + "%";
 
-        private void DrawBoundingBox(int value, int highY, Color colour, int width, IGraphics g)
+        private void DrawBoundingBox(int value, int highY, XColor colour, int width, IGraphics g)
         {
-            using(var pen = new Pen(colour, width)
+            using(var pen = new XPen(colour, width)
             {
-                DashStyle = System.Drawing.Drawing2D.DashStyle.Dot
+                DashStyle = XDashStyle.Dot
             })
             {
                 var fromY = this.CalcY(this.Unit * highY);
@@ -395,17 +384,17 @@ namespace Mbrit.Vegas.Lens.Graph
 
                 var x = this.XTicks[value];
 
-                var rect = new RectangleF(this.PlotArea.Left, fromY, x - this.PlotArea.Left, toY - fromY);
+                var rect = new XRectangleF(this.PlotArea.Left, fromY, x - this.PlotArea.Left, toY - fromY);
                 g.DrawRectangle(pen, rect);
             }
         }
 
-        private PointF PlotLine(IEnumerable<float> values, Color colour, int width, DashStyle dash, IGraphics g) =>
+        private XPointF PlotLine(IEnumerable<float> values, XColor colour, int width, XDashStyle dash, IGraphics g) =>
             this.PlotLine(values, colour, width, dash, string.Empty, g);
 
-        private PointF PlotLine(IEnumerable<float> values, Color colour, int width, DashStyle dash, string label, IGraphics g)
+        private XPointF PlotLine(IEnumerable<float> values, XColor colour, int width, XDashStyle dash, string label, IGraphics g)
         {
-            using (var pen = new Pen(colour, width)
+            using (var pen = new XPen(colour, width)
             {
                 DashStyle = dash
             })
@@ -427,13 +416,13 @@ namespace Mbrit.Vegas.Lens.Graph
                     index++;
                 }
 
-                var pt = new PointF(lastProfitX, lastProfitY);
+                var pt = new XPointF(lastProfitX, lastProfitY);
 
                 if (!(string.IsNullOrEmpty(label)) && g != null)
                 {
                     using (var font = this.GetFont())
                     {
-                        using (var brush = new SolidBrush(colour))
+                        using (var brush = new XBrush(colour))
                         {
                             g.DrawString(label, font, brush, pt.X, pt.Y - 6);
                         }

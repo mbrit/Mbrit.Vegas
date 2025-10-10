@@ -21,7 +21,11 @@ namespace Mbrit.Vegas.Simulator
 
         // fixed...
         public decimal TakeProfitMultiplier => 4;
+
+        //public int MaxPutIns => 15;
         public int MaxPutIns => 12;
+        //public int MaxPutIns => 9;
+        //public int MaxPutIns => 6;
 
         //private const int DefaultMaxHands = 25;
 

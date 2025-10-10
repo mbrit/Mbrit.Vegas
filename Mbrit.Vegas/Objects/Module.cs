@@ -10,6 +10,7 @@ namespace Mbrit.Vegas
     {
         WebApi = 0,
         Console = 1,
-        Utility = 2
+        Utility = 2,
+        Lens = 3
     }
 }

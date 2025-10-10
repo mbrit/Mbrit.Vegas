@@ -73,7 +73,7 @@ namespace Mbrit.Vegas.Simulator
 
             var player = new AutomaticWalkGamePlayer();
 
-            var runs = this.DoMagic(rounds, 2, player, (index, rounds) =>
+            var runs = this.DoMagic(rounds, 3, player, (index, rounds) =>
             {
                 if (index == 0)
                     return WalkGameDefaults.GetSetup(WalkGameMode.ReachSpike1, rounds, unitSize, hailMaryCount);
@@ -1271,6 +1271,15 @@ namespace Mbrit.Vegas.Simulator
                         state.StopReason = WalkStopReason.DynamicInvestmentLimit;
                         break;
                     }
+
+                    // not beneficial to do...
+                    /*
+                    if (state.LossChainSteps == 5)
+                    {
+                        logStop("Stopped at 'n' consecutive losses.");
+                        break;
+                    }
+                    */
                 }
                 finally
                 {

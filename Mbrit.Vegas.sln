@@ -17,7 +17,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Mbrit.Vegas.Web", "Mbrit.Vegas.Web\Mbrit.Vegas.Web.esproj", "{06AAA1E6-CCBA-4422-AD9C-08EB7721094D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mbrit.Vegas.Lens", "Mbrit.Vegas.Lens\Mbrit.Vegas.Lens.csproj", "{718D73C7-E6DC-4891-921B-143468AFA848}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mbrit.Vegas.Lens", "Mbrit.Vegas.Lens\Mbrit.Vegas.Lens.csproj", "{718D73C7-E6DC-4891-921B-143468AFA848}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mbrit.Vegas.Lens.Shared", "Mbrit.Vegas.Lens.Shared\Mbrit.Vegas.Lens.Shared.csproj", "{812269EF-B4C2-4EFC-974F-768191885629}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mbrit.Vegas.Cards", "Mbrit.Vegas.Cards\Mbrit.Vegas.Cards.csproj", "{F3479A7D-6972-4347-8D1F-1D740931BE0B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{718D73C7-E6DC-4891-921B-143468AFA848}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{718D73C7-E6DC-4891-921B-143468AFA848}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{718D73C7-E6DC-4891-921B-143468AFA848}.Release|Any CPU.Build.0 = Release|Any CPU
+		{812269EF-B4C2-4EFC-974F-768191885629}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{812269EF-B4C2-4EFC-974F-768191885629}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{812269EF-B4C2-4EFC-974F-768191885629}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{812269EF-B4C2-4EFC-974F-768191885629}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3479A7D-6972-4347-8D1F-1D740931BE0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3479A7D-6972-4347-8D1F-1D740931BE0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3479A7D-6972-4347-8D1F-1D740931BE0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3479A7D-6972-4347-8D1F-1D740931BE0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

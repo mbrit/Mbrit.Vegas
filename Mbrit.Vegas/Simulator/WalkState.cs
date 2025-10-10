@@ -144,6 +144,17 @@ namespace Mbrit.Vegas.Simulator
 
         internal decimal LossChainScore => 0 - this.LossChains.ScoreChains(false);
 
+        internal int LossChainSteps
+        {
+            get
+            {
+                if (this.LossChain != null)
+                    return this.LossChain.Steps;
+                else
+                    return 0;
+            }
+        }
+
         internal decimal ChainScore => this.WinChainScore + this.LossChainScore;
 
         internal int MaxLossChain => this.LossChains.Max();
