@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
@@ -6,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Graph\GraphElement.cs" />
     <Compile Remove="Graph\GraphGenerator.cs" />
@@ -16,25 +18,22 @@
     <Compile Remove="Graph\PlotLineGraphElement.cs" />
     <Compile Remove="Graph\SvgGraphics.cs" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Mbrit.Vegas.Lens.Shared\Mbrit.Vegas.Lens.Shared.csproj" />
     <ProjectReference Include="..\Mbrit.Vegas\Mbrit.Vegas.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Reference Include="BootFX.Common">
-      <HintPath>C:\Code\BootFX\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.dll</HintPath>
+      <HintPath>..\..\..\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.dll</HintPath>
     </Reference>
     <Reference Include="BootFX.Common.MySql">
-      <HintPath>C:\Code\BootFX\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.MySql.dll</HintPath>
+      <HintPath>..\..\..\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.MySql.dll</HintPath>
     </Reference>
     <Reference Include="BootFX.Common.Postgres">
-      <HintPath>C:\Code\BootFX\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.Postgres.dll</HintPath>
+      <HintPath>..\..\..\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.Postgres.dll</HintPath>
     </Reference>
-    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
-    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.1" />
-    <PackageReference Include="System.Security.Permissions" Version="9.0.0" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
-  <ItemGroup />
+
 </Project>

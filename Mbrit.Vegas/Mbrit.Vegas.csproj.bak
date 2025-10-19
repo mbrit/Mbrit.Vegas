@@ -3,7 +3,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Version>1.0.20406.1911</Version>
+    <Version>1.0.20713.1241</Version>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Entities\StagedBlood\**" />
@@ -12,6 +12,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Objects\AsStringConverter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\Casinos.txt" />
+    <None Remove="Resources\Games.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Casinos.txt" />
+    <EmbeddedResource Include="Resources\Games.txt" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BootFX.Common">
@@ -24,7 +32,6 @@
       <HintPath>D:\Code\BootFX.Common-7.0\BootFX.Common\BootFX.Sample.Utility\bin\Debug\net6.0\BootFX.Common.Postgres.dll</HintPath>
     </Reference>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="BootFX" Version="7.0.11112.1645" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.0" />
     <PackageReference Include="System.Security.Permissions" Version="8.0.0" />
